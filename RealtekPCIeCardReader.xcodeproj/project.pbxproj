@@ -1,0 +1,662 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D51D6F9C2660B7E100871FA3 /* SD.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D51D6F9A2660B7E100871FA3 /* SD.hpp */; };
+		D51D6F9F2660BE3800871FA3 /* RealtekSDXCSlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D51D6F9D2660BE3800871FA3 /* RealtekSDXCSlot.cpp */; };
+		D51D6FA02660BE3800871FA3 /* RealtekSDXCSlot.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D51D6F9E2660BE3800871FA3 /* RealtekSDXCSlot.hpp */; };
+		D57B48B725EB08B1000D3E67 /* Utilities.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D57B48B525EB08B1000D3E67 /* Utilities.hpp */; };
+		D57B48BC25EB315C000D3E67 /* RealtekRTS5249Controller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57B48BA25EB315C000D3E67 /* RealtekRTS5249Controller.cpp */; };
+		D57B48BD25EB315C000D3E67 /* RealtekRTS5249Controller.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D57B48BB25EB315C000D3E67 /* RealtekRTS5249Controller.hpp */; };
+		D57FA69B267B0BB00023097C /* IOSDSimpleBlockRequest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57FA699267B0BB00023097C /* IOSDSimpleBlockRequest.cpp */; };
+		D57FA69C267B0BB00023097C /* IOSDSimpleBlockRequest.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D57FA69A267B0BB00023097C /* IOSDSimpleBlockRequest.hpp */; };
+		D57FA69F267B0BBE0023097C /* IOSDComplexBlockRequest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57FA69D267B0BBE0023097C /* IOSDComplexBlockRequest.cpp */; };
+		D57FA6A0267B0BBE0023097C /* IOSDComplexBlockRequest.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D57FA69E267B0BBE0023097C /* IOSDComplexBlockRequest.hpp */; };
+		D57FA6A5267C1F340023097C /* RealtekRTS5209Controller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57FA6A3267C1F340023097C /* RealtekRTS5209Controller.cpp */; };
+		D57FA6A6267C1F340023097C /* RealtekRTS5209Controller.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D57FA6A4267C1F340023097C /* RealtekRTS5209Controller.hpp */; };
+		D57FA6A9267D2C8D0023097C /* RealtekRTS524AController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57FA6A7267D2C8D0023097C /* RealtekRTS524AController.cpp */; };
+		D57FA6AA267D2C8D0023097C /* RealtekRTS524AController.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D57FA6A8267D2C8D0023097C /* RealtekRTS524AController.hpp */; };
+		D57FA6AD267D50400023097C /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = D57FA6AC267D50400023097C /* LICENSE */; };
+		D59B34B42651C23F004C3348 /* RealtekRTS5249SeriesController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59B34B22651C23F004C3348 /* RealtekRTS5249SeriesController.cpp */; };
+		D59B34B52651C23F004C3348 /* RealtekRTS5249SeriesController.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59B34B32651C23F004C3348 /* RealtekRTS5249SeriesController.hpp */; };
+		D59E076326646BD7009E96EE /* RealtekSDRequest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E076126646BD7009E96EE /* RealtekSDRequest.cpp */; };
+		D59E076426646BD7009E96EE /* RealtekSDRequest.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59E076226646BD7009E96EE /* RealtekSDRequest.hpp */; };
+		D59E076826646BE3009E96EE /* RealtekSDCommand.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59E076626646BE3009E96EE /* RealtekSDCommand.hpp */; };
+		D59E076C2664B53E009E96EE /* IOSDBusConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59E076A2664B53E009E96EE /* IOSDBusConfig.hpp */; };
+		D59E077726675FB9009E96EE /* IOSDHostDriver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E077526675FB9009E96EE /* IOSDHostDriver.cpp */; };
+		D59E077826675FB9009E96EE /* IOSDHostDriver.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59E077626675FB9009E96EE /* IOSDHostDriver.hpp */; };
+		D59E077B266841FA009E96EE /* IOSDBlockStorageDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E0779266841FA009E96EE /* IOSDBlockStorageDevice.cpp */; };
+		D59E077C266841FA009E96EE /* IOSDBlockStorageDevice.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59E077A266841FA009E96EE /* IOSDBlockStorageDevice.hpp */; };
+		D59E077F2669F153009E96EE /* IOSDCard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E077D2669F153009E96EE /* IOSDCard.cpp */; };
+		D59E07802669F153009E96EE /* IOSDCard.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59E077E2669F153009E96EE /* IOSDCard.hpp */; };
+		D59E0783266C09E0009E96EE /* IOSDHostDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E0781266C09E0009E96EE /* IOSDHostDevice.cpp */; };
+		D59E0784266C09E0009E96EE /* IOSDHostDevice.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59E0782266C09E0009E96EE /* IOSDHostDevice.hpp */; };
+		D59E078E266C0FD3009E96EE /* ClosedRange.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59E078D266C0FD3009E96EE /* ClosedRange.hpp */; };
+		D59E0791266DF6B5009E96EE /* IOSDBlockRequest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E078F266DF6B5009E96EE /* IOSDBlockRequest.cpp */; };
+		D59E0792266DF6B5009E96EE /* IOSDBlockRequest.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59E0790266DF6B5009E96EE /* IOSDBlockRequest.hpp */; };
+		D5D2EE2E25DE0212004B5310 /* libkmod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5D2EE2D25DE01FD004B5310 /* libkmod.a */; };
+		D5D2EE3625DE0358004B5310 /* RealtekRTS525AController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D2EE3425DE0358004B5310 /* RealtekRTS525AController.cpp */; };
+		D5D2EE3725DE0358004B5310 /* RealtekRTS525AController.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5D2EE3525DE0358004B5310 /* RealtekRTS525AController.hpp */; };
+		D5D2EE7525DE4714004B5310 /* Debug.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5D2EE7425DE4714004B5310 /* Debug.hpp */; };
+		D5D2EE7B25DE4CE1004B5310 /* Registers.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5D2EE7925DE4CE1004B5310 /* Registers.hpp */; };
+		D5D2EE8825DF1316004B5310 /* RealtekPCIeCardReaderController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D2EE8625DF1316004B5310 /* RealtekPCIeCardReaderController.cpp */; };
+		D5D2EE8925DF1316004B5310 /* RealtekPCIeCardReaderController.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5D2EE8725DF1316004B5310 /* RealtekPCIeCardReaderController.hpp */; };
+		D5D2EE9F25E0B639004B5310 /* BitOptions.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5D2EE9E25E0B639004B5310 /* BitOptions.hpp */; };
+		D5FF56422670B1C500B0143E /* IOSDBlockRequestQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF56402670B1C500B0143E /* IOSDBlockRequestQueue.cpp */; };
+		D5FF56432670B1C500B0143E /* IOSDBlockRequestQueue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF56412670B1C500B0143E /* IOSDBlockRequestQueue.hpp */; };
+		D5FF56462671484600B0143E /* IOSDBlockRequestEventSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF56442671484600B0143E /* IOSDBlockRequestEventSource.cpp */; };
+		D5FF56472671484600B0143E /* IOSDBlockRequestEventSource.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF56452671484600B0143E /* IOSDBlockRequestEventSource.hpp */; };
+		D5FF564B26715FBE00B0143E /* IOSDCardEventSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF564926715FBE00B0143E /* IOSDCardEventSource.cpp */; };
+		D5FF564C26715FBE00B0143E /* IOSDCardEventSource.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF564A26715FBE00B0143E /* IOSDCardEventSource.hpp */; };
+		D5FF564F267221B100B0143E /* AppleSDXCSlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF564D267221B100B0143E /* AppleSDXCSlot.cpp */; };
+		D5FF5650267221B100B0143E /* AppleSDXCSlot.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF564E267221B100B0143E /* AppleSDXCSlot.hpp */; };
+		D5FF5653267225D800B0143E /* AppleSDXC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF5651267225D800B0143E /* AppleSDXC.cpp */; };
+		D5FF5654267225D800B0143E /* AppleSDXC.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF5652267225D800B0143E /* AppleSDXC.hpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D51D6F9A2660B7E100871FA3 /* SD.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SD.hpp; sourceTree = "<group>"; };
+		D51D6F9D2660BE3800871FA3 /* RealtekSDXCSlot.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekSDXCSlot.cpp; sourceTree = "<group>"; };
+		D51D6F9E2660BE3800871FA3 /* RealtekSDXCSlot.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekSDXCSlot.hpp; sourceTree = "<group>"; };
+		D57B48B525EB08B1000D3E67 /* Utilities.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Utilities.hpp; sourceTree = "<group>"; };
+		D57B48BA25EB315C000D3E67 /* RealtekRTS5249Controller.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekRTS5249Controller.cpp; sourceTree = "<group>"; };
+		D57B48BB25EB315C000D3E67 /* RealtekRTS5249Controller.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS5249Controller.hpp; sourceTree = "<group>"; };
+		D57FA699267B0BB00023097C /* IOSDSimpleBlockRequest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDSimpleBlockRequest.cpp; sourceTree = "<group>"; };
+		D57FA69A267B0BB00023097C /* IOSDSimpleBlockRequest.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDSimpleBlockRequest.hpp; sourceTree = "<group>"; };
+		D57FA69D267B0BBE0023097C /* IOSDComplexBlockRequest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDComplexBlockRequest.cpp; sourceTree = "<group>"; };
+		D57FA69E267B0BBE0023097C /* IOSDComplexBlockRequest.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDComplexBlockRequest.hpp; sourceTree = "<group>"; };
+		D57FA6A1267C007A0023097C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
+		D57FA6A3267C1F340023097C /* RealtekRTS5209Controller.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekRTS5209Controller.cpp; sourceTree = "<group>"; };
+		D57FA6A4267C1F340023097C /* RealtekRTS5209Controller.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS5209Controller.hpp; sourceTree = "<group>"; };
+		D57FA6A7267D2C8D0023097C /* RealtekRTS524AController.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekRTS524AController.cpp; sourceTree = "<group>"; };
+		D57FA6A8267D2C8D0023097C /* RealtekRTS524AController.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS524AController.hpp; sourceTree = "<group>"; };
+		D57FA6AB267D3C610023097C /* FAQ.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FAQ.md; sourceTree = "<group>"; };
+		D57FA6AC267D50400023097C /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
+		D59B34B22651C23F004C3348 /* RealtekRTS5249SeriesController.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekRTS5249SeriesController.cpp; sourceTree = "<group>"; };
+		D59B34B32651C23F004C3348 /* RealtekRTS5249SeriesController.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS5249SeriesController.hpp; sourceTree = "<group>"; };
+		D59E076126646BD7009E96EE /* RealtekSDRequest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekSDRequest.cpp; sourceTree = "<group>"; };
+		D59E076226646BD7009E96EE /* RealtekSDRequest.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekSDRequest.hpp; sourceTree = "<group>"; };
+		D59E076626646BE3009E96EE /* RealtekSDCommand.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekSDCommand.hpp; sourceTree = "<group>"; };
+		D59E076A2664B53E009E96EE /* IOSDBusConfig.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDBusConfig.hpp; sourceTree = "<group>"; };
+		D59E077526675FB9009E96EE /* IOSDHostDriver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDHostDriver.cpp; sourceTree = "<group>"; };
+		D59E077626675FB9009E96EE /* IOSDHostDriver.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDHostDriver.hpp; sourceTree = "<group>"; };
+		D59E0779266841FA009E96EE /* IOSDBlockStorageDevice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDBlockStorageDevice.cpp; sourceTree = "<group>"; };
+		D59E077A266841FA009E96EE /* IOSDBlockStorageDevice.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDBlockStorageDevice.hpp; sourceTree = "<group>"; };
+		D59E077D2669F153009E96EE /* IOSDCard.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDCard.cpp; sourceTree = "<group>"; };
+		D59E077E2669F153009E96EE /* IOSDCard.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDCard.hpp; sourceTree = "<group>"; };
+		D59E0781266C09E0009E96EE /* IOSDHostDevice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDHostDevice.cpp; sourceTree = "<group>"; };
+		D59E0782266C09E0009E96EE /* IOSDHostDevice.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDHostDevice.hpp; sourceTree = "<group>"; };
+		D59E078D266C0FD3009E96EE /* ClosedRange.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ClosedRange.hpp; sourceTree = "<group>"; };
+		D59E078F266DF6B5009E96EE /* IOSDBlockRequest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDBlockRequest.cpp; sourceTree = "<group>"; };
+		D59E0790266DF6B5009E96EE /* IOSDBlockRequest.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDBlockRequest.hpp; sourceTree = "<group>"; };
+		D5D2EE1925DE007E004B5310 /* RealtekPCIeCardReader.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealtekPCIeCardReader.kext; sourceTree = BUILT_PRODUCTS_DIR; };
+		D5D2EE2025DE007E004B5310 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D5D2EE2D25DE01FD004B5310 /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkmod.a; path = MacKernelSDK/Library/x86_64/libkmod.a; sourceTree = "<group>"; };
+		D5D2EE3425DE0358004B5310 /* RealtekRTS525AController.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekRTS525AController.cpp; sourceTree = "<group>"; };
+		D5D2EE3525DE0358004B5310 /* RealtekRTS525AController.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS525AController.hpp; sourceTree = "<group>"; };
+		D5D2EE7425DE4714004B5310 /* Debug.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Debug.hpp; sourceTree = "<group>"; };
+		D5D2EE7925DE4CE1004B5310 /* Registers.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Registers.hpp; sourceTree = "<group>"; };
+		D5D2EE8625DF1316004B5310 /* RealtekPCIeCardReaderController.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekPCIeCardReaderController.cpp; sourceTree = "<group>"; };
+		D5D2EE8725DF1316004B5310 /* RealtekPCIeCardReaderController.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekPCIeCardReaderController.hpp; sourceTree = "<group>"; };
+		D5D2EE9E25E0B639004B5310 /* BitOptions.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BitOptions.hpp; sourceTree = "<group>"; };
+		D5FF56402670B1C500B0143E /* IOSDBlockRequestQueue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDBlockRequestQueue.cpp; sourceTree = "<group>"; };
+		D5FF56412670B1C500B0143E /* IOSDBlockRequestQueue.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDBlockRequestQueue.hpp; sourceTree = "<group>"; };
+		D5FF56442671484600B0143E /* IOSDBlockRequestEventSource.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDBlockRequestEventSource.cpp; sourceTree = "<group>"; };
+		D5FF56452671484600B0143E /* IOSDBlockRequestEventSource.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDBlockRequestEventSource.hpp; sourceTree = "<group>"; };
+		D5FF564926715FBE00B0143E /* IOSDCardEventSource.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDCardEventSource.cpp; sourceTree = "<group>"; };
+		D5FF564A26715FBE00B0143E /* IOSDCardEventSource.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDCardEventSource.hpp; sourceTree = "<group>"; };
+		D5FF564D267221B100B0143E /* AppleSDXCSlot.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AppleSDXCSlot.cpp; sourceTree = "<group>"; };
+		D5FF564E267221B100B0143E /* AppleSDXCSlot.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = AppleSDXCSlot.hpp; sourceTree = "<group>"; };
+		D5FF5651267225D800B0143E /* AppleSDXC.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AppleSDXC.cpp; sourceTree = "<group>"; };
+		D5FF5652267225D800B0143E /* AppleSDXC.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = AppleSDXC.hpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D5D2EE1625DE007E004B5310 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5D2EE2E25DE0212004B5310 /* libkmod.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D51D6FA526622C4800871FA3 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				D51D6FA826622CA000871FA3 /* Base */,
+				D5D2EE9425DF1C5A004B5310 /* RTL8411 */,
+				D5D2EE8E25DF1C2B004B5310 /* RTS5209 */,
+				D5D2EE8F25DF1C37004B5310 /* RTS5227 */,
+				D5D2EE9025DF1C40004B5310 /* RTS5228 */,
+				D5D2EE9125DF1C44004B5310 /* RTS5229 */,
+				D5D2EE8D25DF1C0D004B5310 /* RTS5249 */,
+				D5D2EE9225DF1C4A004B5310 /* RTS5260 */,
+				D5D2EE9325DF1C55004B5310 /* RTS5261 */,
+			);
+			name = Controllers;
+			sourceTree = "<group>";
+		};
+		D51D6FA626622C4E00871FA3 /* Card Slots */ = {
+			isa = PBXGroup;
+			children = (
+				D5FF564D267221B100B0143E /* AppleSDXCSlot.cpp */,
+				D5FF564E267221B100B0143E /* AppleSDXCSlot.hpp */,
+				D59E0781266C09E0009E96EE /* IOSDHostDevice.cpp */,
+				D59E0782266C09E0009E96EE /* IOSDHostDevice.hpp */,
+				D51D6F9D2660BE3800871FA3 /* RealtekSDXCSlot.cpp */,
+				D51D6F9E2660BE3800871FA3 /* RealtekSDXCSlot.hpp */,
+			);
+			name = "Card Slots";
+			sourceTree = "<group>";
+		};
+		D51D6FA726622C5800871FA3 /* Block Devices */ = {
+			isa = PBXGroup;
+			children = (
+				D59E0779266841FA009E96EE /* IOSDBlockStorageDevice.cpp */,
+				D59E077A266841FA009E96EE /* IOSDBlockStorageDevice.hpp */,
+			);
+			name = "Block Devices";
+			sourceTree = "<group>";
+		};
+		D51D6FA826622CA000871FA3 /* Base */ = {
+			isa = PBXGroup;
+			children = (
+				D5D2EE8625DF1316004B5310 /* RealtekPCIeCardReaderController.cpp */,
+				D5D2EE8725DF1316004B5310 /* RealtekPCIeCardReaderController.hpp */,
+				D5FF5651267225D800B0143E /* AppleSDXC.cpp */,
+				D5FF5652267225D800B0143E /* AppleSDXC.hpp */,
+			);
+			name = Base;
+			sourceTree = "<group>";
+		};
+		D51D6FA926622CBC00871FA3 /* Definitions */ = {
+			isa = PBXGroup;
+			children = (
+				D59E076626646BE3009E96EE /* RealtekSDCommand.hpp */,
+				D59E076126646BD7009E96EE /* RealtekSDRequest.cpp */,
+				D59E076226646BD7009E96EE /* RealtekSDRequest.hpp */,
+				D5D2EE7925DE4CE1004B5310 /* Registers.hpp */,
+				D51D6F9A2660B7E100871FA3 /* SD.hpp */,
+				D59E076A2664B53E009E96EE /* IOSDBusConfig.hpp */,
+			);
+			name = Definitions;
+			sourceTree = "<group>";
+		};
+		D51D6FAA26622CDC00871FA3 /* Miscellaneous */ = {
+			isa = PBXGroup;
+			children = (
+				D5D2EE9E25E0B639004B5310 /* BitOptions.hpp */,
+				D5D2EE7425DE4714004B5310 /* Debug.hpp */,
+				D57B48B525EB08B1000D3E67 /* Utilities.hpp */,
+				D59E078D266C0FD3009E96EE /* ClosedRange.hpp */,
+			);
+			name = Miscellaneous;
+			sourceTree = "<group>";
+		};
+		D57FA6A2267C07D90023097C /* Docs */ = {
+			isa = PBXGroup;
+			children = (
+				D57FA6AB267D3C610023097C /* FAQ.md */,
+			);
+			path = Docs;
+			sourceTree = "<group>";
+		};
+		D5D2EE0F25DE007E004B5310 = {
+			isa = PBXGroup;
+			children = (
+				D57FA6A2267C07D90023097C /* Docs */,
+				D5D2EE1B25DE007E004B5310 /* RealtekPCIeCardReader */,
+				D5D2EE1A25DE007E004B5310 /* Products */,
+				D5D2EE2C25DE01FD004B5310 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		D5D2EE1A25DE007E004B5310 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D5D2EE1925DE007E004B5310 /* RealtekPCIeCardReader.kext */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D5D2EE1B25DE007E004B5310 /* RealtekPCIeCardReader */ = {
+			isa = PBXGroup;
+			children = (
+				D51D6FA726622C5800871FA3 /* Block Devices */,
+				D51D6FA626622C4E00871FA3 /* Card Slots */,
+				D51D6FA526622C4800871FA3 /* Controllers */,
+				D51D6FA926622CBC00871FA3 /* Definitions */,
+				D5FF56482671490300B0143E /* Host Drivers */,
+				D51D6FAA26622CDC00871FA3 /* Miscellaneous */,
+				D57FA6A1267C007A0023097C /* README.md */,
+				D5D2EE2025DE007E004B5310 /* Info.plist */,
+				D57FA6AC267D50400023097C /* LICENSE */,
+			);
+			path = RealtekPCIeCardReader;
+			sourceTree = "<group>";
+		};
+		D5D2EE2C25DE01FD004B5310 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D5D2EE2D25DE01FD004B5310 /* libkmod.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D5D2EE8D25DF1C0D004B5310 /* RTS5249 */ = {
+			isa = PBXGroup;
+			children = (
+				D57FA6A7267D2C8D0023097C /* RealtekRTS524AController.cpp */,
+				D57FA6A8267D2C8D0023097C /* RealtekRTS524AController.hpp */,
+				D5D2EE3425DE0358004B5310 /* RealtekRTS525AController.cpp */,
+				D5D2EE3525DE0358004B5310 /* RealtekRTS525AController.hpp */,
+				D57B48BA25EB315C000D3E67 /* RealtekRTS5249Controller.cpp */,
+				D57B48BB25EB315C000D3E67 /* RealtekRTS5249Controller.hpp */,
+				D59B34B22651C23F004C3348 /* RealtekRTS5249SeriesController.cpp */,
+				D59B34B32651C23F004C3348 /* RealtekRTS5249SeriesController.hpp */,
+			);
+			name = RTS5249;
+			sourceTree = "<group>";
+		};
+		D5D2EE8E25DF1C2B004B5310 /* RTS5209 */ = {
+			isa = PBXGroup;
+			children = (
+				D57FA6A3267C1F340023097C /* RealtekRTS5209Controller.cpp */,
+				D57FA6A4267C1F340023097C /* RealtekRTS5209Controller.hpp */,
+			);
+			name = RTS5209;
+			sourceTree = "<group>";
+		};
+		D5D2EE8F25DF1C37004B5310 /* RTS5227 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = RTS5227;
+			sourceTree = "<group>";
+		};
+		D5D2EE9025DF1C40004B5310 /* RTS5228 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = RTS5228;
+			sourceTree = "<group>";
+		};
+		D5D2EE9125DF1C44004B5310 /* RTS5229 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = RTS5229;
+			sourceTree = "<group>";
+		};
+		D5D2EE9225DF1C4A004B5310 /* RTS5260 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = RTS5260;
+			sourceTree = "<group>";
+		};
+		D5D2EE9325DF1C55004B5310 /* RTS5261 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = RTS5261;
+			sourceTree = "<group>";
+		};
+		D5D2EE9425DF1C5A004B5310 /* RTL8411 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = RTL8411;
+			sourceTree = "<group>";
+		};
+		D5FF56482671490300B0143E /* Host Drivers */ = {
+			isa = PBXGroup;
+			children = (
+				D59E077526675FB9009E96EE /* IOSDHostDriver.cpp */,
+				D59E077626675FB9009E96EE /* IOSDHostDriver.hpp */,
+				D59E078F266DF6B5009E96EE /* IOSDBlockRequest.cpp */,
+				D59E0790266DF6B5009E96EE /* IOSDBlockRequest.hpp */,
+				D57FA699267B0BB00023097C /* IOSDSimpleBlockRequest.cpp */,
+				D57FA69A267B0BB00023097C /* IOSDSimpleBlockRequest.hpp */,
+				D57FA69D267B0BBE0023097C /* IOSDComplexBlockRequest.cpp */,
+				D57FA69E267B0BBE0023097C /* IOSDComplexBlockRequest.hpp */,
+				D5FF56402670B1C500B0143E /* IOSDBlockRequestQueue.cpp */,
+				D5FF56412670B1C500B0143E /* IOSDBlockRequestQueue.hpp */,
+				D5FF56442671484600B0143E /* IOSDBlockRequestEventSource.cpp */,
+				D5FF56452671484600B0143E /* IOSDBlockRequestEventSource.hpp */,
+				D5FF564926715FBE00B0143E /* IOSDCardEventSource.cpp */,
+				D5FF564A26715FBE00B0143E /* IOSDCardEventSource.hpp */,
+				D59E077D2669F153009E96EE /* IOSDCard.cpp */,
+				D59E077E2669F153009E96EE /* IOSDCard.hpp */,
+			);
+			name = "Host Drivers";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D5D2EE1425DE007E004B5310 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5D2EE7B25DE4CE1004B5310 /* Registers.hpp in Headers */,
+				D57FA6A6267C1F340023097C /* RealtekRTS5209Controller.hpp in Headers */,
+				D59E0784266C09E0009E96EE /* IOSDHostDevice.hpp in Headers */,
+				D5D2EE7525DE4714004B5310 /* Debug.hpp in Headers */,
+				D5FF564C26715FBE00B0143E /* IOSDCardEventSource.hpp in Headers */,
+				D5FF56432670B1C500B0143E /* IOSDBlockRequestQueue.hpp in Headers */,
+				D59E0792266DF6B5009E96EE /* IOSDBlockRequest.hpp in Headers */,
+				D59E076426646BD7009E96EE /* RealtekSDRequest.hpp in Headers */,
+				D51D6F9C2660B7E100871FA3 /* SD.hpp in Headers */,
+				D5D2EE9F25E0B639004B5310 /* BitOptions.hpp in Headers */,
+				D5D2EE3725DE0358004B5310 /* RealtekRTS525AController.hpp in Headers */,
+				D59E077C266841FA009E96EE /* IOSDBlockStorageDevice.hpp in Headers */,
+				D5FF56472671484600B0143E /* IOSDBlockRequestEventSource.hpp in Headers */,
+				D51D6FA02660BE3800871FA3 /* RealtekSDXCSlot.hpp in Headers */,
+				D59E077826675FB9009E96EE /* IOSDHostDriver.hpp in Headers */,
+				D59B34B52651C23F004C3348 /* RealtekRTS5249SeriesController.hpp in Headers */,
+				D57FA69C267B0BB00023097C /* IOSDSimpleBlockRequest.hpp in Headers */,
+				D5FF5654267225D800B0143E /* AppleSDXC.hpp in Headers */,
+				D59E078E266C0FD3009E96EE /* ClosedRange.hpp in Headers */,
+				D59E076C2664B53E009E96EE /* IOSDBusConfig.hpp in Headers */,
+				D59E07802669F153009E96EE /* IOSDCard.hpp in Headers */,
+				D5D2EE8925DF1316004B5310 /* RealtekPCIeCardReaderController.hpp in Headers */,
+				D57B48BD25EB315C000D3E67 /* RealtekRTS5249Controller.hpp in Headers */,
+				D57FA6AA267D2C8D0023097C /* RealtekRTS524AController.hpp in Headers */,
+				D57FA6A0267B0BBE0023097C /* IOSDComplexBlockRequest.hpp in Headers */,
+				D57B48B725EB08B1000D3E67 /* Utilities.hpp in Headers */,
+				D59E076826646BE3009E96EE /* RealtekSDCommand.hpp in Headers */,
+				D5FF5650267221B100B0143E /* AppleSDXCSlot.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D5D2EE1825DE007E004B5310 /* RealtekPCIeCardReader */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D5D2EE2325DE007E004B5310 /* Build configuration list for PBXNativeTarget "RealtekPCIeCardReader" */;
+			buildPhases = (
+				D5D2EE1425DE007E004B5310 /* Headers */,
+				D5D2EE1525DE007E004B5310 /* Sources */,
+				D5D2EE1625DE007E004B5310 /* Frameworks */,
+				D5D2EE1725DE007E004B5310 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RealtekPCIeCardReader;
+			productName = RealtekPCIeCardReader;
+			productReference = D5D2EE1925DE007E004B5310 /* RealtekPCIeCardReader.kext */;
+			productType = "com.apple.product-type.kernel-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D5D2EE1025DE007E004B5310 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1250;
+				TargetAttributes = {
+					D5D2EE1825DE007E004B5310 = {
+						CreatedOnToolsVersion = 12.4;
+					};
+				};
+			};
+			buildConfigurationList = D5D2EE1325DE007E004B5310 /* Build configuration list for PBXProject "RealtekPCIeCardReader" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D5D2EE0F25DE007E004B5310;
+			productRefGroup = D5D2EE1A25DE007E004B5310 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D5D2EE1825DE007E004B5310 /* RealtekPCIeCardReader */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D5D2EE1725DE007E004B5310 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D57FA6AD267D50400023097C /* LICENSE in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D5D2EE1525DE007E004B5310 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D57FA6A5267C1F340023097C /* RealtekRTS5209Controller.cpp in Sources */,
+				D59E0791266DF6B5009E96EE /* IOSDBlockRequest.cpp in Sources */,
+				D57FA6A9267D2C8D0023097C /* RealtekRTS524AController.cpp in Sources */,
+				D5FF5653267225D800B0143E /* AppleSDXC.cpp in Sources */,
+				D51D6F9F2660BE3800871FA3 /* RealtekSDXCSlot.cpp in Sources */,
+				D5D2EE8825DF1316004B5310 /* RealtekPCIeCardReaderController.cpp in Sources */,
+				D59E077F2669F153009E96EE /* IOSDCard.cpp in Sources */,
+				D5D2EE3625DE0358004B5310 /* RealtekRTS525AController.cpp in Sources */,
+				D57FA69B267B0BB00023097C /* IOSDSimpleBlockRequest.cpp in Sources */,
+				D59E0783266C09E0009E96EE /* IOSDHostDevice.cpp in Sources */,
+				D5FF56462671484600B0143E /* IOSDBlockRequestEventSource.cpp in Sources */,
+				D5FF564F267221B100B0143E /* AppleSDXCSlot.cpp in Sources */,
+				D57FA69F267B0BBE0023097C /* IOSDComplexBlockRequest.cpp in Sources */,
+				D5FF564B26715FBE00B0143E /* IOSDCardEventSource.cpp in Sources */,
+				D57B48BC25EB315C000D3E67 /* RealtekRTS5249Controller.cpp in Sources */,
+				D59E076326646BD7009E96EE /* RealtekSDRequest.cpp in Sources */,
+				D59E077B266841FA009E96EE /* IOSDBlockStorageDevice.cpp in Sources */,
+				D5FF56422670B1C500B0143E /* IOSDBlockRequestQueue.cpp in Sources */,
+				D59E077726675FB9009E96EE /* IOSDHostDriver.cpp in Sources */,
+				D59B34B42651C23F004C3348 /* RealtekRTS5249SeriesController.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D5D2EE2125DE007E004B5310 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				KERNEL_EXTENSION_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
+				KERNEL_FRAMEWORK_HEADERS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D5D2EE2225DE007E004B5310 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				KERNEL_EXTENSION_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
+				KERNEL_FRAMEWORK_HEADERS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D5D2EE2425DE007E004B5310 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = "$(MODULE_VERSION)";
+				DEVELOPMENT_TEAM = "";
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = RealtekPCIeCardReader/Info.plist;
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/MacKernelSDK/Library/x86_64";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MARKETING_VERSION = "$(MODULE_VERSION)";
+				MODULE_NAME = science.firewolf.RealtekPCIeCardReader;
+				MODULE_VERSION = 0.9.0;
+				PRODUCT_BUNDLE_IDENTIFIER = science.firewolf.rtsx;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				WRAPPER_EXTENSION = kext;
+			};
+			name = Debug;
+		};
+		D5D2EE2525DE007E004B5310 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = "$(MODULE_VERSION)";
+				DEVELOPMENT_TEAM = "";
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = RealtekPCIeCardReader/Info.plist;
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/MacKernelSDK/Library/x86_64";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MARKETING_VERSION = "$(MODULE_VERSION)";
+				MODULE_NAME = science.firewolf.RealtekPCIeCardReader;
+				MODULE_VERSION = 0.9.0;
+				PRODUCT_BUNDLE_IDENTIFIER = science.firewolf.rtsx;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				WRAPPER_EXTENSION = kext;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D5D2EE1325DE007E004B5310 /* Build configuration list for PBXProject "RealtekPCIeCardReader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5D2EE2125DE007E004B5310 /* Debug */,
+				D5D2EE2225DE007E004B5310 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D5D2EE2325DE007E004B5310 /* Build configuration list for PBXNativeTarget "RealtekPCIeCardReader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D5D2EE2425DE007E004B5310 /* Debug */,
+				D5D2EE2525DE007E004B5310 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D5D2EE1025DE007E004B5310 /* Project object */;
+}
