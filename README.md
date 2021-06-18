@@ -58,13 +58,16 @@ It uses the Linux driver as a reference implementation but is written from scrat
 
 ### Users
 Please read [FAQs](Docs/FAQ.md) carefully before asking any questions.  
-Please use the issue template before submitting any code-level issues.
-Please clearly indicate your chip model, device ID and revision number and attach the kernel log in your issue.
+Please use the issue template before submitting any code-level issues.  
+Please clearly indicate your chip model, device ID and revision number and attach the kernel log in your issue.  
 
 ### Developers
 You are welcome to submit pull requests to improve this driver.  
 Please read the code documentation to understand how each class/function is related to the Linux driver code and how to add support for other listed devices.  
 A detailed port note will be available later.
+
+## Discussion
+A discussion thread is available on [InsanelyMac](https://www.insanelymac.com/forum/topic/348130-general-discussion-realtek-pcie-card-reader-driver-for-macos/).
 
 ## Support
 Writing a driver from scratch is hard and time consuming.  
