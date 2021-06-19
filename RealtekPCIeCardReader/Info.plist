@@ -77,7 +77,7 @@
 			<key>IOPCIMatch</key>
 			<string>0x520910EC</string>
 			<key>IOProbeScore</key>
-			<real>1000</real>
+			<integer>1000</integer>
 			<key>IOProviderClass</key>
 			<string>IOPCIDevice</string>
 			<key>Protocol Characteristics</key>
@@ -97,7 +97,7 @@
 			<key>IOPCIMatch</key>
 			<string>0x522910EC</string>
 			<key>IOProbeScore</key>
-			<real>1000</real>
+			<integer>1000</integer>
 			<key>IOProviderClass</key>
 			<string>IOPCIDevice</string>
 			<key>Protocol Characteristics</key>
@@ -137,7 +137,7 @@
 			<key>IOPCIMatch</key>
 			<string>0x524A10EC</string>
 			<key>IOProbeScore</key>
-			<real>1000</real>
+			<integer>1000</integer>
 			<key>IOProviderClass</key>
 			<string>IOPCIDevice</string>
 			<key>Protocol Characteristics</key>
