@@ -680,6 +680,17 @@ namespace RTSX::Chip::CARD
         RTSXDeclareChipRegisterValue(kDisableSPIValue, 0);
     }
     
+    RTSXDeclareChipRegister(rBLINK, 0xFD56);
+    RTSXDeclareChipRegister(rGPIODIR, 0xFD57);
+    
+    RTSXDeclareChipRegister(rGPIO, 0xFD58);
+    namespace GPIO
+    {
+        RTSXDeclareChipRegisterValue(kLEDMask, 0x01);
+        RTSXDeclareChipRegisterValue(kLEDOn, 0x00);
+        RTSXDeclareChipRegisterValue(kLEDOff, 0x01);
+    }    
+    
     RTSXDeclareChipRegister(rDATASRC, 0xFD5B);
     namespace DATASRC
     {

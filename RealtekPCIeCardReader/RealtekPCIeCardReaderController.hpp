@@ -1522,7 +1522,7 @@ public:
     /// @return `true` if L1 is enabled, `false` otherwise.
     /// @note Port: This function replaces `rtsx_reg_to_aspm()` defined in `rtsx_pcr.h`.
     ///
-    inline bool vsIsASPML1Enabled(UInt32 regVal)
+    virtual bool vsIsASPML1Enabled(UInt32 regVal)
     {
         return ((regVal >> 28) & 0x02) == 0x02;
     }
