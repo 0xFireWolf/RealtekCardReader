@@ -926,36 +926,64 @@ public:
     //
     
     ///
+    /// ------------------------------------------------------------
+    /// | Controller | LED Toggle Register | LED Blinking Register |
+    /// ------------------------------------------------------------
+    /// |    5209    |      CARD_GPIO      |    CARD_AUTO_BLINK    |
+    /// |    5227    |      GPIO_CTL       |      OLT_LED_CTL      |
+    /// |    522A    |      GPIO_CTL       |      OLT_LED_CTL      |
+    /// |    5228    |      GPIO_CTL       |      OLT_LED_CTL      |
+    /// |    5229    |      GPIO_CTL       |      OLT_LED_CTL      |
+    /// |    5249    |      GPIO_CTL       |      OLT_LED_CTL      |
+    /// |    524A    |      GPIO_CTL       |      OLT_LED_CTL      |
+    /// |    525A    |      GPIO_CTL       |      OLT_LED_CTL      |
+    /// |    5260    |  RTS5260_GPIO_CTL0  |      OLT_LED_CTL      |
+    /// |    5261    |      GPIO_CTL       |      OLT_LED_CTL      |
+    /// |    5286    |      CARD_GPIO      |    CARD_AUTO_BLINK    |
+    /// |    5287    |      CARD_GPIO      |    CARD_AUTO_BLINK    |
+    /// |    5289    |      CARD_GPIO      |    CARD_AUTO_BLINK    |
+    /// ------------------------------------------------------------
+    ///
+    
+    ///
     /// Turn on the LED
     ///
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     /// @note Port: This function replaces `turn_on_led()` defined in `struct pcr_ops`.
+    ///             The base controller class implements this function by changing the value of `GPIO_CTL`.
+    ///             RTS5209, 5260, 5286, 5287 and 5289 controllers must override this function.
     ///
-    virtual IOReturn turnOnLED() = 0;
+    virtual IOReturn turnOnLED();
     
     ///
     /// Turn off the LED
     ///
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     /// @note Port: This function replaces `turn_off_led()` defined in `struct pcr_ops`.
+    ///             The base controller class implements this function by changing the value of `GPIO_CTL`.
+    ///             RTS5209, 5286, 5287 and 5289 controllers must override this function.
     ///
-    virtual IOReturn turnOffLED() = 0;
+    virtual IOReturn turnOffLED();
     
     ///
     /// Enable LED blinking
     ///
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     /// @note Port: This function replaces `enable_auto_blink()` defined in `struct pcr_ops`.
+    ///             The base controller class implements this function by changing the value of `OLT_LED_CTL`.
+    ///             RTS5209, 5286, 5287 and 5289 controllers must override this function.
     ///
-    virtual IOReturn enableLEDBlinking() = 0;
+    virtual IOReturn enableLEDBlinking();
     
     ///
     /// Disable LED blinking
     ///
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     /// @note Port: This function replaces `enable_auto_blink()` defined in `struct pcr_ops`.
+    ///             The base controller class implements this function by changing the value of `OLT_LED_CTL`.
+    ///             RTS5209, 5286, 5287 and 5289 controllers must override this function.
     ///
-    virtual IOReturn disableLEDBlinking() = 0;
+    virtual IOReturn disableLEDBlinking();
     
     //
     // MARK: - Card Power Management
