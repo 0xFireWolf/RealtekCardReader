@@ -2753,11 +2753,11 @@ error:
 ///
 /// Probe the index of the message signaled interrupt
 ///
-/// @return The index on success, `-1` otherwise.
+/// @return The index on success, `0` otherwise.
 ///
 int RealtekPCIeCardReaderController::probeMSIIndex()
 {
-    int index = -1;
+    int index = 0;
     
     int interruptType = 0;
     
@@ -2767,13 +2767,13 @@ int RealtekPCIeCardReaderController::probeMSIIndex()
         {
             pinfo("Found the MSI index = %d.", index);
             
-            break;
+            return index;
         }
         
         index += 1;
     }
     
-    return index;
+    return 0;
 }
 
 ///
@@ -2786,12 +2786,7 @@ bool RealtekPCIeCardReaderController::setupInterrupts()
     // Guard: Probe the MSI interrupt index
     int index = this->probeMSIIndex();
     
-    if (index == -1)
-    {
-        pwarning("Failed to probe the MSI index. Will use the default value 0 instead.");
-        
-        index = 0;
-    }
+    psoftassert(index != 0, "Failed to probe the MSI index. Will use the default value 0 instead.");
     
     pinfo("The MSI index = %d. Will set up the interrupt event source.", index);
     

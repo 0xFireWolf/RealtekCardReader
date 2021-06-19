@@ -1573,7 +1573,7 @@ public:
     ///
     /// [Helper] Probe the index of the message signaled interrupt
     ///
-    /// @return The index on success, `-1` otherwise.
+    /// @return The index on success, `0` otherwise.
     /// @note This helper function is invoked by `RealtekPCIeCardReaderController::setupInterrupts()`.
     ///
     int probeMSIIndex();
