@@ -599,6 +599,10 @@ namespace RTSX::Chip::CARD
     RTSXDeclareChipRegister(rPWRCTRL, 0xFD50);
     namespace PWRCTRL
     {
+        RTSXDeclareChipRegisterValue(kPMOSStrgMask, 0x10);
+        RTSXDeclareChipRegisterValue(kPMOSStrg800mA, 0x10);
+        RTSXDeclareChipRegisterValue(kPMOSStrg400mA, 0x00);
+        
         RTSXDeclareChipRegisterValue(kSDPowerOn, 0x00);
         RTSXDeclareChipRegisterValue(kSDPartialPowerOn, 0x01);
         RTSXDeclareChipRegisterValue(kSDPowerOff, 0x03);

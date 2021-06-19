@@ -47,6 +47,8 @@
 		D5D2EE8825DF1316004B5310 /* RealtekPCIeCardReaderController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D2EE8625DF1316004B5310 /* RealtekPCIeCardReaderController.cpp */; };
 		D5D2EE8925DF1316004B5310 /* RealtekPCIeCardReaderController.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5D2EE8725DF1316004B5310 /* RealtekPCIeCardReaderController.hpp */; };
 		D5D2EE9F25E0B639004B5310 /* BitOptions.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5D2EE9E25E0B639004B5310 /* BitOptions.hpp */; };
+		D5E8E0C1267DA32500703407 /* RealtekRTS5229Controller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E8E0BF267DA32500703407 /* RealtekRTS5229Controller.cpp */; };
+		D5E8E0C2267DA32500703407 /* RealtekRTS5229Controller.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5E8E0C0267DA32500703407 /* RealtekRTS5229Controller.hpp */; };
 		D5FF56422670B1C500B0143E /* IOSDBlockRequestQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF56402670B1C500B0143E /* IOSDBlockRequestQueue.cpp */; };
 		D5FF56432670B1C500B0143E /* IOSDBlockRequestQueue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF56412670B1C500B0143E /* IOSDBlockRequestQueue.hpp */; };
 		D5FF56462671484600B0143E /* IOSDBlockRequestEventSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF56442671484600B0143E /* IOSDBlockRequestEventSource.cpp */; };
@@ -104,6 +106,8 @@
 		D5D2EE8625DF1316004B5310 /* RealtekPCIeCardReaderController.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekPCIeCardReaderController.cpp; sourceTree = "<group>"; };
 		D5D2EE8725DF1316004B5310 /* RealtekPCIeCardReaderController.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekPCIeCardReaderController.hpp; sourceTree = "<group>"; };
 		D5D2EE9E25E0B639004B5310 /* BitOptions.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BitOptions.hpp; sourceTree = "<group>"; };
+		D5E8E0BF267DA32500703407 /* RealtekRTS5229Controller.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekRTS5229Controller.cpp; sourceTree = "<group>"; };
+		D5E8E0C0267DA32500703407 /* RealtekRTS5229Controller.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS5229Controller.hpp; sourceTree = "<group>"; };
 		D5FF56402670B1C500B0143E /* IOSDBlockRequestQueue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDBlockRequestQueue.cpp; sourceTree = "<group>"; };
 		D5FF56412670B1C500B0143E /* IOSDBlockRequestQueue.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDBlockRequestQueue.hpp; sourceTree = "<group>"; };
 		D5FF56442671484600B0143E /* IOSDBlockRequestEventSource.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDBlockRequestEventSource.cpp; sourceTree = "<group>"; };
@@ -292,6 +296,8 @@
 		D5D2EE9125DF1C44004B5310 /* RTS5229 */ = {
 			isa = PBXGroup;
 			children = (
+				D5E8E0BF267DA32500703407 /* RealtekRTS5229Controller.cpp */,
+				D5E8E0C0267DA32500703407 /* RealtekRTS5229Controller.hpp */,
 			);
 			name = RTS5229;
 			sourceTree = "<group>";
@@ -374,6 +380,7 @@
 				D57FA6A0267B0BBE0023097C /* IOSDComplexBlockRequest.hpp in Headers */,
 				D57B48B725EB08B1000D3E67 /* Utilities.hpp in Headers */,
 				D59E076826646BE3009E96EE /* RealtekSDCommand.hpp in Headers */,
+				D5E8E0C2267DA32500703407 /* RealtekRTS5229Controller.hpp in Headers */,
 				D5FF5650267221B100B0143E /* AppleSDXCSlot.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -450,6 +457,7 @@
 				D59E0791266DF6B5009E96EE /* IOSDBlockRequest.cpp in Sources */,
 				D57FA6A9267D2C8D0023097C /* RealtekRTS524AController.cpp in Sources */,
 				D5FF5653267225D800B0143E /* AppleSDXC.cpp in Sources */,
+				D5E8E0C1267DA32500703407 /* RealtekRTS5229Controller.cpp in Sources */,
 				D51D6F9F2660BE3800871FA3 /* RealtekSDXCSlot.cpp in Sources */,
 				D5D2EE8825DF1316004B5310 /* RealtekPCIeCardReaderController.cpp in Sources */,
 				D59E077F2669F153009E96EE /* IOSDCard.cpp in Sources */,
@@ -604,7 +612,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MARKETING_VERSION = "$(MODULE_VERSION)";
 				MODULE_NAME = science.firewolf.RealtekPCIeCardReader;
-				MODULE_VERSION = 0.9.0;
+				MODULE_VERSION = 0.9.1;
 				PRODUCT_BUNDLE_IDENTIFIER = science.firewolf.rtsx;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_STATIC_ANALYZER = YES;
@@ -627,7 +635,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MARKETING_VERSION = "$(MODULE_VERSION)";
 				MODULE_NAME = science.firewolf.RealtekPCIeCardReader;
-				MODULE_VERSION = 0.9.0;
+				MODULE_VERSION = 0.9.1;
 				PRODUCT_BUNDLE_IDENTIFIER = science.firewolf.rtsx;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_STATIC_ANALYZER = YES;

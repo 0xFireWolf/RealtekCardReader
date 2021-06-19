@@ -276,7 +276,7 @@ IOItemCount RealtekRTS525AController::initHardwareExtraGetChipRegValuePairs(Chip
     populate(LDO::rPWRSEL, 0x03, 0x00);
     populate(LDO::rPWRSEL, 0x03, 0x01);
 
-    // COMM: Set initial LED cycle period
+    // COMM: Set the initial LED cycle period
     populate(OLT_LED::rCTL, 0x0F, 0x02);
 
     // COMM: Set reversed socket

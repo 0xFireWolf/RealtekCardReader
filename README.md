@@ -33,21 +33,21 @@ It uses the Linux driver as a reference implementation but is written from scrat
 - Other systems are not tested yet.
 
 ## Supported Devices
-| Series |   PCI ID   |               Name               | Supported |
-|:------:|:----------:|:--------------------------------:|:---------:|
-|  5209  | 0x10EC5209 |  RTS5209 PCI Express Card Reader |  Not Yet  |
-|  5227  | 0x10EC5227 |  RTS5227 PCI Express Card Reader |  Not Yet  |
-|  5227  | 0x10EC522A |  RTS522A PCI Express Card Reader |  Not Yet  |
-|  5228  | 0x10EC5228 |  RTS5228 PCI Express Card Reader |  Not Yet  |
-|  5229  | 0x10EC5229 |  RTS5229 PCI Express Card Reader |  Not Yet  |
-|  5249  | 0x10EC5249 |  RTS5249 PCI Express Card Reader |    Yes    |
-|  5249  | 0x10EC524A |  RTS524A PCI Express Card Reader |    Yes    |
-|  5249  | 0x10EC525A |  RTS525A PCI Express Card Reader |    Yes    |
-|  5260  | 0x10EC5260 |  RTS5260 PCI Express Card Reader |  Not Yet  |
-|  5261  | 0x10EC5261 |  RTS5261 PCI Express Card Reader |  Not Yet  |
-|  8411  | 0x10EC5286 |  RTL8402 PCI Express Card Reader |  Not Yet  |
-|  8411  | 0x10EC5287 | RTL8411B PCI Express Card Reader |  Not Yet  |
-|  8411  | 0x10EC5289 |  RTL8411 PCI Express Card Reader |  Not Yet  |
+| Series |   PCI ID   |               Name               | Supported | Since |
+|:------:|:----------:|:--------------------------------:|:---------:|:-----:|
+|  5209  | 0x10EC5209 |  RTS5209 PCI Express Card Reader |  Not Yet  |  N/A  |
+|  5227  | 0x10EC5227 |  RTS5227 PCI Express Card Reader |  Not Yet  |  N/A  |
+|  5227  | 0x10EC522A |  RTS522A PCI Express Card Reader |  Not Yet  |  N/A  |
+|  5228  | 0x10EC5228 |  RTS5228 PCI Express Card Reader |  Not Yet  |  N/A  |
+|  5229  | 0x10EC5229 |  RTS5229 PCI Express Card Reader |    Yes    | 0.9.1 |
+|  5249  | 0x10EC5249 |  RTS5249 PCI Express Card Reader |    Yes    | 0.9.0 |
+|  5249  | 0x10EC524A |  RTS524A PCI Express Card Reader |    Yes    | 0.9.0 |
+|  5249  | 0x10EC525A |  RTS525A PCI Express Card Reader |    Yes    | 0.9.0 |
+|  5260  | 0x10EC5260 |  RTS5260 PCI Express Card Reader |  Not Yet  |  N/A  |
+|  5261  | 0x10EC5261 |  RTS5261 PCI Express Card Reader |  Not Yet  |  N/A  |
+|  8411  | 0x10EC5286 |  RTL8402 PCI Express Card Reader |  Not Yet  |  N/A  |
+|  8411  | 0x10EC5287 | RTL8411B PCI Express Card Reader |  Not Yet  |  N/A  |
+|  8411  | 0x10EC5289 |  RTL8411 PCI Express Card Reader |  Not Yet  |  N/A  |
 
 #### Notes:
 - By design, all listed devices are supported, and devices that have the same series share most of the controller code.

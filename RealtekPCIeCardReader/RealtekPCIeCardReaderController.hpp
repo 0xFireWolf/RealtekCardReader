@@ -1475,6 +1475,25 @@ public:
     }
     
     ///
+    /// [Helper] Map the given selector index to the selector value
+    ///
+    /// @param index The index extracted from `vsGetSD30DriveSelector*()`
+    /// @return The actual selector value.
+    ///
+    inline UInt8 vsMapDriveSelector(UInt8 index)
+    {
+        static constexpr UInt8 kMap[] =
+        {
+            0x01, // Type D
+            0x02, // Type C
+            0x05, // Type A
+            0x03, // Type B
+        };
+        
+        return kMap[index];
+    }
+    
+    ///
     /// [Helper] Extract the card drive selector from the register value
     ///
     /// @param regVal The register value
