@@ -67,10 +67,12 @@ IOReturn IOSDHostDriver::submitBlockRequest(IOSDBlockRequest::Processor processo
     request->init(this, processor, buffer, block, nblocks, attributes, completion);
     
     // It is possible that the user removes the card just before the host driver enqueues the request and signals the processor workloop.
-    // In this case, the card event handler has already disabled the queue event source.
+    // In this case, the card removal handler has already disabled the queue event source.
     // Here the host driver notifies the processor workloop that a block request is pending,
     // and the workloop will invoke `IOSDBlockRequestEventSource::checkForWork()`.
     // Since the event source is disabled, it will not process this request.
+    // The request remains in the queue, but the host driver will recycle it when a new card is inserted.
+    // See `IOSDHostDriver::attachCard(frequency:)` for details.
     this->pendingRequests->enqueueRequest(request);
     
     this->queueEventSource->notify();
@@ -1848,6 +1850,12 @@ bool IOSDHostDriver::attachCard(UInt32 frequency)
     
     OSSafeReleaseNULL(characteristics);
     
+    // Sanitize the pending request queue
+    // It is possible that one or two requests are left in the queue,
+    // even after the card has been removed from the system.
+    // See `IOSDHostDriver::submitBlockRequest()` for details.
+    this->recyclePendingBlockRequest();
+    
     pinfo("The card has been created and initialized.");
     
     return true;
@@ -2009,12 +2017,7 @@ void IOSDHostDriver::detachCard()
     }
     
     // Recycle all pending requests
-    while (!this->pendingRequests->isEmpty())
-    {
-        pinfo("Recycling a pending request...");
-        
-        this->releaseBlockRequestToPool(this->pendingRequests->dequeueRequest());
-    }
+    this->recyclePendingBlockRequest();
 }
 
 //

@@ -203,6 +203,20 @@ public:
         pfatal("Detected an invalid type of block request.");
     }
     
+    ///
+    /// Recycle all pending block requests and return them to the pool
+    ///
+    inline void recyclePendingBlockRequest()
+    {
+        // Recycle all pending requests
+        while (!this->pendingRequests->isEmpty())
+        {
+            pinfo("Recycling a pending request...");
+            
+            this->releaseBlockRequestToPool(this->pendingRequests->dequeueRequest());
+        }
+    }
+    
     //
     // MARK: - I/O Requests
     //
