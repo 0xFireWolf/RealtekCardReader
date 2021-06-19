@@ -136,6 +136,16 @@ void IOSDBlockRequestEventSource::free()
 }
 
 ///
+/// Notify the workloop that a new block request is pending
+///
+void IOSDBlockRequestEventSource::notify()
+{
+    passert(this->workLoop != nullptr, "The queue event source should have been registered with a workloop.");
+    
+    this->signalWorkAvailable();
+}
+
+///
 /// Create a block request event source with the given queue
 ///
 /// @param owner Owner of this instance of an event source; the first parameter of the action routine

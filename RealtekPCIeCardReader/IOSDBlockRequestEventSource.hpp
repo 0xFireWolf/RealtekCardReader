@@ -45,12 +45,17 @@ private:
     ///
     bool initWithQueue(OSObject* owner, Action action, IOSDBlockRequestQueue* queue);
     
+public:
     ///
     /// Release this event source
     ///
     void free() override;
     
-public:
+    ///
+    /// Notify the workloop that a new block request is pending
+    ///
+    void notify();
+    
     ///
     /// Create a block request event source with the given queue
     ///
