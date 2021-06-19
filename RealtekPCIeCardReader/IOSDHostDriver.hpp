@@ -8,6 +8,8 @@
 #ifndef IOSDHostDriver_hpp
 #define IOSDHostDriver_hpp
 
+// TODO: REMOVE THESE NOTES
+// TODO: WILL BE REPLACED BY DMA LIMITS
 static auto max_segs = 256;
 static auto max_seg_size = 65536;      // FIREWOLF: SD Command Data Length Limit (UInt16)
 static auto max_blk_size = 512;
@@ -80,13 +82,28 @@ class IOSDHostDriver: public IOService
     /// A dedicated workloop that initializes the card and processes the block request
     IOWorkLoop* processorWorkLoop;
     
+    ///
     /// An event source to signal the processor workloop to process a pending block request
+    ///
+    /// @note The event source is enabled when a card is inserted and disabled when the card is removed.
+    /// @note The enable status is manipulated by `IOSDHostDriver::onSDCardInsertedGated()` and `IOSDHostDriver::onSDCardRemovedGated()`.
+    ///
     IOSDBlockRequestEventSource* queueEventSource;
     
+    ///
     /// An event source to signal the processor workloop to attach a SD card
+    ///
+    /// @note Enable this event source to start to initialize the SD card.
+    ///       This event source disables itself automatically to acknowledge the card insertion event.
+    ///
     IOSDCardEventSource* attachCardEventSource;
     
+    ///
     /// An event source to signal the processor workloop to detach a SD card
+    ///
+    /// @note Enable this event source to start to clean up the SD card.
+    ///       This event source disables itself automatically to acknowledge the card removal event.
+    ///
     IOSDCardEventSource* detachCardEventSource;
     
     /// The SD card (NULL if not inserted)
@@ -254,6 +271,16 @@ public:
     /// @note The given arguments are guaranteed to be valid.
     ///
     IOReturn submitWriteBlocksRequest(IOMemoryDescriptor* buffer, UInt64 block, UInt64 nblocks, IOStorageAttributes* attributes, IOStorageCompletion* completion);
+    
+    ///
+    /// Transform the given starting block number to the argument of CMD17/18/24/25 if necessary
+    ///
+    /// @param block The starting block number
+    /// @return The argument to be passed to CMD17/18/24/25.
+    ///         i.e. The given block number if the card is block addressed (SDHC/XC),
+    ///              or the corresponding byte offset if the card is byte addressed (SDSC).
+    ///
+    UInt32 transformBlockOffsetIfNecessary(UInt64 block);
     
     ///
     /// Process the given request to read a single block
@@ -933,14 +960,6 @@ public:
     /// @return `kIOReturnSuccess` always.
     ///
     IOReturn isCardPresent(bool& result);
-    
-    ///
-    /// Check whether the card is block addressed
-    ///
-    /// @param result Set `true` if the card is block addressed (i.e. SDHC/XC), `false` otherwise.
-    /// @return `kIOReturnSuccess` on success, `kIOReturnNoMedia` if the card is not present.
-    ///
-    IOReturn isCardBlockAddressed(bool& result);
     
     ///
     /// Get the card capacity in number of blocks

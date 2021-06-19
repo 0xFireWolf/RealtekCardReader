@@ -66,9 +66,14 @@ IOReturn IOSDHostDriver::submitBlockRequest(IOSDBlockRequest::Processor processo
     
     request->init(this, processor, buffer, block, nblocks, attributes, completion);
     
+    // It is possible that the user removes the card just before the host driver enqueues the request and signals the processor workloop.
+    // In this case, the card event handler has already disabled the queue event source.
+    // Here the host driver notifies the processor workloop that a block request is pending,
+    // and the workloop will invoke `IOSDBlockRequestEventSource::checkForWork()`.
+    // Since the event source is disabled, it will not process this request.
     this->pendingRequests->enqueueRequest(request);
     
-    this->queueEventSource->enable();
+    this->queueEventSource->notify();
     
     return kIOReturnSuccess;
 }
@@ -146,6 +151,37 @@ IOReturn IOSDHostDriver::submitWriteBlocksRequest(IOMemoryDescriptor* buffer, UI
 }
 
 ///
+/// Transform the given starting block number to the argument of CMD17/18/24/25 if necessary
+///
+/// @param block The starting block number
+/// @return The argument to be passed to CMD17/18/24/25.
+///         i.e. The given block number if the card is block addressed (SDHC/XC),
+///              or the corresponding byte offset if the card is byte addressed (SDSC).
+///
+UInt32 IOSDHostDriver::transformBlockOffsetIfNecessary(UInt64 block)
+{
+    // SDXC supports up to 2TB
+    passert(block <= UINT32_MAX, "The maximum capacity supported is 2TB.");
+    
+    // This function is invoked by the processor workloop (i.e. the queue event source),
+    // so the instance variable `card` is guaranteed to be non-null.
+    // 1) It is possible that the user removes the SD card while the workloop is processing this request,
+    //    but the card will be released and set to NULL only after the workloop finishes this request.
+    // 2) If the user removes the SD card before the workloop starts to process this request,
+    //    the queue event source is disabled, so we should never reach at here.
+    passert(this->card != nullptr, "The card should be non-null at this moment.");
+    
+    if (!this->card->getCSD().isBlockAddressed)
+    {
+        block <<= 9;
+        
+        pinfo("The card is byte addressed. Adjusted argument = %llu.", block);
+    }
+    
+    return static_cast<UInt32>(block);
+}
+
+///
 /// Process the given request to read a single block
 ///
 /// @param request A non-null block request
@@ -157,9 +193,7 @@ IOReturn IOSDHostDriver::processReadBlockRequest(IOSDBlockRequest* request)
 {
     pinfo("Processing the request that reads a single block...");
     
-    passert(request->getBlockOffset() <= UINT32_MAX, "The maximum capacity supported is 2TB.");
-    
-    auto creq = RealtekSDRequestFactory::CMD17(static_cast<UInt32>(request->getBlockOffset()), request->getDMACommand());
+    auto creq = RealtekSDRequestFactory::CMD17(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getDMACommand());
     
     return this->waitForRequest(creq);
 }
@@ -176,9 +210,7 @@ IOReturn IOSDHostDriver::processReadBlocksRequest(IOSDBlockRequest* request)
 {
     pinfo("Processing the request that reads multiple blocks...");
     
-    passert(request->getBlockOffset() <= UINT32_MAX, "The maximum capacity supported is 2TB.");
-    
-    auto creq = RealtekSDRequestFactory::CMD18(static_cast<UInt32>(request->getBlockOffset()), request->getDMACommand(), request->getNumBlocks());
+    auto creq = RealtekSDRequestFactory::CMD18(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getDMACommand(), request->getNumBlocks());
     
     return this->waitForRequest(creq);
 }
@@ -195,9 +227,7 @@ IOReturn IOSDHostDriver::processWriteBlockRequest(IOSDBlockRequest* request)
 {
     pinfo("Processing the request that writes a single block...");
     
-    passert(request->getBlockOffset() <= UINT32_MAX, "The maximum capacity supported is 2TB.");
-    
-    auto creq = RealtekSDRequestFactory::CMD24(static_cast<UInt32>(request->getBlockOffset()), request->getDMACommand());
+    auto creq = RealtekSDRequestFactory::CMD24(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getDMACommand());
     
     return this->waitForRequest(creq);
 }
@@ -233,9 +263,7 @@ IOReturn IOSDHostDriver::processWriteBlocksRequest(IOSDBlockRequest* request)
     // Process the block request
     pinfo("Processing the request that writes multiple blocks...");
     
-    passert(request->getBlockOffset() <= UINT32_MAX, "The maximum capacity supported is 2TB.");
-    
-    auto creq = RealtekSDRequestFactory::CMD25(static_cast<UInt32>(request->getBlockOffset()), request->getDMACommand(), request->getNumBlocks());
+    auto creq = RealtekSDRequestFactory::CMD25(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getDMACommand(), request->getNumBlocks());
     
     return this->waitForRequest(creq);
 }
@@ -1914,8 +1942,6 @@ void IOSDHostDriver::attachCard()
         {
             perr("Failed to initialize the card at %u Hz.", frequency);
             
-            pinfo("DEBUG: ABORT EARLY AT HERE.");
-            
             continue;
         }
         
@@ -2049,26 +2075,6 @@ IOReturn IOSDHostDriver::isCardWriteProtected(bool& result)
 IOReturn IOSDHostDriver::isCardPresent(bool& result)
 {
     return this->host->isCardPresent(result);
-}
-
-///
-/// Check whether the card is block addressed
-///
-/// @param result Set `true` if the card is block addressed (i.e. SDHC/XC), `false` otherwise.
-/// @return `kIOReturnSuccess` on success, `kIOReturnNoMedia` if the card is not present.
-///
-IOReturn IOSDHostDriver::isCardBlockAddressed(bool& result)
-{
-    if (this->card == nullptr)
-    {
-        perr("The card is not present.");
-        
-        return kIOReturnNoMedia;
-    }
-    
-    result = this->card->getCSD().isBlockAddressed;
-    
-    return kIOReturnSuccess;
 }
 
 ///
