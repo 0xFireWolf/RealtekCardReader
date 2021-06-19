@@ -75,7 +75,7 @@ class RealtekRTS5249SeriesController: public RealtekPCIeCardReaderController
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `*_init_params()` defined in each controller file.
     ///
-    virtual IOReturn initParameters() override;
+    IOReturn initParameters() override;
     
     ///
     /// Initialize vendor-specific parameters
@@ -83,7 +83,7 @@ class RealtekRTS5249SeriesController: public RealtekPCIeCardReaderController
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `fetch_vendor_settings()` defined in the `pcr->ops`.
     ///
-    virtual IOReturn initVendorSpecificParameters() override;
+    IOReturn initVendorSpecificParameters() override;
     
     ///
     /// [Helper] Initialize the hardware from the PCI config
@@ -99,7 +99,7 @@ class RealtekRTS5249SeriesController: public RealtekPCIeCardReaderController
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `extra_init_hw()` defined in defined in the `pcr->ops`.
     ///
-    virtual IOReturn initHardwareExtra() override;
+    IOReturn initHardwareExtra() override;
     
     ///
     /// [Helper] Get a sequence of registers needed to initialize the hardware

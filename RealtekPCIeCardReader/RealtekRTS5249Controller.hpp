@@ -42,7 +42,7 @@ class RealtekRTS5249Controller: public RealtekRTS5249SeriesController
     ///
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     ///
-    virtual IOReturn optimizePhys() override;
+    IOReturn optimizePhys() override;
     
     ///
     /// [Helper] Get a sequence of registers needed to initialize the hardware

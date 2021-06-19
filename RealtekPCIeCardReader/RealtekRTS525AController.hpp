@@ -88,7 +88,7 @@ class RealtekRTS525AController: public RealtekRTS5249SeriesController
     ///
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     ///
-    virtual IOReturn optimizePhys() override;
+    IOReturn optimizePhys() override;
     
     ///
     /// Initialize hardware-specific parameters
@@ -96,7 +96,7 @@ class RealtekRTS525AController: public RealtekRTS5249SeriesController
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `*_init_params()` defined in each controller file.
     ///
-    virtual IOReturn initParameters() override;
+    IOReturn initParameters() override;
     
     //
     // MARK: - Hardware Initialization and Configuration

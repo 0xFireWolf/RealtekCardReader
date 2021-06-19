@@ -79,7 +79,7 @@ class RealtekRTS5229Controller: public RealtekPCIeCardReaderController
     ///
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     ///
-    virtual IOReturn optimizePhys() override;
+    IOReturn optimizePhys() override;
     
     ///
     /// Initialize hardware-specific parameters
@@ -87,7 +87,7 @@ class RealtekRTS5229Controller: public RealtekPCIeCardReaderController
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `*_init_params()` defined in each controller file.
     ///
-    virtual IOReturn initParameters() override;
+    IOReturn initParameters() override;
     
     ///
     /// Initialize vendor-specific parameters
@@ -95,7 +95,7 @@ class RealtekRTS5229Controller: public RealtekPCIeCardReaderController
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `fetch_vendor_settings()` defined in the `pcr->ops`.
     ///
-    virtual IOReturn initVendorSpecificParameters() override;
+    IOReturn initVendorSpecificParameters() override;
     
     ///
     /// Initialize the hardware (Extra Part)
@@ -103,7 +103,7 @@ class RealtekRTS5229Controller: public RealtekPCIeCardReaderController
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `extra_init_hw()` defined in defined in the `pcr->ops`.
     ///
-    virtual IOReturn initHardwareExtra() override;
+    IOReturn initHardwareExtra() override;
 };
 
 #endif /* RealtekRTS5229Controller_hpp */
