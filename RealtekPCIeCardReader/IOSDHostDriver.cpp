@@ -1699,11 +1699,13 @@ IOReturn IOSDHostDriver::ACMD51(UInt32 rca, SCR& scr)
 //
 
 ///
-/// Use the given frequency to communicate with the card and try to attach it
+/// [Helper] Use the given frequency to communicate with the card and try to attach it
 ///
 /// @param frequency The initial frequency in Hz
 /// @return `true` on success, `false` otherwise.
 /// @note Port: This function replaces `mmc_rescan_try_freq()` defined in `core.c` and `mmc_attach_sd()` in `sd.c`.
+/// @note This function is invoked by `IOSDHostDriver::attachCard()`,
+///       so it runs synchronously with respect to the processor workloop.
 ///
 bool IOSDHostDriver::attachCard(UInt32 frequency)
 {
@@ -1824,9 +1826,11 @@ bool IOSDHostDriver::attachCard(UInt32 frequency)
 }
 
 ///
-/// Publish the block storage device
+/// [Helper] Publish the block storage device
 ///
 /// @return `true` on success, `false` otherwise.
+/// @note This function is invoked by `IOSDHostDriver::attachCard()`,
+///       so it runs synchronously with respect to the processor workloop.
 ///
 bool IOSDHostDriver::publishBlockStorageDevice()
 {
@@ -2045,6 +2049,26 @@ IOReturn IOSDHostDriver::isCardWriteProtected(bool& result)
 IOReturn IOSDHostDriver::isCardPresent(bool& result)
 {
     return this->host->isCardPresent(result);
+}
+
+///
+/// Check whether the card is block addressed
+///
+/// @param result Set `true` if the card is block addressed (i.e. SDHC/XC), `false` otherwise.
+/// @return `kIOReturnSuccess` on success, `kIOReturnNoMedia` if the card is not present.
+///
+IOReturn IOSDHostDriver::isCardBlockAddressed(bool& result)
+{
+    if (this->card == nullptr)
+    {
+        perr("The card is not present.");
+        
+        return kIOReturnNoMedia;
+    }
+    
+    result = this->card->getCSD().isBlockAddressed;
+    
+    return kIOReturnSuccess;
 }
 
 ///

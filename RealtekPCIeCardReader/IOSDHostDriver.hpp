@@ -856,18 +856,22 @@ public:
     //
     
     ///
-    /// Use the given frequency to communicate with the card and try to attach it
+    /// [Helper] Use the given frequency to communicate with the card and try to attach it
     ///
     /// @param frequency The initial frequency in Hz
     /// @return `true` on success, `false` otherwise.
     /// @note Port: This function replaces `mmc_rescan_try_freq()` defined in `core.c` and `mmc_attach_sd()` in `sd.c`.
+    /// @note This function is invoked by `IOSDHostDriver::attachCard()`,
+    ///       so it runs synchronously with respect to the processor workloop.
     ///
     bool attachCard(UInt32 frequency);
     
     ///
-    /// Publish the block storage device
+    /// [Helper] Publish the block storage device
     ///
     /// @return `true` on success, `false` otherwise.
+    /// @note This function is invoked by `IOSDHostDriver::attachCard()`,
+    ///       so it runs synchronously with respect to the processor workloop.
     ///
     bool publishBlockStorageDevice();
     
@@ -909,6 +913,11 @@ public:
     // MARK: - Query Card Information and Status
     //
     
+    // TODO: Card is allocated, attached, detached, deallocated by the processor workloop.
+    // TODO: Should also query card information with respect to the processor workloop.
+    // TODO: It is possible that the card is removed by the user when the storage subsystem is querying the card information.
+    // TODO: USE PROCESS WORKLOOP IOCOMMANDGATE RUNACTION TO PROTECT THE FOLLOWING QUERY FUNCTIONS
+    
     ///
     /// Check whether the card has write protection enabled
     ///
@@ -924,6 +933,14 @@ public:
     /// @return `kIOReturnSuccess` always.
     ///
     IOReturn isCardPresent(bool& result);
+    
+    ///
+    /// Check whether the card is block addressed
+    ///
+    /// @param result Set `true` if the card is block addressed (i.e. SDHC/XC), `false` otherwise.
+    /// @return `kIOReturnSuccess` on success, `kIOReturnNoMedia` if the card is not present.
+    ///
+    IOReturn isCardBlockAddressed(bool& result);
     
     ///
     /// Get the card capacity in number of blocks
