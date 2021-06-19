@@ -35,7 +35,7 @@ It uses the Linux driver as a reference implementation but is written from scrat
 ## Supported Devices
 | Series |   PCI ID   |               Name               | Supported | Since |
 |:------:|:----------:|:--------------------------------:|:---------:|:-----:|
-|  5209  | 0x10EC5209 |  RTS5209 PCI Express Card Reader |  Not Yet  | 0.9.1 |
+|  5209  | 0x10EC5209 |  RTS5209 PCI Express Card Reader |    Yes    | 0.9.1 |
 |  5227  | 0x10EC5227 |  RTS5227 PCI Express Card Reader |  Not Yet  |  N/A  |
 |  5227  | 0x10EC522A |  RTS522A PCI Express Card Reader |  Not Yet  |  N/A  |
 |  5228  | 0x10EC5228 |  RTS5228 PCI Express Card Reader |  Not Yet  |  N/A  |
