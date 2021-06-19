@@ -46,42 +46,6 @@ class RealtekRTS5249SeriesController: public RealtekPCIeCardReaderController
     static const SimpleRegValuePairs kSDDisablePullControlTable;
     
     //
-    // MARK: - LED Management
-    //
-
-    ///
-    /// Turn on the LED
-    ///
-    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    /// @note Port: This function replaces `turn_on_led()` defined in `struct pcr_ops`.
-    ///
-    IOReturn turnOnLED() override;
-
-    ///
-    /// Turn off the LED
-    ///
-    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    /// @note Port: This function replaces `turn_off_led()` defined in `struct pcr_ops`.
-    ///
-    IOReturn turnOffLED() override;
-
-    ///
-    /// Enable LED blinking
-    ///
-    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    /// @note Port: This function replaces `enable_auto_blink()` defined in `struct pcr_ops`.
-    ///
-    IOReturn enableLEDBlinking() override;
-
-    ///
-    /// Disable LED blinking
-    ///
-    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    /// @note Port: This function replaces `enable_auto_blink()` defined in `struct pcr_ops`.
-    ///
-    IOReturn disableLEDBlinking() override;
-    
-    //
     // MARK: - Card Power Management
     //
     

@@ -70,62 +70,6 @@ const SimpleRegValuePairs RealtekRTS5249SeriesController::kSDDisablePullControlT
 };
 
 //
-// MARK: - LED Management
-//
-
-///
-/// Turn on the LED
-///
-/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-/// @note Port: This function replaces `turn_on_led()` defined in `struct pcr_ops`.
-///
-IOReturn RealtekRTS5249SeriesController::turnOnLED()
-{
-    using namespace RTSX::Chip::GPIO;
-    
-    return this->writeChipRegister(rCTL, CTL::kLEDMask, CTL::kTurnOnLEDValue);
-}
-
-///
-/// Turn off the LED
-///
-/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-/// @note Port: This function replaces `turn_off_led()` defined in `struct pcr_ops`.
-///
-IOReturn RealtekRTS5249SeriesController::turnOffLED()
-{
-    using namespace RTSX::Chip::GPIO;
-    
-    return this->writeChipRegister(rCTL, CTL::kLEDMask, CTL::kTurnOffLEDValue);
-}
-
-///
-/// Enable LED blinking
-///
-/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-/// @note Port: This function replaces `enable_auto_blink()` defined in `struct pcr_ops`.
-///
-IOReturn RealtekRTS5249SeriesController::enableLEDBlinking()
-{
-    using namespace RTSX::Chip::OLT_LED;
-    
-    return this->writeChipRegister(rCTL, CTL::kBlinkingMask, CTL::kEnableBlinkingValue);
-}
-
-///
-/// Disable LED blinking
-///
-/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-/// @note Port: This function replaces `enable_auto_blink()` defined in `struct pcr_ops`.
-///
-IOReturn RealtekRTS5249SeriesController::disableLEDBlinking()
-{
-    using namespace RTSX::Chip::OLT_LED;
-    
-    return this->writeChipRegister(rCTL, CTL::kBlinkingMask, CTL::kDisableBlinkingValue);
-}
-
-//
 // MARK: - Card Power Management
 //
 
