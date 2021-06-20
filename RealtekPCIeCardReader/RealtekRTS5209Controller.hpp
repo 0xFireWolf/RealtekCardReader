@@ -11,7 +11,7 @@
 #include "RealtekPCIeCardReaderController.hpp"
 
 ///
-/// Represents the abstract RTS5229 series card reader controller
+/// Represents the RTS5229 card reader controller
 ///
 class RealtekRTS5209Controller: public RealtekPCIeCardReaderController
 {
