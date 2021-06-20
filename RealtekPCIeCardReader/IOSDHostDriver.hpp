@@ -917,6 +917,18 @@ public:
     bool publishBlockStorageDevice();
     
     ///
+    /// [Helper] Publish the card characteristics
+    ///
+    /// @note System Information needs this to present card information.
+    ///
+    void publishCardCharacteristics();
+    
+    ///
+    /// [Helper] Remove the published card characteristics
+    ///
+    void removeCardCharacteristics();
+    
+    ///
     /// Attach the SD card
     ///
     /// @note This function is invoked on the processor workloop thread when a SD card is inserted.

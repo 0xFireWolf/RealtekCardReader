@@ -44,8 +44,6 @@ void IOSDHostDevice::onSDCardRemovedGated()
     this->driver->onSDCardRemovedGated();
     
     this->setProperty("Card Present", false);
-    
-    this->removeProperty("Card Characteristics");
 }
 
 //

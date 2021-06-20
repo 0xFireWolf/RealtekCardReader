@@ -11,6 +11,7 @@
 #include "IOSDBlockStorageDevice.hpp"
 #include <IOKit/IOBufferMemoryDescriptor.h>
 #include <IOKit/IOSubMemoryDescriptor.h>
+#include <IOKit/storage/IOBlockStorageDriver.h>
 #include <i386/param.h>
 
 //
@@ -1744,13 +1745,15 @@ bool IOSDHostDriver::attachCard(UInt32 frequency)
 
     psoftassert(this->card == nullptr, "this->card should be null at this moment.");
 
-    this->card = nullptr;
-
+    // Initial clock and voltages
     this->host->setHostInitialClock(frequency);
 
     UInt32 ocr = this->host->getHostSupportedVoltageRanges();
-
+    
     pinfo("Voltage ranges supported by the host: 0x%08x.", ocr);
+    
+    // OCR value returned by the card
+    UInt32 rocr = 0;
     
     // Power up the SD bus
     pinfo("Powering up the host bus...");
@@ -1771,7 +1774,7 @@ bool IOSDHostDriver::attachCard(UInt32 frequency)
     {
         perr("Failed to tell the card to go to the idle state.");
 
-        return false;
+        goto error;
     }
     
     pinfo("The card is now in the idle state.");
@@ -1782,13 +1785,11 @@ bool IOSDHostDriver::attachCard(UInt32 frequency)
         perr("The card does not respond to the CMD8.");
     }
 
-    UInt32 rocr;
-
     if (this->ACMD41(rocr) != kIOReturnSuccess)
     {
         perr("The card does not respond to the ACMD41.");
 
-        return false;
+        goto error;
     }
 
     // Filter out unsupported voltage levels
@@ -1808,50 +1809,41 @@ bool IOSDHostDriver::attachCard(UInt32 frequency)
     // Start the card initialization sequence
     pinfo("Creating the card with the OCR = 0x%08x.", rocr);
     
-    auto card = IOSDCard::createWithOCR(this, rocr);
+    this->card = IOSDCard::createWithOCR(this, rocr);
 
-    if (card == nullptr)
+    if (this->card == nullptr)
     {
         perr("Failed to complete the card initialization sequence.");
 
-        return false;
+        goto error;
     }
     
-    if (!card->attach(this))
+    if (!this->card->attach(this))
     {
         perr("Failed to attach the SD card device.");
         
-        card->release();
+        OSSafeReleaseNULL(this->card);
         
-        return false;
+        goto error;
     }
     
-    if (!card->start(this))
+    if (!this->card->start(this))
     {
         perr("Failed to start the SD card device.");
         
-        card->detach(this);
+        this->card->detach(this);
         
-        card->release();
+        OSSafeReleaseNULL(this->card);
         
-        return false;
+        goto error;
     }
-
-    this->card = card;
     
     // Fetch and publish the card characteristics
     // so that the System Profiler can recognize the card and show related information
-    OSDictionary* characteristics = this->card->getCardCharacteristics();
-    
-    if (characteristics != nullptr)
-    {
-        this->getHostDevice()->setProperty("Card Characteristics", characteristics);
-    }
-    
-    OSSafeReleaseNULL(characteristics);
+    this->publishCardCharacteristics();
     
     // Sanitize the pending request queue
-    // It is possible that one or two requests are left in the queue,
+    // It is possible that one or two requests are left in the queue
     // even after the card has been removed from the system.
     // See `IOSDHostDriver::submitBlockRequest()` for details.
     this->recyclePendingBlockRequest();
@@ -1859,6 +1851,11 @@ bool IOSDHostDriver::attachCard(UInt32 frequency)
     pinfo("The card has been created and initialized.");
     
     return true;
+    
+error:
+    psoftassert(this->powerOff() == kIOReturnSuccess, "Failed to power off the bus.");
+    
+    return false;
 }
 
 ///
@@ -1916,6 +1913,35 @@ bool IOSDHostDriver::publishBlockStorageDevice()
     pinfo("The block storage device has been published.");
     
     return true;
+}
+
+///
+/// [Helper] Publish the card characteristics
+///
+/// @note System Information needs this to present card information.
+///
+void IOSDHostDriver::publishCardCharacteristics()
+{
+    OSDictionary* characteristics = this->card->getCardCharacteristics();
+    
+    if (characteristics != nullptr)
+    {
+        this->getHostDevice()->setProperty("Card Characteristics", characteristics);
+        
+        OSSafeReleaseNULL(characteristics);
+    }
+    else
+    {
+        perr("Failed to fetch the card characteristics.");
+    }
+}
+
+///
+/// [Helper] Remove the published card characteristics
+///
+void IOSDHostDriver::removeCardCharacteristics()
+{
+    this->host->removeProperty("Card Characteristics");
 }
 
 ///
@@ -1992,21 +2018,31 @@ void IOSDHostDriver::attachCard()
 ///
 void IOSDHostDriver::detachCard()
 {
+    pinfo("Detaching the SD card...");
+    
     // Stop the block storage device
     if (this->blockStorageDevice != nullptr)
     {
-        this->blockStorageDevice->stop(this);
+        pinfo("Stopping the block storage device...");
         
+        this->blockStorageDevice->terminate();
+        
+        this->blockStorageDevice->stop(this);
+
         this->blockStorageDevice->detach(this);
         
         this->blockStorageDevice->release();
         
         this->blockStorageDevice = nullptr;
+        
+        pinfo("The block storage device has been stopped.");
     }
     
     // Stop the card device
     if (this->card != nullptr)
     {
+        pinfo("Stopping the card device...");
+        
         this->card->stop(this);
         
         this->card->detach(this);
@@ -2014,10 +2050,20 @@ void IOSDHostDriver::detachCard()
         this->card->release();
         
         this->card = nullptr;
+        
+        pinfo("The card device has been stopped.");
     }
+    
+    // Remove published card characteristics
+    this->removeCardCharacteristics();
     
     // Recycle all pending requests
     this->recyclePendingBlockRequest();
+    
+    // Power off the bus
+    psoftassert(this->powerOff() == kIOReturnSuccess, "Failed to power off the bus.");
+    
+    pinfo("The SD card has been detached.");
 }
 
 //
