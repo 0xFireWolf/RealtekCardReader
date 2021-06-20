@@ -143,7 +143,7 @@ IOReturn RealtekRTS524AController::optimizePhys()
         { rANA8, ANA8::kRxEQDCGain | ANA8::kSelRxEnable | ANA8::kRxEQValue | ANA8::kSCP | ANA8::kSelIPI },
     };
     
-    if (this->parameters.revision == Revision::kA)
+    if (this->parameters.revision.isRevA())
     {
         return this->writePhysRegisters(kRevA);
     }
@@ -222,7 +222,7 @@ IOItemCount RealtekRTS524AController::initHardwareExtraGetChipRegValuePairs(Chip
     populate(rPCLKCTL, PCKLCTL::kModeSelector, PCKLCTL::kModeSelector);
     
     // SPEC: Revision A
-    if (this->parameters.revision == Revision::kA)
+    if (this->parameters.revision.isRevA())
     {
         populate(LDO::DV18::rCFG, LDO::DV18::CFG::kSRMask, LDO::DV18::CFG::kSRDefault);
         

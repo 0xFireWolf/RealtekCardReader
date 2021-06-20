@@ -114,7 +114,7 @@ IOReturn RealtekRTS525AController::optimizePhys()
         { rREV0, REV0::kFilterOut | REV0::kCDRBypassPFD | REV0::kCDRRxIdleBypass }
     };
 
-    if (this->parameters.revision == Revision::kA)
+    if (this->parameters.revision.isRevA())
     {
         return this->writePhysRegisters(pairs);
     }
@@ -307,7 +307,7 @@ IOItemCount RealtekRTS525AController::initHardwareExtraGetChipRegValuePairs(Chip
     populate(rPCLKCTL, PCKLCTL::kModeSelector, PCKLCTL::kModeSelector);
     
     // SPEC: Revision A
-    if (this->parameters.revision == Revision::kA)
+    if (this->parameters.revision.isRevA())
     {
         populate(L1SUB::rCFG2, L1SUB::CFG2::kAutoConfig, L1SUB::CFG2::kAutoConfig);
         

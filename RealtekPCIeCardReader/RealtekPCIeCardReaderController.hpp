@@ -150,9 +150,63 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     };
     
     /// IC Revision
-    enum class Revision: UInt8
+    struct Revision
     {
-        kA = 0, kB = 1, kC = 2, kD = 3, kUnknown = 0xFF
+        /// The underlying revision value
+        enum class Value: UInt8
+        {
+            kA = 0, kB = 1, kC = 2, kD = 3, kUnknown = 0xFF
+        } value;
+        
+        /// Parse the revision from the given value
+        static inline Revision parse(UInt8 value)
+        {
+            switch (value)
+            {
+                case 0: return { Value::kA };
+                case 1: return { Value::kB };
+                case 2: return { Value::kC };
+                case 3: return { Value::kD };
+                default: return { Value::kUnknown };
+            }
+        }
+        
+        /// Get the string representation
+        inline const char* stringify()
+        {
+            switch (this->value)
+            {
+                case Value::kA: return "A";
+                case Value::kB: return "B";
+                case Value::kC: return "C";
+                case Value::kD: return "D";
+                default: return "Unknown";
+            }
+        }
+        
+        /// Check whether the chip has a revision of A
+        inline bool isRevA()
+        {
+            return this->value == Value::kA;
+        }
+        
+        /// Check whether the chip has a revision of B
+        inline bool isRevB()
+        {
+            return this->value == Value::kB;
+        }
+        
+        /// Check whether the chip has a revision of C
+        inline bool isRevC()
+        {
+            return this->value == Value::kC;
+        }
+        
+        /// Check whether the chip has a revision of D
+        inline bool isRevD()
+        {
+            return this->value == Value::kD;
+        }
     };
       
     /// Device-specific parameters

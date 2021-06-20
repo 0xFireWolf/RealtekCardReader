@@ -2406,55 +2406,9 @@ IOReturn RealtekPCIeCardReaderController::getRevision(Revision& revision)
         return retVal;
     }
     
-    switch (regVal & DUMMY::kICRevisionMask)
-    {
-        case 0:
-        {
-            revision = Revision::kA;
-            
-            pinfo("Chip revision is A.");
-            
-            break;
-        }
-            
-        case 1:
-        {
-            revision = Revision::kB;
-            
-            pinfo("Chip revision is B.");
-            
-            break;
-        }
-            
-        case 2:
-        {
-            revision = Revision::kC;
-            
-            pinfo("Chip revision is C.");
-            
-            break;
-        }
-            
-        case 3:
-        {
-            revision = Revision::kD;
-            
-            pinfo("Chip revision is D.");
-            
-            break;
-        }
-            
-        default:
-        {
-            pwarning("Undefined revision.");
-            
-            revision = Revision::kUnknown;
-            
-            break;
-        }
-    }
+    revision = Revision::parse(regVal & DUMMY::kICRevisionMask);
     
-    pinfo("Chip revision has been fetched.");
+    pinfo("Chip revision has been fetched: Rev %s.", revision.stringify());
     
     return kIOReturnSuccess;
 }

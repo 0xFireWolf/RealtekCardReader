@@ -239,7 +239,7 @@ IOReturn RealtekRTS5229Controller::initParameters()
     
     this->parameters.sd30DriveSelector3d3V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeD;
     
-    if (this->parameters.revision != Revision::kC)
+    if (!this->parameters.revision.isRevC())
     {
         this->parameters.sdEnablePullControlTable = &RealtekRTS5229Controller::kSDEnablePullControlTable;
         
