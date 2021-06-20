@@ -1432,14 +1432,6 @@ IOReturn RealtekSDXCSlot::setBusTiming(IOSDBusConfig::BusTiming timing)
 ///
 IOReturn RealtekSDXCSlot::setBusConfig(const IOSDBusConfig& config)
 {
-    // Guard: Check whether the card is still present
-    if (!this->controller->isCardPresent())
-    {
-        perr("The card is not present. Will abort the given config.");
-        
-        return kIOReturnNoMedia;
-    }
-    
     pinfo("The host driver requests to change the bus configuration.");
     
     // Notify the card reader to enter the worker state
