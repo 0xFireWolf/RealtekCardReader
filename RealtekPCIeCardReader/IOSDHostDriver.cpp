@@ -2143,6 +2143,12 @@ IOReturn IOSDHostDriver::getCardNumBlocks(UInt64& nblocks)
     
     nblocks = this->card->getCSD().capacity;
     
+    // Treat the SDSC card as a block device whose block size is 512 bytes
+    // SDHC/XC cards always have a read block length of 9
+    // SDSC cards may have a read block length of 9, 10, or 11
+    // Adjust the total number of blocks accordingly
+    nblocks <<= (this->card->getCSD().readBlockLength - 9);
+    
     return kIOReturnSuccess;
 }
 
@@ -2154,16 +2160,11 @@ IOReturn IOSDHostDriver::getCardNumBlocks(UInt64& nblocks)
 ///
 IOReturn IOSDHostDriver::getCardMaxBlockIndex(UInt64& index)
 {
-    if (this->card == nullptr)
-    {
-        perr("The card is not present.");
-        
-        return kIOReturnNoMedia;
-    }
+    IOReturn retVal = this->getCardNumBlocks(index);
     
-    index = this->card->getCSD().capacity - 1;
+    index -= 1;
     
-    return kIOReturnSuccess;
+    return retVal;
 }
 
 ///
@@ -2181,7 +2182,7 @@ IOReturn IOSDHostDriver::getCardBlockLength(UInt64& length)
         return kIOReturnNoMedia;
     }
     
-    length = 1 << this->card->getCSD().readBlockLength;
+    length = 512;
     
     return kIOReturnSuccess;
 }
