@@ -2078,6 +2078,9 @@ void IOSDHostDriver::detachCard()
 ///
 void IOSDHostDriver::onSDCardInsertedGated()
 {
+    // Make sure that the detach event source is disabled
+    this->detachCardEventSource->disable();
+    
     // Notify the processor work loop to attach the card
     this->attachCardEventSource->enable();
     
@@ -2095,6 +2098,9 @@ void IOSDHostDriver::onSDCardRemovedGated()
 {
     // Disable the queue event source so that the processor work loop will stop processing requests
     this->queueEventSource->disable();
+    
+    // Make sure that the attach event source is disabled
+    this->attachCardEventSource->disable();
     
     // Notify the processor work loop to detach the card
     this->detachCardEventSource->enable();
