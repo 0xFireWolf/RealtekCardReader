@@ -1,5 +1,8 @@
 #  Changelog
 
+#### v0.9.3 Beta
+- Added support for RTS5227 and RTS522A.
+
 #### v0.9.2 Beta
 - Fixed an issue that the block size and the total number of blocks are not reported properly for SDSC cards.
 - Fixed an issue that a kernel panic occurs when the card is removed from the system without being ejected properly.

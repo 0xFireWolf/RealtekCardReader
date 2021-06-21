@@ -1379,6 +1379,14 @@ namespace RTSX::Chip
         RTSXDeclareChipRegisterValue(kEnablePwdSuspnd, 0x10);
     }
     
+    RTSXDeclareChipRegister(rOBFFCFG, 0xFE4C);
+    namespace OBFFCFG
+    {
+        RTSXDeclareChipRegisterValue(kMask, 0x03);
+        RTSXDeclareChipRegisterValue(kEnable, 0x03);
+        RTSXDeclareChipRegisterValue(kDisable, 0x00);
+    }
+    
     RTSXDeclareChipRegister(rPCLKCTL, 0xFE55);
     namespace PCKLCTL
     {
@@ -1791,6 +1799,12 @@ namespace RTSX::PHYS
         RTSXDeclarePhysRegisterValue(kCDRRxIdleBypass, 0x0002);
     }
     
+    RTSXDeclarePhysRegister(rFLD0, 0x1A);
+    namespace FLD0
+    {
+        RTSXDeclarePhysRegisterValue(kInit27s, 0x2546);
+    }
+    
     RTSXDeclarePhysRegister(rANA1A, 0x1A);
     namespace ANA1A
     {
@@ -1798,7 +1812,6 @@ namespace RTSX::PHYS
         RTSXDeclarePhysRegisterValue(kRXTBist, 0x0500);
         RTSXDeclarePhysRegisterValue(kTXRBist, 0x0040);
         RTSXDeclarePhysRegisterValue(kRev, 0x0006);
-        RTSXDeclarePhysRegisterValue(kInit27s, 0x2546);
     }
     
     RTSXDeclarePhysRegister(rANA1D, 0x1D);
