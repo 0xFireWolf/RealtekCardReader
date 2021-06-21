@@ -60,6 +60,19 @@ class RealtekRTS524AController: public RealtekRTS5249SeriesController
     IOReturn switchOutputVoltage(OutputVoltage outputVoltage) override;
     
     //
+    // MARK: - OOBS Polling
+    //
+    
+    ///
+    /// Check whether the hardware supports OOBS polling
+    ///
+    /// @return `true` if supported, `false` otherwise.
+    /// @note By default, this function returns `false`.
+    /// @note e.g., RTS522A, RTS524A and RTS525A should override this function and return `true`.
+    ///
+    bool supportsOOBSPolling() override;
+    
+    //
     // MARK: - Hardware Initialization and Configuration
     //
     

@@ -96,6 +96,22 @@ IOReturn RealtekRTS524AController::switchOutputVoltage(OutputVoltage outputVolta
 }
 
 //
+// MARK: - OOBS Polling
+//
+
+///
+/// Check whether the hardware supports OOBS polling
+///
+/// @return `true` if supported, `false` otherwise.
+/// @note By default, this function returns `false`.
+/// @note e.g., RTS522A, RTS524A and RTS525A should override this function and return `true`.
+///
+bool RealtekRTS524AController::supportsOOBSPolling()
+{
+    return true;
+}
+
+//
 // MARK: - Hardware Initialization and Configuration
 //
 
