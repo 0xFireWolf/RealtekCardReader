@@ -440,9 +440,9 @@ IOReturn RealtekRTS8411SeriesController::initVendorSpecificParameters()
     
     this->parameters.sd30DriveSelector3d3V = this->vsGetSD30DriveSelector3d3V(regVal);
     
-    pinfo("PCR CFG2: RegVal = 0x%08x.", regVal);
+    pinfo("PCR CFG3: RegVal = 0x%08x.", regVal);
     
-    pinfo("PCR CFG2: SD30 Drive Selector (3.3V) = %d.", this->parameters.sd30DriveSelector3d3V);
+    pinfo("PCR CFG3: SD30 Drive Selector (3.3V) = %d.", this->parameters.sd30DriveSelector3d3V);
     
     pinfo("Vendor-specific parameters have been initialized.");
     
