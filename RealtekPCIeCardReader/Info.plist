@@ -168,6 +168,66 @@
 				<string>Internal</string>
 			</dict>
 		</dict>
+		<key>RealtekRTS5286Controller</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>IOClass</key>
+			<string>RealtekRTS5286Controller</string>
+			<key>IOPCIMatch</key>
+			<string>0x528610EC</string>
+			<key>IOProbeScore</key>
+			<integer>1000</integer>
+			<key>IOProviderClass</key>
+			<string>IOPCIDevice</string>
+			<key>Protocol Characteristics</key>
+			<dict>
+				<key>Physical Interconnect</key>
+				<string>Secure Digital</string>
+				<key>Physical Interconnect Location</key>
+				<string>Internal</string>
+			</dict>
+		</dict>
+		<key>RealtekRTS5287Controller</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>IOClass</key>
+			<string>RealtekRTS5287Controller</string>
+			<key>IOPCIMatch</key>
+			<string>0x528710EC</string>
+			<key>IOProbeScore</key>
+			<integer>1000</integer>
+			<key>IOProviderClass</key>
+			<string>IOPCIDevice</string>
+			<key>Protocol Characteristics</key>
+			<dict>
+				<key>Physical Interconnect</key>
+				<string>Secure Digital</string>
+				<key>Physical Interconnect Location</key>
+				<string>Internal</string>
+			</dict>
+		</dict>
+		<key>RealtekRTS5289Controller</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>IOClass</key>
+			<string>RealtekRTS5289Controller</string>
+			<key>IOPCIMatch</key>
+			<string>0x528910EC</string>
+			<key>IOProbeScore</key>
+			<integer>1000</integer>
+			<key>IOProviderClass</key>
+			<string>IOPCIDevice</string>
+			<key>Protocol Characteristics</key>
+			<dict>
+				<key>Physical Interconnect</key>
+				<string>Secure Digital</string>
+				<key>Physical Interconnect Location</key>
+				<string>Internal</string>
+			</dict>
+		</dict>
 	</dict>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2021 FireWolf. All rights reserved.</string>

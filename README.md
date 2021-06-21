@@ -45,9 +45,9 @@ It uses the Linux driver as a reference implementation but is written from scrat
 |  5249  | 0x10EC525A |  RTS525A PCI Express Card Reader |    Yes    | 0.9.0 |
 |  5260  | 0x10EC5260 |  RTS5260 PCI Express Card Reader |  Not Yet  |  N/A  |
 |  5261  | 0x10EC5261 |  RTS5261 PCI Express Card Reader |  Not Yet  |  N/A  |
-|  8411  | 0x10EC5286 |  RTL8402 PCI Express Card Reader |  Not Yet  |  N/A  |
-|  8411  | 0x10EC5287 | RTL8411B PCI Express Card Reader |  Not Yet  |  N/A  |
-|  8411  | 0x10EC5289 |  RTL8411 PCI Express Card Reader |  Not Yet  |  N/A  |
+|  8411  | 0x10EC5286 |  RTL8402 PCI Express Card Reader |    Yes    | 0.9.2 |
+|  8411  | 0x10EC5287 | RTL8411B PCI Express Card Reader |    Yes    | 0.9.2 |
+|  8411  | 0x10EC5289 |  RTL8411 PCI Express Card Reader |    Yes    | 0.9.2 |
 
 #### Notes:
 - By design, all listed devices are supported, and devices that have the same series share most of the controller code.

@@ -606,11 +606,17 @@ namespace RTSX::Chip::CARD
         RTSXDeclareChipRegisterValue(kSDPowerOn, 0x00);
         RTSXDeclareChipRegisterValue(kSDPartialPowerOn, 0x01);
         RTSXDeclareChipRegisterValue(kSDPowerOff, 0x03);
-        
         RTSXDeclareChipRegisterValue(kSDPowerMask, 0x03);
         
         RTSXDeclareChipRegisterValue(kSDVCCPartialPowerOn, 0x02);
         RTSXDeclareChipRegisterValue(kSDVCCPowerOn, 0x00);
+        
+        RTSXDeclareChipRegisterValue(kBppPowerOff, 0x0F);
+        RTSXDeclareChipRegisterValue(kBppPower5PercentOn, 0x0E);
+        RTSXDeclareChipRegisterValue(kBppPower10PercentOn, 0x0C);
+        RTSXDeclareChipRegisterValue(kBppPower15PercentOn, 0x08);
+        RTSXDeclareChipRegisterValue(kBppPowerOn, 0x00);
+        RTSXDeclareChipRegisterValue(kBppPowerMask, 0x0F);
     }
     
     RTSXDeclareChipRegister(rSHAREMODE, 0xFD52);
@@ -752,6 +758,27 @@ namespace RTSX::Chip::CARD
         RTSXDeclareChipRegisterValue(kEnableMS, 0x08);
         RTSXDeclareChipRegisterValue(kEnableSD40, 0x10);
         RTSXDeclareChipRegisterValue(kMask, 0x1E);
+    }
+    
+    /// 8411 series specific
+    RTSXDeclareChipRegister(rPADCTL, 0xFD73);
+    namespace PADCTL
+    {
+        RTSXDeclareChipRegisterValue(kDisableMask, 0x07);
+        RTSXDeclareChipRegisterValue(kDisableMS, 0x04);
+        RTSXDeclareChipRegisterValue(kDisableSD, 0x02);
+        RTSXDeclareChipRegisterValue(kDisableXD, 0x01);
+        RTSXDeclareChipRegisterValue(kDisableAll, 0x07);
+        RTSXDeclareChipRegisterValue(kEnableAll, 0x00);
+        RTSXDeclareChipRegisterValue(kEnableMS, 0x03);
+        RTSXDeclareChipRegisterValue(kEnableSD, 0x05);
+        RTSXDeclareChipRegisterValue(kEnableXD, 0x06);
+        RTSXDeclareChipRegisterValue(kAutoDisable, 0x40);
+        
+        RTSXDeclareChipRegisterValue(kForceLowMask, 0x38);
+        RTSXDeclareChipRegisterValue(kForceLowXD, 0x08);
+        RTSXDeclareChipRegisterValue(kForceLowSD, 0x10);
+        RTSXDeclareChipRegisterValue(kForceLowMS, 0x20);
     }
 }
 
@@ -1342,6 +1369,10 @@ namespace RTSX::Chip
         RTSXDeclareChipRegisterValue(kICRevisionMask, 0x0F);
     }
     
+    RTSXDeclareChipRegister(rSYSVER, 0xFC32);
+    
+    RTSXDeclareChipRegister(rPKGMODE, 0xFD51);
+    
     RTSXDeclareChipRegister(rVREF, 0xFE97);
     namespace VREF
     {
@@ -1391,6 +1422,11 @@ namespace RTSX::Chip
     RTSXDeclareChipRegister(rLINKSTA, 0xFE5B);
     
     RTSXDeclareChipRegister(rPGWIDTH, 0xFE5C);
+    
+    namespace EFUSE
+    {
+        RTSXDeclareChipRegister(rCONTENT, 0xFE5F);
+    }
     
     RTSXDeclareChipRegister(rHSSTA, 0xFE60);
     namespace HSSTA
@@ -1479,6 +1515,32 @@ namespace RTSX::Chip::PM
 
 namespace RTSX::Chip::LDO
 {
+    RTSXDeclareChipRegister(rCTL, 0xFC1E);
+    namespace CTL
+    {
+        RTSXDeclareChipRegisterValue(kBppAsic1V7, 0x00);
+        RTSXDeclareChipRegisterValue(kBppAsic1V8, 0x01);
+        RTSXDeclareChipRegisterValue(kBppAsic1V9, 0x02);
+        RTSXDeclareChipRegisterValue(kBppAsic2V0, 0x03);
+        RTSXDeclareChipRegisterValue(kBppAsic2V7, 0x04);
+        RTSXDeclareChipRegisterValue(kBppAsic2V8, 0x05);
+        RTSXDeclareChipRegisterValue(kBppAsic3V2, 0x06);
+        RTSXDeclareChipRegisterValue(kBppAsic3V3, 0x07);
+        
+        RTSXDeclareChipRegisterValue(kBppTuned18, 0x07);
+        RTSXDeclareChipRegisterValue(kBppTuned18Shift_8402, 5);
+        RTSXDeclareChipRegisterValue(kBppTuned18Shift_8411, 4);
+        
+        RTSXDeclareChipRegisterValue(kBppPadMask, 0x04);
+        RTSXDeclareChipRegisterValue(kBppPad3V3, 0x04);
+        RTSXDeclareChipRegisterValue(kBppPad1V8, 0x00);
+        
+        RTSXDeclareChipRegisterValue(kBppLDOMask, 0x03);
+        RTSXDeclareChipRegisterValue(kBppLDOOn, 0x00);
+        RTSXDeclareChipRegisterValue(kBppLDOSuspend, 0x02);
+        RTSXDeclareChipRegisterValue(kBppLDOOff, 0x03);
+    }
+    
     RTSXDeclareChipRegister(rPWRSEL, 0xFE78);
     
     namespace DV18
