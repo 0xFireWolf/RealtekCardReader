@@ -167,7 +167,7 @@ IOReturn RealtekRTS5227SeriesController::powerOffCard()
         { rPWRGATECTRL, PWRGATECTRL::kMask, PWRGATECTRL::kOn }
     };
     
-    return this->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));return 0;
+    return this->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
 }
 
 //

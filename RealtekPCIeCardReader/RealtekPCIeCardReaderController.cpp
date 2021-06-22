@@ -2910,9 +2910,7 @@ bool RealtekPCIeCardReaderController::setupCardReader()
     
     if (this->initVendorSpecificParameters() != kIOReturnSuccess)
     {
-        perr("Failed to initialize vendor-specific parameters.");
-        
-        return false;
+        perr("Failed to initialize vendor-specific parameters. Will use the default values.");
     }
     
     pinfo("Vendor-specific parameters have been initialized.");
