@@ -60,6 +60,7 @@ It uses the Linux driver as a reference implementation but is written from scrat
 Please read [FAQs](Docs/FAQ.md) carefully before asking any questions.  
 Please use the issue template before submitting any code-level issues.  
 Please clearly indicate your chip model, device ID and revision number and attach the kernel log in your issue.  
+Please make sure that your kernel log is complete. Issues without any details will be closed and left unanswered.
 
 ### Developers
 You are welcome to submit pull requests to improve this driver.  
