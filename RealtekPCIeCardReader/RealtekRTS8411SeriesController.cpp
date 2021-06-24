@@ -275,14 +275,17 @@ bool RealtekRTS8411SeriesController::isCardPresent()
     psoftassert(this->writeChipRegister(CARD::rPWRCTRL, CARD::PWRCTRL::kBppPowerMask, CARD::PWRCTRL::kBppPowerOff) == kIOReturnSuccess,
                 "Failed to power off the card.");
     
-    // Disable the MS card interrupts
-    const ChipRegValuePair pairs[] =
+    if (present)
     {
-        { EFUSE::rCONTENT, 0xE0, 0x80 },
-        { CARD::rPADCTL, CARD::PADCTL::kDisableMask, CARD::PADCTL::kEnableSD }
-    };
-    
-    psoftassert(this->writeChipRegisters(SimpleRegValuePairs(pairs)) == kIOReturnSuccess, "Disable the MS card interrupt.");
+        // Disable the MS card interrupts
+        const ChipRegValuePair pairs[] =
+        {
+            { EFUSE::rCONTENT, 0xE0, 0x80 },
+            { CARD::rPADCTL, CARD::PADCTL::kDisableMask, CARD::PADCTL::kEnableSD }
+        };
+        
+        psoftassert(this->writeChipRegisters(SimpleRegValuePairs(pairs)) == kIOReturnSuccess, "Disable the MS card interrupt.");
+    }
     
     return present;
 }
