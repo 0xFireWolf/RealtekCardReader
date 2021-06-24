@@ -2014,25 +2014,7 @@ void IOSDHostDriver::attachCard()
     }
     
     // The default frequencies are not suitable for the host
-    // Attempt to initialize the card with the maximum frequency supported by the host
     perr("Failed to initialize the card at the default frequencies.");
-    
-    // Try to initialize the card with the minimum and/or the maximum frequency supported by the host
-    const UInt32 hostFrequencies[] = { range.lowerBound, range.upperBound };
-    
-    for (auto frequency : hostFrequencies)
-    {
-        if (this->attachCard(frequency))
-        {
-            pinfo("Initialized the card at %u Hz.", frequency);
-            
-            psoftassert(this->publishBlockStorageDevice(), "Failed to publish the block storage device");
-            
-            return;
-        }
-    }
-    
-    perr("Failed to initialize the card at the host min and max frequencies [%u, %u] Hz.", range.lowerBound, range.upperBound);
 }
 
 ///
