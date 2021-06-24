@@ -962,7 +962,7 @@ IOReturn IOSDHostDriver::waitForAppRequest(RealtekSDRequest& request, UInt32 rca
     
     IOReturn retVal = kIOReturnSuccess;
     
-    for (int attempt = 0; kMaxAttempts < 10; attempt += 1)
+    for (int attempt = 0; attempt < kMaxAttempts; attempt += 1)
     {
         pinfo("[%02d] Sending the application command...", attempt);
         
