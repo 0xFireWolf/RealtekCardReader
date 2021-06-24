@@ -1,6 +1,6 @@
 #  Frequently Asked Questions
 
-**Last Updated:** Jun 18, 2021
+**Last Updated:** Jun 24, 2021
 
 ## Device Support
 
