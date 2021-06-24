@@ -958,18 +958,42 @@ IOReturn IOSDHostDriver::waitForRequest(RealtekSDRequest& request)
 ///
 IOReturn IOSDHostDriver::waitForAppRequest(RealtekSDRequest& request, UInt32 rca)
 {
-    // Guard: Send the CMD55
-    IOReturn retVal = this->CMD55(rca);
-
-    if (retVal != kIOReturnSuccess)
+    static constexpr int kMaxAttempts = 10;
+    
+    IOReturn retVal = kIOReturnSuccess;
+    
+    for (int attempt = 0; kMaxAttempts < 10; attempt += 1)
     {
-        perr("Failed to issue a CMD55. Error = 0x%x.", retVal);
+        pinfo("[%02d] Sending the application command...", attempt);
+        
+        // Guard: Send the CMD55
+        retVal = this->CMD55(rca);
 
-        return retVal;
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to issue a CMD55. Error = 0x%x.", retVal);
+
+            continue;
+        }
+
+        // Send the application command
+        retVal = this->waitForRequest(request);
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to issue the application command. Error = 0x%x.", retVal);
+            
+            continue;
+        }
+        
+        pinfo("[%02d] The application command has been sent successfully.", attempt);
+        
+        return kIOReturnSuccess;
     }
-
-    // Send the application command
-    return this->waitForRequest(request);
+    
+    perr("Failed to send the application command. Error = 0x%x.", retVal);
+    
+    return retVal;
 }
 
 ///
