@@ -27,6 +27,7 @@ static auto max_req_size = 524288;     // FIREWOLF: IODMACommand transfer size l
 #include "IOSDCard.hpp"
 #include "IOSDCardEventSource.hpp"
 #include "SD.hpp"
+#include "Utilities.hpp"
 
 /// Forward declaration (Client of the SD host driver)
 class IOSDBlockStorageDevice;
@@ -122,7 +123,7 @@ public:
     ///
     inline IODMACommand* allocateDMACommandFromPool()
     {
-        return OSRequiredCast(IODMACommand, this->dmaCommandPool->getCommand());
+        return OSDynamicCast(IODMACommand, this->dmaCommandPool->getCommand());
     }
     
     ///
@@ -142,7 +143,7 @@ public:
     ///
     inline IOSDSimpleBlockRequest* allocateSimpleBlockRequestFromPool()
     {
-        return OSRequiredCast(IOSDSimpleBlockRequest, this->simpleBlockRequestPool->getCommand());
+        return OSDynamicCast(IOSDSimpleBlockRequest, this->simpleBlockRequestPool->getCommand());
     }
     
     ///
@@ -162,7 +163,7 @@ public:
     ///
     inline IOSDComplexBlockRequest* allocateComplexBlockRequestFromPool()
     {
-        return OSRequiredCast(IOSDComplexBlockRequest, this->complexBlockRequestPool->getCommand());
+        return OSDynamicCast(IOSDComplexBlockRequest, this->complexBlockRequestPool->getCommand());
     }
     
     ///

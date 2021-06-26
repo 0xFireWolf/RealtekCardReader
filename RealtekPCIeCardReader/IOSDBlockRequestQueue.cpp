@@ -6,6 +6,7 @@
 //
 
 #include "IOSDBlockRequestQueue.hpp"
+#include "Debug.hpp"
 #include <kern/queue.h>
 
 //
@@ -50,7 +51,9 @@ bool IOSDBlockRequestQueue::isEmpty()
     
     auto action = [](OSObject* queue, void* result, void*, void*, void*) -> IOReturn
     {
-        auto instance = OSRequiredCast(IOSDBlockRequestQueue, queue);
+        auto instance = OSDynamicCast(IOSDBlockRequestQueue, queue);
+        
+        passert(instance != nullptr, "The given object is not a valid instance of IOSDBlockRequestQueue.");
         
         *reinterpret_cast<bool*>(result) = queue_empty(&instance->fQueueHead);
         

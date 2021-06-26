@@ -1258,6 +1258,8 @@ IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, IOMemoryDe
     {
         perr("Failed to associate the given response with the DMA command. Error = 0x%x.", retVal);
 
+        this->releaseDMACommandToPool(dma);
+        
         return retVal;
     }
 

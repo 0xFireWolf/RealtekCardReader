@@ -53,7 +53,7 @@ public:
     ///
     inline IOSDBlockRequest* dequeueRequest()
     {
-        return OSRequiredCast(IOSDBlockRequest, this->getCommand(false));
+        return OSDynamicCast(IOSDBlockRequest, this->getCommand(false));
     }
 };
 
