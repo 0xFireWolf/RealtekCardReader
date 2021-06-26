@@ -2490,7 +2490,7 @@ bool RealtekSDXCSlot::start(IOService* provider)
 
     this->driver = driver;
     
-    this->registerService();
+    //this->registerService();
     
     pinfo("The host driver has been published.");
     

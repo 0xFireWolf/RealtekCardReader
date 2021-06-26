@@ -3195,7 +3195,7 @@ bool RealtekPCIeCardReaderController::start(IOService* provider)
         pinfo("The card is not present when the driver starts.");
     }
     
-    this->registerService();
+    //this->registerService();
     
     this->isIdle = true;
     
