@@ -186,8 +186,10 @@ public:
     {
         using namespace RTSX::Chip::SD;
         
+        BitOptions<UInt8> type = this->responseType;
+        
         // Guard: Check whether the driver should ignore the CRC7 checksum
-        if (BitOptions(this->responseType).contains(CFG2::kNoCheckCRC7))
+        if (type.contains(CFG2::kNoCheckCRC7))
         {
             return true;
         }
