@@ -163,7 +163,7 @@ public:
     }
 
     ///
-    /// Check whether the given option in in this collection
+    /// Check whether the given option is in this collection
     ///
     /// @param option An option to be checked
     /// @return `true` if `this` contains the given `option`, `false` otherwise.
@@ -172,6 +172,32 @@ public:
     inline bool contains(BitOption option) const
     {
         return (this->options & option) == option;
+    }
+    
+    ///
+    /// Check whether at least one of the given options is in this collection
+    ///
+    /// @param option One or more options to be checked
+    /// @return `true` if `this` contains at least one of the given options, `false` otherwise.
+    ///
+    template <typename... Option>
+    [[nodiscard]]
+    inline bool containsOneOf(Option... option) const
+    {
+        return (this->contains(option) || ...);
+    }
+    
+    ///
+    /// Check whether all of the given options are in this collection
+    ///
+    /// @param option One or more options to be checked
+    /// @return `true` if `this` contains all of the given options, `false` otherwise.
+    ///
+    template <typename... Option>
+    [[nodiscard]]
+    inline bool containsAll(Option... option) const
+    {
+        return (this->contains(option) && ...);
     }
     
     ///

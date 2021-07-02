@@ -1569,8 +1569,14 @@ IOReturn RealtekSDXCSlot::waitVoltageStable1()
         return retVal;
     }
     
+    pinfo("Current line status is 0x%x.", status);
+    
     // Guard: Ensure that both lines are low
-    if (BitOptions(status).contains(SD::BUSSTAT::kAllLinesStatus))
+    if (BitOptions(status).containsOneOf(SD::BUSSTAT::kCommandStatus,
+                                         SD::BUSSTAT::kData0Status,
+                                         SD::BUSSTAT::kData1Status,
+                                         SD::BUSSTAT::kData2Status,
+                                         SD::BUSSTAT::kData3Status))
     {
         perr("Current line status is 0x%x. At least one of lines is high.", status);
         
@@ -1614,29 +1620,14 @@ IOReturn RealtekSDXCSlot::waitVoltageStable2()
         return retVal;
     }
     
-    // Wait until the card drive both CMD and DATA lines to high
-    IOSleep(20);
-    
     // Read the current status of both CMD and DATA lines
     UInt8 status = 0;
     
-//    retVal = this->controller->readChipRegister(SD::rBUSSTAT, status);
-//
-//    if (retVal != kIOReturnSuccess)
-//    {
-//        perr("Failed to read the command and the data line status. Error = 0x%x.", retVal);
-//
-//        return retVal;
-//    }
-//
-//    // Guard: Ensure that both lines are high
-//    if (BitOptions(status).contains(SD::BUSSTAT::kAllLinesStatus))
-//    {
-//        return kIOReturnSuccess;
-//    }
-    
+    // Wait until the card drive both CMD and DATA lines to high
     for (auto attempt = 0; attempt < 200; attempt += 1)
     {
+        IOSleep(20);
+        
         pinfo("[%02d] Reading the status of all lines...", attempt);
         
         retVal = this->controller->readChipRegister(SD::rBUSSTAT, status);
@@ -1644,8 +1635,6 @@ IOReturn RealtekSDXCSlot::waitVoltageStable2()
         if (retVal != kIOReturnSuccess)
         {
             perr("Failed to read the command and the data line status. Error = 0x%x.", retVal);
-            
-            IOSleep(20);
             
             continue;
         }
@@ -1657,8 +1646,6 @@ IOReturn RealtekSDXCSlot::waitVoltageStable2()
         {
             return kIOReturnSuccess;
         }
-        
-        IOSleep(20);
     }
     
     // Stop the card clock
