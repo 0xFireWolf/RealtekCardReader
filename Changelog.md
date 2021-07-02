@@ -2,6 +2,8 @@
 
 #### v0.9.3 Beta
 - Added support for RTS5227 and RTS522A.
+- Fixed an issue that driving tables are not set for RTS5227 and RTS522A.
+- Disabled the bonus feature temporarily: Your card reader will not be listed in System Profiler. 
 
 #### v0.9.2 Beta
 - Fixed an issue that the block size and the total number of blocks are not reported properly for SDSC cards.

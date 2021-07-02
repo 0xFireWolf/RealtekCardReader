@@ -208,6 +208,10 @@ IOReturn RealtekRTS5227SeriesController::initParameters()
     
     this->parameters.sd30DriveSelector3d3V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
     
+    this->parameters.sd30DriveTable1d8V = &RealtekRTS5227SeriesController::kSD30DriveTable1d8V;
+    
+    this->parameters.sd30DriveTable3d3V = &RealtekRTS5227SeriesController::kSD30DriveTable3d3V;
+    
     this->parameters.initialTxClockPhase = {27, 27, 15};
     
     this->parameters.initialRxClockPhase = {30, 7, 7};
