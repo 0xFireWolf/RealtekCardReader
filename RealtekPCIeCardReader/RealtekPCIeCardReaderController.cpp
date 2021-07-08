@@ -8,6 +8,7 @@
 #include "RealtekPCIeCardReaderController.hpp"
 #include "RealtekSDXCSlot.hpp"
 #include "BitOptions.hpp"
+#include "IOPCIeDevice.hpp"
 
 //
 // MARK: - Meta Class Definitions

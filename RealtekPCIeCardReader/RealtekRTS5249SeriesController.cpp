@@ -8,6 +8,7 @@
 #include "RealtekRTS5249SeriesController.hpp"
 #include "Registers.hpp"
 #include "BitOptions.hpp"
+#include "IOPCIeDevice.hpp"
 
 //
 // MARK: - Meta Class Definitions
