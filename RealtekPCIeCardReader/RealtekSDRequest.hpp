@@ -275,9 +275,6 @@ namespace RealtekSDRequestFactory
     
     static inline RealtekSDCommandWithInboundDataTransferRequest CMD6(UInt32 mode, UInt32 group, UInt32 value, IODMACommand* data)
     {
-        // TODO: Preferred number of segments to be generated?
-        // TODO: Start offset of the DMA command?
-        // TODO: Add more fields to RealtekSDData????
         return RealtekSDCommandWithInboundDataTransferRequest(RealtekSDCommand::CMD6(mode, group, value), RealtekSDData(data, 1, 64));
     }
     

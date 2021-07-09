@@ -8,14 +8,6 @@
 #ifndef IOSDHostDriver_hpp
 #define IOSDHostDriver_hpp
 
-// TODO: REMOVE THESE NOTES
-// TODO: WILL BE REPLACED BY DMA LIMITS
-static auto max_segs = 256;
-static auto max_seg_size = 65536;      // FIREWOLF: SD Command Data Length Limit (UInt16)
-static auto max_blk_size = 512;
-static auto max_blk_count = 65535;     // FIREWOLF: SD Command Data Length Limit (UInt16) Can read up to 65536 blocks in one SD command request
-static auto max_req_size = 524288;     // FIREWOLF: IODMACommand transfer size limit
-
 #include <IOKit/IOCommandPool.h>
 #include "IOSDHostDevice.hpp"
 #include "IOSDBusConfig.hpp"
@@ -393,7 +385,10 @@ public:
     ///
     /// @return The non-null host device.
     ///
-    IOSDHostDevice* getHostDevice();
+    inline IOSDHostDevice* getHostDevice()
+    {
+        return this->host;
+    }
     
     //
     // MARK: - Adjust Host Bus Settings

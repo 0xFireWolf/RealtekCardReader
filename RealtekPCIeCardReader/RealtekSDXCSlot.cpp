@@ -2396,6 +2396,8 @@ bool RealtekSDXCSlot::init(OSDictionary* dictionary)
     
     this->caps2 = MMC_CAP2_NO_PRESCAN_POWERUP | MMC_CAP2_FULL_PWR_CYCLE;
     
+    this->dmaLimits = { 256, 65536, 524288 };
+    
     return true;
 }
 

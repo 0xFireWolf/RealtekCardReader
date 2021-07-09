@@ -50,11 +50,11 @@ IOReturn IOSDHostDriver::submitBlockRequest(IOSDBlockRequest::Processor processo
         return kIOReturnNoMedia;
     }
     
-    // Guard: The maximum number of blocks in one request is 1024
+    // Guard: The maximum number of blocks in one request is 1024 (for example)
     // Split the incoming request into multiple smaller one if necessary
     IOSDBlockRequest* request = nullptr;
 
-    if (nblocks <= 1024)
+    if (nblocks <= this->host->getDMALimits().maxRequestNumBlocks())
     {
         request = this->allocateSimpleBlockRequestFromPool();
     }
@@ -437,16 +437,6 @@ UInt32 IOSDHostDriver::selectMutualVoltageLevels(UInt32 ocr)
     pinfo("Selected mutual voltage levels = 0x%x.", ocr);
 
     return ocr;
-}
-
-///
-/// Get the host device
-///
-/// @return The non-null host device.
-///
-IOSDHostDevice* IOSDHostDriver::getHostDevice()
-{
-    return this->host;
 }
 
 //
@@ -2434,10 +2424,13 @@ bool IOSDHostDriver::setupPreallocatedDMACommands()
     
     bzero(this->pDMACommands, sizeof(this->pDMACommands));
     
+    UInt64 maxSegmentSize = this->host->getDMALimits().maxSegmentSize;
+    
+    pinfo("Maximum segment size suppported by the host device = %llu bytes.", maxSegmentSize);
+    
     for (auto index = 0; index < IOSDHostDriver::kDefaultPoolSize; index += 1)
     {
-        // TODO: 65536 is the maximum segment size, 524288 (512 * 1024  512KB MAX RAW I/O TRANSFER) is the maximum request size (FETCH FROM HOST CAPS)
-        this->pDMACommands[index] = IODMACommand::withSpecification(kIODMACommandOutputHost32, 32, 65536, IODMACommand::kMapped, 0, 1);
+        this->pDMACommands[index] = IODMACommand::withSpecification(kIODMACommandOutputHost32, 32, maxSegmentSize, IODMACommand::kMapped, 0, 1);
         
         if (this->pDMACommands[index] == nullptr)
         {

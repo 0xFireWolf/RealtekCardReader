@@ -115,6 +115,9 @@ struct IOSDBusConfig
         kTypeD = 3,
     } driverType;
     
+    /// Reserved field
+    UInt8 reserved;
+    
     void print() const
     {
         // TODO: IMP THIS

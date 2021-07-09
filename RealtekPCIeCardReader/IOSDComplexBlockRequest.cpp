@@ -72,6 +72,9 @@ void IOSDComplexBlockRequest::service()
     // The service status
     IOReturn retVal = kIOReturnSuccess;
     
+    // The maximum number of blocks to be transferred in one transaction
+    UInt64 maxRequestNumBlocks = this->driver->getHostDevice()->getDMALimits().maxRequestNumBlocks();
+    
     // The original completion action
     IOStorageCompletionAction action = this->completion.action;
     
@@ -96,7 +99,7 @@ void IOSDComplexBlockRequest::service()
     while (this->cblock < this->block + this->nblocks)
     {
         // Calculate the number of blocks to be transfered
-        this->cnblocks = min(1024ULL, this->block + this->nblocks - this->cblock);
+        this->cnblocks = min(maxRequestNumBlocks, this->block + this->nblocks - this->cblock);
         
         pinfo("BREQ: Servicing the intermediate transaction: Current start index = %llu; Number of blocks = %llu.", this->cblock, this->cnblocks);
         
@@ -138,7 +141,7 @@ void IOSDComplexBlockRequest::service()
         this->complete(retVal);
         
         // The intermediate request completes without errors
-        this->cblock += 1024;
+        this->cblock += maxRequestNumBlocks;
     }
 
 out:

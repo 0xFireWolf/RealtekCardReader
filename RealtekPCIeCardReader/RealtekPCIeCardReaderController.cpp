@@ -2873,7 +2873,7 @@ bool RealtekPCIeCardReaderController::setupHostBuffer()
     UInt32 numSegments = 1;
     
     // Guard: 1. Allocate memory for the host command and data buffer
-    this->hostBufferDescriptor = IOBufferMemoryDescriptor::withCapacity(4096, kIODirectionInOut, true);
+    this->hostBufferDescriptor = IOBufferMemoryDescriptor::withCapacity(kHostBufferSize, kIODirectionInOut, true);
     
     if (this->hostBufferDescriptor == nullptr)
     {

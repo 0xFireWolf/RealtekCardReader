@@ -140,6 +140,25 @@ public:
         UInt32 v33;
     };
     
+    /// Limitations imposed by the host device on DMA transactions
+    struct DMALimits
+    {
+        /// The maximum number of segments in the scatter/gather list
+        UInt32 maxNumSegments;
+        
+        /// The maximum number of bytes in one segment
+        UInt32 maxSegmentSize;
+        
+        /// The maximum number of bytes in one DMA transaction
+        UInt64 maxRequestSize;
+        
+        /// Get the maximum number of blocks in one DMA transaction
+        inline UInt64 maxRequestNumBlocks() const
+        {
+            return this->maxRequestSize / 512;
+        }
+    };
+    
     //
     // MARK: - Host Properties
     //
@@ -168,6 +187,9 @@ protected:
     
     /// Host device capabilities
     BitOptions<UInt32> caps2;
+    
+    /// Host DMA limitations
+    DMALimits dmaLimits;
     
 public:
     //
@@ -346,6 +368,16 @@ public:
     inline BitOptions<UInt32> getCaps2()
     {
         return this->caps2;
+    }
+    
+    ///
+    /// Get the host DMA limitations
+    ///
+    /// @return The host DMA limitations.
+    ///
+    inline DMALimits getDMALimits()
+    {
+        return this->dmaLimits;
     }
     
     //
