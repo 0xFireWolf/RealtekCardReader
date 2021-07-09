@@ -399,6 +399,9 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     /// The host data buffer starts at the offset 1024 in the host buffer
     static constexpr IOByteCount kHostDatabufferOffset = RTSX::MMIO::HCBAR::kMaxNumCmds * 4;
     
+    /// The maximum number of DMA segments supported by the card reader
+    static constexpr IOItemCount kMaxNumSegments = 256;
+    
     ///
     /// A descriptor that allocates the host command and data buffer
     ///

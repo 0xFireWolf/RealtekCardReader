@@ -1099,16 +1099,13 @@ IOReturn RealtekPCIeCardReaderController::enqueueDMACommand(IODMACommand* comman
     //
     // Step 1: Generate a physical scather/gather list
     //
-    // The maximum number of entries is 384
-    // FIXME: Is it OK to assume that the offset to the memory descriptor is 0? (YES, IT's OK; The upper layer can guarantee this)
-    // FIXME: Pass additional information about the DMA command: e.g., preferred number of segments to be generated (Yes, host device caps)
     pinfo("Generating a scather/gather list from the given DMA command...");
     
     UInt64 offset = 0;
     
-    IODMACommand::Segment32 segments[256] = {};
+    IODMACommand::Segment32 segments[kMaxNumSegments] = {};
     
-    UInt32 numSegments = 256; // TODO: THIS IS THE DEVICE LIMIT (DECLARE DMA CAPS)
+    UInt32 numSegments = kMaxNumSegments;
     
     IOReturn retVal = command->gen32IOVMSegments(&offset, segments, &numSegments);
     
@@ -1118,6 +1115,13 @@ IOReturn RealtekPCIeCardReaderController::enqueueDMACommand(IODMACommand* comman
         
         return retVal;
     }
+    
+    // The maximum number of bytes in a single DMA transaction is 524288,
+    // and the kernel finds free pages available for the DMA transfer.
+    // so the maximum number of segments is 524288 / 4096 = 128.
+    // As a result, it should be sufficient to call `gen32IOVMSegments()` once,
+    // and the returned offset should be identical to the length of the memory descriptor.
+    psoftassert(command->getMemoryDescriptor()->getLength() == offset, "Detected Inconsistency: Offset != DMA Buffer Length.");
     
     pinfo("Generated a scather/gather list from the given DMA command. Offset = %llu; Number of entries = %d.", offset, numSegments);
     
