@@ -13,99 +13,6 @@
 #include "BitOptions.hpp"
 #include "RealtekSDRequest.hpp" // FIXME: SHOULD BE GENERIC
 
-// TODO: Convert to C++
-
-///
-/// Enumerates all host device capabilities
-///
-/// @note Not all capabilities are supported by the macOS driver.
-/// @note Not all capabilities are applicable to a SD card dreader.
-/// @ref /include/linux/mmc/host.h
-///
-enum Capability
-{
-    // ----------
-    // | Caps 1 |
-    // ----------
-    
-    /// Can the host do 4 bit transfers
-    /// @ref MMC_CAP_4_BIT_DATA
-    k4BitData = 1 << 0,
-    
-    /// Can do MMC high-speed timing
-    /// @ref MMC_CAP_MMC_HIGHSPEED
-    kMMCHighSpeec = 1 << 1,
-    
-    
-    
-};
-
-#define MMC_CAP_MMC_HIGHSPEED    (1 << 1)    /*  */
-#define MMC_CAP_SD_HIGHSPEED    (1 << 2)    /* Can do SD high-speed timing */
-#define MMC_CAP_SDIO_IRQ    (1 << 3)    /* Can signal pending SDIO IRQs */
-#define MMC_CAP_SPI        (1 << 4)    /* Talks only SPI protocols */
-#define MMC_CAP_NEEDS_POLL    (1 << 5)    /* Needs polling for card-detection */
-#define MMC_CAP_8_BIT_DATA    (1 << 6)    /* Can the host do 8 bit transfers */
-#define MMC_CAP_AGGRESSIVE_PM    (1 << 7)    /* Suspend (e)MMC/SD at idle  */
-#define MMC_CAP_NONREMOVABLE    (1 << 8)    /* Nonremovable e.g. eMMC */
-#define MMC_CAP_WAIT_WHILE_BUSY    (1 << 9)    /* Waits while card is busy */
-#define MMC_CAP_3_3V_DDR    (1 << 11)    /* Host supports eMMC DDR 3.3V */
-#define MMC_CAP_1_8V_DDR    (1 << 12)    /* Host supports eMMC DDR 1.8V */
-#define MMC_CAP_1_2V_DDR    (1 << 13)    /* Host supports eMMC DDR 1.2V */
-#define MMC_CAP_DDR        (MMC_CAP_3_3V_DDR | MMC_CAP_1_8V_DDR | \
-                 MMC_CAP_1_2V_DDR)
-#define MMC_CAP_POWER_OFF_CARD    (1 << 14)    /* Can power off after boot */
-#define MMC_CAP_BUS_WIDTH_TEST    (1 << 15)    /* CMD14/CMD19 bus width ok */
-#define MMC_CAP_UHS_SDR12    (1 << 16)    /* Host supports UHS SDR12 mode */
-#define MMC_CAP_UHS_SDR25    (1 << 17)    /* Host supports UHS SDR25 mode */
-#define MMC_CAP_UHS_SDR50    (1 << 18)    /* Host supports UHS SDR50 mode */
-#define MMC_CAP_UHS_SDR104    (1 << 19)    /* Host supports UHS SDR104 mode */
-#define MMC_CAP_UHS_DDR50    (1 << 20)    /* Host supports UHS DDR50 mode */
-#define MMC_CAP_UHS        (MMC_CAP_UHS_SDR12 | MMC_CAP_UHS_SDR25 | \
-                 MMC_CAP_UHS_SDR50 | MMC_CAP_UHS_SDR104 | \
-                 MMC_CAP_UHS_DDR50)
-#define MMC_CAP_SYNC_RUNTIME_PM    (1 << 21)    /* Synced runtime PM suspends. */
-#define MMC_CAP_NEED_RSP_BUSY    (1 << 22)    /* Commands with R1B can't use R1. */
-#define MMC_CAP_DRIVER_TYPE_A    (1 << 23)    /* Host supports Driver Type A */
-#define MMC_CAP_DRIVER_TYPE_C    (1 << 24)    /* Host supports Driver Type C */
-#define MMC_CAP_DRIVER_TYPE_D    (1 << 25)    /* Host supports Driver Type D */
-#define MMC_CAP_DONE_COMPLETE    (1 << 27)    /* RW reqs can be completed within mmc_request_done() */
-#define MMC_CAP_CD_WAKE        (1 << 28)    /* Enable card detect wake */
-#define MMC_CAP_CMD_DURING_TFR    (1 << 29)    /* Commands during data transfer */
-#define MMC_CAP_CMD23        (1 << 30)    /* CMD23 supported. */
-#define MMC_CAP_HW_RESET    (1 << 31)    /* Reset the eMMC card via RST_n */
-
-    //u32            caps2;        /* More host capabilities */
-
-#define MMC_CAP2_BOOTPART_NOACC    (1 << 0)    /* Boot partition no access */
-#define MMC_CAP2_FULL_PWR_CYCLE    (1 << 2)    /* Can do full power cycle */
-#define MMC_CAP2_FULL_PWR_CYCLE_IN_SUSPEND (1 << 3) /* Can do full power cycle in suspend */
-#define MMC_CAP2_HS200_1_8V_SDR    (1 << 5)        /* can support */
-#define MMC_CAP2_HS200_1_2V_SDR    (1 << 6)        /* can support */
-#define MMC_CAP2_HS200        (MMC_CAP2_HS200_1_8V_SDR | \
-                 MMC_CAP2_HS200_1_2V_SDR)
-#define MMC_CAP2_SD_EXP        (1 << 7)    /* SD express via PCIe */
-#define MMC_CAP2_SD_EXP_1_2V    (1 << 8)    /* SD express 1.2V */
-#define MMC_CAP2_CD_ACTIVE_HIGH    (1 << 10)    /* Card-detect signal active high */
-#define MMC_CAP2_RO_ACTIVE_HIGH    (1 << 11)    /* Write-protect signal active high */
-#define MMC_CAP2_NO_PRESCAN_POWERUP (1 << 14)    /* Don't power up before scan */
-#define MMC_CAP2_HS400_1_8V    (1 << 15)    /* Can support HS400 1.8V */
-#define MMC_CAP2_HS400_1_2V    (1 << 16)    /* Can support HS400 1.2V */
-#define MMC_CAP2_HS400        (MMC_CAP2_HS400_1_8V | \
-                 MMC_CAP2_HS400_1_2V)
-#define MMC_CAP2_HSX00_1_8V    (MMC_CAP2_HS200_1_8V_SDR | MMC_CAP2_HS400_1_8V)
-#define MMC_CAP2_HSX00_1_2V    (MMC_CAP2_HS200_1_2V_SDR | MMC_CAP2_HS400_1_2V)
-#define MMC_CAP2_SDIO_IRQ_NOTHREAD (1 << 17)
-#define MMC_CAP2_NO_WRITE_PROTECT (1 << 18)    /* No physical write protect pin, assume that card is always read-write */
-#define MMC_CAP2_NO_SDIO    (1 << 19)    /* Do not send SDIO commands during initialization */
-#define MMC_CAP2_HS400_ES    (1 << 20)    /* Host supports enhanced strobe */
-#define MMC_CAP2_NO_SD        (1 << 21)    /* Do not send SD commands during initialization */
-#define MMC_CAP2_NO_MMC        (1 << 22)    /* Do not send (e)MMC commands during initialization */
-#define MMC_CAP2_CQE        (1 << 23)    /* Has eMMC command queue engine */
-#define MMC_CAP2_CQE_DCMD    (1 << 24)    /* CQE can issue a direct command */
-#define MMC_CAP2_AVOID_3_3V    (1 << 25)    /* Host must negotiate down from 3.3V */
-#define MMC_CAP2_MERGE_CAPABLE    (1 << 26)    /* Host can merge a segment over the segment size */
-
 /// Forward declaration (Client of the SD host device)
 class IOSDHostDriver;
 
@@ -159,6 +66,68 @@ public:
         }
     };
     
+    ///
+    /// Enumerates all host device capabilities
+    ///
+    /// @note Not all capabilities are supported by the macOS driver.
+    /// @note Not all capabilities are applicable to a SD card reader.
+    /// @ref /include/linux/mmc/host.h
+    ///
+    enum Capability: UInt64
+    {
+        // ----------
+        // | Caps 1 |
+        // ----------
+        
+        /// Can the host do 4 bit transfers
+        /// @ref MMC_CAP_4_BIT_DATA
+        k4BitData = 1ULL << 0,
+        
+        /// Can do MMC high-speed timing
+        /// @ref MMC_CAP_MMC_HIGHSPEED
+        kMMCHighSpeed = 1ULL << 1,
+        
+        /// Can do SD high-speed timing
+        /// @ref MMC_CAP_SD_HIGHSPEED
+        kSDHighSpeed = 1ULL << 2,
+        
+        /// Host supports testing the bus width (MMC CMD14/CMD19)
+        /// @ref MMC_CAP_BUS_WIDTH_TEST
+        kBusWidthTest = 1ULL << 15,
+        
+        /// Host supports the UHS SDR12 mode
+        /// @ref MMC_CAP_UHS_SDR12
+        kUHSSDR12 = 1ULL << 16,
+        
+        /// Host supports the UHS SDR25 mode
+        /// @ref MMC_CAP_UHS_SDR25
+        kUHSSDR25 = 1ULL << 17,
+        
+        /// Host supports the UHS SDR50 mode
+        /// @ref MMC_CAP_UHS_SDR50
+        kUHSSDR50 = 1ULL << 18,
+        
+        /// Host supports the UHS SDR104 mode
+        /// @ref MMC_CAP_UHS_SDR104
+        kUHSSDR104 = 1ULL << 19,
+        
+        /// Host supports the UHS DDR50 mode
+        /// @ref MMC_CAP_UHS_DDR50
+        kUHSDDR50 = 1ULL << 20,
+        
+        // ----------
+        // | Caps 2 |
+        // ----------
+        
+        /// Can do a full power cycle
+        /// @ref MMC_CAP2_FULL_PWR_CYCLE
+        kFullPowerCycle = 1ULL << (32 + 2),
+        
+        /// Do not power up the bus before the scan
+        /// @ref MMC_CAP2_NO_PRESCAN_POWERUP
+        kNoPrescanPowerUp = 1ULL << (32 + 14),
+    };
+    
     //
     // MARK: - Host Properties
     //
@@ -183,10 +152,7 @@ protected:
     UInt32 supportedVoltageRanges;
     
     /// Host device capabilities
-    BitOptions<UInt32> caps1;
-    
-    /// Host device capabilities
-    BitOptions<UInt32> caps2;
+    BitOptions<UInt64> capabilities;
     
     /// Host DMA limitations
     DMALimits dmaLimits;
@@ -360,14 +326,14 @@ public:
         return this->supportedVoltageRanges;
     }
     
-    inline BitOptions<UInt32> getCaps1()
+    ///
+    /// Get the host capabilities
+    ///
+    /// @return The host capabilities.
+    ///
+    inline BitOptions<UInt64> getCapabilities()
     {
-        return this->caps1;
-    }
-    
-    inline BitOptions<UInt32> getCaps2()
-    {
-        return this->caps2;
+        return this->capabilities;
     }
     
     ///

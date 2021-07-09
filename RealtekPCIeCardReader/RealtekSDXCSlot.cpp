@@ -2345,21 +2345,21 @@ void RealtekSDXCSlot::fetchHostCapabilities()
     {
         pinfo("The card reader supports the UHS-I SDR50 mode.");
         
-        this->caps1 |= MMC_CAP_UHS_SDR50;
+        this->capabilities |= Capability::kUHSSDR50;
     }
     
     if (this->controller->supportsSDR104())
     {
         pinfo("The card reader supports the UHS-I SDR104 mode.");
         
-        this->caps1 |= MMC_CAP_UHS_SDR104;
+        this->capabilities |= Capability::kUHSSDR104;
     }
     
     if (this->controller->supportsDDR50())
     {
         pinfo("The card reader supports the UHS-I DDR50 mode.");
         
-        this->caps1 |= MMC_CAP_UHS_DDR50;
+        this->capabilities |= Capability::kUHSDDR50;
     }
 }
 
@@ -2387,14 +2387,14 @@ bool RealtekSDXCSlot::init(OSDictionary* dictionary)
     
     this->supportedVoltageRanges = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
     
-    this->caps1 = Capability::k4BitData  |
-                  MMC_CAP_SD_HIGHSPEED   |
-                  MMC_CAP_MMC_HIGHSPEED  |
-                  MMC_CAP_BUS_WIDTH_TEST |
-                  MMC_CAP_UHS_SDR12      |
-                  MMC_CAP_UHS_SDR25;
-    
-    this->caps2 = MMC_CAP2_NO_PRESCAN_POWERUP | MMC_CAP2_FULL_PWR_CYCLE;
+    this->capabilities = Capability::k4BitData          |
+                         Capability::kSDHighSpeed       |
+                         Capability::kMMCHighSpeed      |
+                         Capability::kBusWidthTest      |
+                         Capability::kUHSSDR12          |
+                         Capability::kUHSSDR25          |
+                         Capability::kNoPrescanPowerUp  |
+                         Capability::kFullPowerCycle;
     
     this->dmaLimits = { 256, 65536, 524288 };
     

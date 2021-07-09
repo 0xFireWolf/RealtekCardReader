@@ -695,39 +695,39 @@ cycle:
 ///
 SwitchCaps::BusSpeed IOSDCard::selectUltraHighSpeedBusSpeed()
 {
-    BitOptions hostCaps = this->driver->getHostDevice()->getCaps1();
+    BitOptions hostCaps = this->driver->getHostDevice()->getCapabilities();
     
     BitOptions cardCaps = this->switchCaps.sd3BusMode;
     
-    if (hostCaps.contains(MMC_CAP_UHS_SDR104) && cardCaps.contains(SwitchCaps::BusMode::kModeUHSSDR104))
+    if (hostCaps.contains(IOSDHostDevice::Capability::kUHSSDR104) && cardCaps.contains(SwitchCaps::BusMode::kModeUHSSDR104))
     {
         pinfo("Will use the speed mode UHS-I SDR104.");
         
         return SwitchCaps::BusSpeed::kSpeedUHSSDR104;
     }
     
-    if (hostCaps.contains(MMC_CAP_UHS_DDR50) && cardCaps.contains(SwitchCaps::BusMode::kModeUHSDDR50))
+    if (hostCaps.contains(IOSDHostDevice::Capability::kUHSDDR50) && cardCaps.contains(SwitchCaps::BusMode::kModeUHSDDR50))
     {
         pinfo("Will use the speed mode UHS-I DDR50.");
         
         return SwitchCaps::BusSpeed::kSpeedUHSDDR50;
     }
     
-    if (hostCaps.contains(MMC_CAP_UHS_SDR50) && cardCaps.contains(SwitchCaps::BusMode::kModeUHSSDR50))
+    if (hostCaps.contains(IOSDHostDevice::Capability::kUHSSDR50) && cardCaps.contains(SwitchCaps::BusMode::kModeUHSSDR50))
     {
         pinfo("Will use the speed mode UHS-I SDR50.");
         
         return SwitchCaps::BusSpeed::kSpeedUHSSDR50;
     }
     
-    if (hostCaps.contains(MMC_CAP_UHS_SDR25) && cardCaps.contains(SwitchCaps::BusMode::kModeUHSSDR25))
+    if (hostCaps.contains(IOSDHostDevice::Capability::kUHSSDR25) && cardCaps.contains(SwitchCaps::BusMode::kModeUHSSDR25))
     {
         pinfo("Will use the speed mode UHS-I SDR25.");
         
         return SwitchCaps::BusSpeed::kSpeedUHSSDR25;
     }
     
-    if (hostCaps.contains(MMC_CAP_UHS_SDR12) && cardCaps.contains(SwitchCaps::BusMode::kModeUHSSDR12))
+    if (hostCaps.contains(IOSDHostDevice::Capability::kUHSSDR12) && cardCaps.contains(SwitchCaps::BusMode::kModeUHSSDR12))
     {
         pinfo("Will use the speed mode UHS-I SDR12.");
         

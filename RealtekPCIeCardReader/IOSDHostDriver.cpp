@@ -298,7 +298,7 @@ void IOSDHostDriver::finalizeBlockRequest(IOSDBlockRequest* request)
 ///
 bool IOSDHostDriver::hostSupportsHighSpeedMode()
 {
-    return this->host->getCaps1().contains(MMC_CAP_SD_HIGHSPEED);
+    return this->host->getCapabilities().contains(IOSDHostDevice::Capability::kSDHighSpeed);
 }
 
 ///
@@ -308,15 +308,15 @@ bool IOSDHostDriver::hostSupportsHighSpeedMode()
 ///
 bool IOSDHostDriver::hostSupportsUltraHighSpeedMode()
 {
-    auto caps = this->host->getCaps1();
+    auto caps = this->host->getCapabilities();
     
-    bool s4b = caps.contains(Capability::k4BitData);
+    bool s4b = caps.contains(IOSDHostDevice::Capability::k4BitData);
     
-    bool uhs = caps.contains(MMC_CAP_UHS_SDR12)  ||
-               caps.contains(MMC_CAP_UHS_SDR25)  ||
-               caps.contains(MMC_CAP_UHS_SDR50)  ||
-               caps.contains(MMC_CAP_UHS_SDR104) ||
-               caps.contains(MMC_CAP_UHS_DDR50);
+    bool uhs = caps.containsOneOf(IOSDHostDevice::Capability::kUHSSDR12,
+                                  IOSDHostDevice::Capability::kUHSSDR25,
+                                  IOSDHostDevice::Capability::kUHSSDR50,
+                                  IOSDHostDevice::Capability::kUHSSDR104,
+                                  IOSDHostDevice::Capability::kUHSDDR50);
     
     return s4b && uhs;
 }
@@ -328,7 +328,7 @@ bool IOSDHostDriver::hostSupportsUltraHighSpeedMode()
 ///
 bool IOSDHostDriver::hostSupports4BitBusWidth()
 {
-    return this->host->getCaps1().contains(Capability::k4BitData);
+    return this->host->getCapabilities().contains(IOSDHostDevice::Capability::k4BitData);
 }
 
 ///
@@ -414,8 +414,7 @@ UInt32 IOSDHostDriver::selectMutualVoltageLevels(UInt32 ocr)
         return 0;
     }
 
-    // TODO: CHANGE THIS TO GETTER FUNC?
-    if (this->host->getCaps2().contains(MMC_CAP2_FULL_PWR_CYCLE))
+    if (this->host->getCapabilities().contains(IOSDHostDevice::Capability::kFullPowerCycle))
     {
         pinfo("The host device supports a full power cycle.");
         
