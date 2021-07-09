@@ -699,6 +699,17 @@ public:
     }
     
     ///
+    /// CMD8: Send the interface condition and the voltage supply information based on the given operation condition value
+    ///
+    /// @param ocr The operation condition register value
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    ///
+    inline IOReturn CMD8(UInt32 ocr)
+    {
+        return this->CMD8(static_cast<UInt8>((ocr & 0xFF8000) != 0));
+    }
+    
+    ///
     /// CMD9: Ask the card specified by the given relative address to send the card specific data
     ///
     /// @param rca The card relative address

@@ -50,8 +50,7 @@ bool IOSDCard::init(IOSDHostDriver* driver, UInt32 ocr)
     pinfo("The card is now in the idle state.");
     
     // Check whether the card supports SD 2.0
-    // TODO: Add a CMD8 variant that takes the OCR as its argument
-    if (this->driver->CMD8((ocr & 0xFF8000) != 0) == kIOReturnSuccess)
+    if (this->driver->CMD8(ocr) == kIOReturnSuccess)
     {
         pinfo("Found a SD 2.0 compliant card.");
         

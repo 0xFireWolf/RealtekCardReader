@@ -1798,7 +1798,7 @@ bool IOSDHostDriver::attachCard(UInt32 frequency)
     pinfo("The card is now in the idle state.");
 
     // Check whether a SD card is inserted
-    if (this->CMD8((ocr & 0xFF8000) != 0) != kIOReturnSuccess)
+    if (this->CMD8(ocr) != kIOReturnSuccess)
     {
         perr("The card does not respond to the CMD8.");
     }
