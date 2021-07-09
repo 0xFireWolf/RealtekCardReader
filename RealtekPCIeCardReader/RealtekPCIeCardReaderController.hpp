@@ -1386,6 +1386,41 @@ public:
     void enterWorkerState();
     
     //
+    // MARK: - Power Management
+    //
+    
+    ///
+    /// Power down the controller forcedly
+    ///
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `rtsx_base_force_power_down()` defined in `rtsx_psr.c` and `*_force_power_down()` defined in each controller file.
+    ///
+    virtual IOReturn forcePowerDown() = 0;
+    
+    ///
+    /// Prepare to enter the sleep state
+    ///
+    /// @note Port: This function replaces `rtsx_pci_suspend()` defined in `rtsx_psr.c`.
+    ///
+    void prepareToSleep();
+    
+    ///
+    /// Prepare to wake up from sleep
+    ///
+    /// @note Port: This function replaces `rtsx_pci_resume()` defined in `rtsx_psr.c`.
+    ///
+    void prepareToWakeUp();
+    
+    ///
+    /// Adjust the power state in response to system-wide power events
+    ///
+    /// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to
+    /// @param whatDevice A pointer to the power management object which registered to manage power for this device
+    /// @return `kIOPMAckImplied` always.
+    ///
+    IOReturn setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice) override;
+    
+    //
     // MARK: - Hardware Interrupt Management
     //
     
@@ -1604,6 +1639,13 @@ public:
     //
     
     ///
+    /// Setup the power management
+    ///
+    /// @return `true` on success, `false` otherwise.
+    ///
+    bool setupPowerManagement();
+    
+    ///
     /// [Helper] Get the 8-bit base address register to map the device memory
     ///
     /// @return The BAR value 0x10 for all controllers other than RTS525A.
@@ -1666,6 +1708,11 @@ public:
     //
     // MARK: - Teardown Routines
     //
+    
+    ///
+    /// Tear down the power management
+    ///
+    void tearDownPowerManagement();
     
     ///
     /// Unmap the device memory

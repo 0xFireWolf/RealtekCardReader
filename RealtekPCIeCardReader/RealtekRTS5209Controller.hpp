@@ -109,6 +109,18 @@ class RealtekRTS5209Controller: public RealtekPCIeCardReaderController
     IOReturn switchOutputVoltage(OutputVoltage outputVoltage) override;
     
     //
+    // MARK: - Power Management
+    //
+    
+    ///
+    /// Power down the controller forcedly
+    ///
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `rtsx_base_force_power_down()` defined in `rtsx_psr.c` and `*_force_power_down()` defined in each controller file.
+    ///
+    IOReturn forcePowerDown() override;
+    
+    //
     // MARK: - Hardware Initialization and Configuration
     //
     

@@ -192,6 +192,23 @@ IOReturn RealtekRTS5229Controller::switchOutputVoltage(OutputVoltage outputVolta
 }
 
 //
+// MARK: - Power Management
+//
+
+///
+/// Power down the controller forcedly
+///
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `rtsx_base_force_power_down()` defined in `rtsx_psr.c` and `*_force_power_down()` defined in each controller file.
+///
+IOReturn RealtekRTS5229Controller::forcePowerDown()
+{
+    using namespace RTSX::Chip;
+    
+    return this->writeChipRegister(rFPDCTL, FPDCTL::kAllPowerMask, FPDCTL::kAllPowerDownValue);
+}
+
+//
 // MARK: - Hardware Initialization and Configuration
 //
 

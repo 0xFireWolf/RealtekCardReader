@@ -113,6 +113,37 @@ IOReturn RealtekRTS522AController::setL1OffSubConfigD0(bool active)
 }
 
 //
+// MARK: - Power Management
+//
+
+///
+/// Power down the controller forcedly
+///
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `rtsx_base_force_power_down()` defined in `rtsx_psr.c` and `*_force_power_down()` defined in each controller file.
+///
+IOReturn RealtekRTS522AController::forcePowerDown()
+{
+    using namespace RTSX::Chip;
+    
+    const ChipRegValuePair pairs[] =
+    {
+        // Set the relink time to 0
+        { rALCFG + 1, 0xFF, 0 },
+        { rALCFG + 2, 0xFF, 0 },
+        { rALCFG + 3, ALCFG::kRelinkTimeMask, 0 },
+        
+        // Disable the D3 delink mode
+        { PM::rCTRL3_52XA, PM::CTRL3::kEnableD3DelinkMode, PM::CTRL3::kEnableD3DelinkMode },
+        
+        // Power down the SSC and OCP
+        { rFPDCTL, FPDCTL::kAllPowerMask, FPDCTL::kAllPowerDownValue },
+    };
+    
+    return this->writeChipRegisters(SimpleRegValuePairs(pairs));
+}
+
+//
 // MARK: - Hardware Initialization and Configuration
 //
 

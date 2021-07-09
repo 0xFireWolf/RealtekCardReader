@@ -19,10 +19,10 @@ It uses the Linux driver as a reference implementation but is written from scrat
 - SD Express cards are not supported
 
 ## Current Status
-- **Last Updated:** Jun 24, 2021
+- **Last Updated:** Jul 8, 2021
 - **Reference:** [Linux Kernel 5.11](https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.11.tar.xz)
-- **Driver Status:** Pre-1.0 Beta
-    - Power management is not implemented.
+- **Driver Status:** Pre-1.0 Beta (v0.9.4)
+    - Basic power management is now available.
     - I/O performance and the overall driver stability are of the most concern at this moment.
 
 ## Supported Systems

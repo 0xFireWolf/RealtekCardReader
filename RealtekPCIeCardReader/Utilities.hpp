@@ -11,6 +11,8 @@
 #include <IOKit/pci/IOPCIDevice.h>
 #include "Debug.hpp"
 
+static constexpr IOPMPowerFlags kIOPMPowerOff = 0;
+
 /// Get the number of elements in an array
 template <typename T, size_t N>
 constexpr size_t arrsize(const T (&array)[N])

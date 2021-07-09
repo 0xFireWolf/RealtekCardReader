@@ -2324,8 +2324,103 @@ IOReturn IOSDHostDriver::getCardSerialNumber(UInt32& serial)
 }
 
 //
+// MARK: - Power Management
+//
+
+///
+/// Prepare to enter the sleep state
+///
+void IOSDHostDriver::prepareToSleep()
+{
+    pinfo("Prepare to sleep...");
+    
+    // Disable the queue event source so that the processor work loop will stop processing requests
+    this->queueEventSource->disable();
+    
+    // Detach the card
+    this->detachCard();
+    
+    // All done
+    pinfo("The host driver is ready to sleep.");
+}
+
+///
+/// Prepare to wake up from sleep
+///
+void IOSDHostDriver::prepareToWakeUp()
+{
+    pinfo("Prepare to wake up...");
+    
+    bool present = false;
+    
+    this->isCardPresent(present);
+    
+    if (present)
+    {
+        // Attach the card
+        pinfo("The card is present when the computer wakes up.");
+        
+        this->queueEventSource->enable();
+        
+        this->attachCard();
+    }
+    else
+    {
+        pinfo("The card is not present when the computer wakes up.");
+    }
+    
+    // All done
+    pinfo("The host driver is ready.");
+}
+
+///
+/// Adjust the power state in response to system-wide power events
+///
+/// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to
+/// @param whatDevice A pointer to the power management object which registered to manage power for this device
+/// @return `kIOPMAckImplied` always.
+///
+IOReturn IOSDHostDriver::setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice)
+{
+    pinfo("Setting the power state from %u to %lu.", this->getPowerState(), powerStateOrdinal);
+    
+    if (powerStateOrdinal == 0)
+    {
+        this->prepareToSleep();
+    }
+    else
+    {
+        this->prepareToWakeUp();
+    }
+    
+    pinfo("The power state has been set to %lu.", powerStateOrdinal);
+    
+    return kIOPMAckImplied;
+}
+
+//
 // MARK: - Startup Routines
 //
+
+///
+/// Setup the power management
+///
+/// @return `true` on success, `false` otherwise.
+///
+bool IOSDHostDriver::setupPowerManagement()
+{
+    static IOPMPowerState kPowerStates[] =
+    {
+        { kIOPMPowerStateVersion1, kIOPMPowerOff, kIOPMPowerOff, kIOPMPowerOff, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { kIOPMPowerStateVersion1, kIOPMPowerOn | kIOPMDeviceUsable | kIOPMInitialDeviceState, kIOPMPowerOn, kIOPMPowerOn, 0, 0, 0, 0, 0, 0, 0, 0 },
+    };
+    
+    this->PMinit();
+    
+    this->host->joinPMtree(this);
+    
+    return this->registerPowerDriver(this, kPowerStates, arrsize(kPowerStates)) == kIOPMNoErr;
+}
 
 ///
 /// Setup the array of preallocated DMA commands
@@ -2637,6 +2732,14 @@ bool IOSDHostDriver::setupCardEventSources()
 //
 
 ///
+/// Tear down the power management
+///
+void IOSDHostDriver::tearDownPowerManagement()
+{
+    this->PMstop();
+}
+
+///
 /// Tear down the array of preallocated DMA commands
 ///
 void IOSDHostDriver::tearDownPreallocatedDMACommands()
@@ -2785,6 +2888,12 @@ bool IOSDHostDriver::start(IOService* provider)
     
     this->host->retain();
     
+    // Setup the power managememt
+    if (!this->setupPowerManagement())
+    {
+        goto error;
+    }
+    
     // Preallocate DMA commands
     if (!this->setupPreallocatedDMACommands())
     {
@@ -2864,6 +2973,8 @@ error:
     
     this->tearDownPreallocatedDMACommands();
     
+    this->tearDownPowerManagement();
+    
     OSSafeReleaseNULL(this->host);
     
     pinfo("===================================");
@@ -2897,6 +3008,8 @@ void IOSDHostDriver::stop(IOService* provider)
     this->tearDownPreallocatedBlockRequests();
     
     this->tearDownPreallocatedDMACommands();
+    
+    this->tearDownPowerManagement();
     
     OSSafeReleaseNULL(this->host);
     

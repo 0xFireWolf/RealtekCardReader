@@ -1062,8 +1062,38 @@ public:
     IOReturn getCardSerialNumber(UInt32& serial);
     
     //
+    // MARK: - Power Management
+    //
+    
+    ///
+    /// Prepare to enter the sleep state
+    ///
+    void prepareToSleep();
+    
+    ///
+    /// Prepare to wake up from sleep
+    ///
+    void prepareToWakeUp();
+    
+    ///
+    /// Adjust the power state in response to system-wide power events
+    ///
+    /// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to
+    /// @param whatDevice A pointer to the power management object which registered to manage power for this device
+    /// @return `kIOPMAckImplied` always.
+    ///
+    IOReturn setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice) override;
+    
+    //
     // MARK: - Startup Routines
     //
+    
+    ///
+    /// Setup the power management
+    ///
+    /// @return `true` on success, `false` otherwise.
+    ///
+    bool setupPowerManagement();
     
     ///
     /// Setup the array of preallocated DMA commands
@@ -1140,6 +1170,11 @@ public:
     //
     // MARK: - Teardown Routines
     //
+    
+    ///
+    /// Tear down the power management
+    ///
+    void tearDownPowerManagement();
     
     ///
     /// Tear down the array of preallocated DMA commands

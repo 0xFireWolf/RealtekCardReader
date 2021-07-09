@@ -1478,6 +1478,12 @@ namespace RTSX::Chip::L1SUB
 
 namespace RTSX::Chip
 {
+    RTSXDeclareChipRegister(rALCFG, 0xFF00);
+    namespace ALCFG
+    {
+        RTSXDeclareChipRegisterValue(kRelinkTimeMask, 0x01);
+    }
+    
     RTSXDeclareChipRegister(rPETXCFG, 0xFF03);
     namespace PETXCFT
     {
@@ -1516,7 +1522,7 @@ namespace RTSX::Chip::PM
         RTSXDeclareChipRegisterValue(kResetPinWake, 0x02);
         RTSXDeclareChipRegisterValue(kEnablePmWake, 0x01);
     }
-    RTSXDeclareChipRegister(rCTRL3_52XA, 0xFF7E); // RTS524A, RTS525A
+    RTSXDeclareChipRegister(rCTRL3_52XA, 0xFF7E); // RTS524A, RTS525A, RTS522A
     
     RTSXDeclareChipRegister(rCTRL4, 0xFF47);
 }

@@ -80,6 +80,18 @@ class RealtekRTS525AController: public RealtekRTS5249SeriesController
     IOReturn setL1OffSubConfigD0(bool active) override;
     
     //
+    // MARK: - Power Management
+    //
+    
+    ///
+    /// Power down the controller forcedly
+    ///
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `rtsx_base_force_power_down()` defined in `rtsx_psr.c` and `*_force_power_down()` defined in each controller file.
+    ///
+    IOReturn forcePowerDown() override;
+    
+    //
     // MARK: - Hardware Initialization and Configuration
     //
     
@@ -97,10 +109,6 @@ class RealtekRTS525AController: public RealtekRTS5249SeriesController
     /// @note Port: This function replaces `*_init_params()` defined in each controller file.
     ///
     IOReturn initParameters() override;
-    
-    //
-    // MARK: - Hardware Initialization and Configuration
-    //
     
     ///
     /// [Helper] Get a sequence of registers needed to initialize the hardware

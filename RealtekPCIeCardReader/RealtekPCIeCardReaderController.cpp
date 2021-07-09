@@ -2167,6 +2167,89 @@ void RealtekPCIeCardReaderController::enterWorkerState()
 }
 
 //
+// MARK: - Power Management
+//
+
+///
+/// Prepare to enter the sleep state
+///
+/// @note Port: This function replaces `rtsx_pci_suspend()` defined in `rtsx_psr.c`.
+///
+void RealtekPCIeCardReaderController::prepareToSleep()
+{
+    pinfo("Prepare to sleep...");
+    
+    // Turn off the LED
+    psoftassert(this->turnOffLED() == kIOReturnSuccess, "Failed to turn off the LED.");
+    
+    // Disable all interrupts
+    this->writeRegister32(RTSX::MMIO::rBIER, 0);
+    
+    // Set the host sleep state
+    using namespace RTSX::Chip;
+    
+    const ChipRegValuePair pairs[] =
+    {
+        { rPETXCFG, 0x08, 0x08 },
+        { rHSSTA, HSSTA::kMask, HSSTA::kHostEnterS3 },
+    };
+    
+    psoftassert(this->writeChipRegisters(SimpleRegValuePairs(pairs)) == kIOReturnSuccess, "Failed to set the host sleep state.");
+    
+    // Power down the controller
+    psoftassert(this->forcePowerDown() == kIOReturnSuccess, "Failed to power down the controller.");
+    
+    // All done
+    pinfo("The hardware is ready to sleep.");
+}
+
+///
+/// Prepare to wake up from sleep
+///
+/// @note Port: This function replaces `rtsx_pci_resume()` defined in `rtsx_psr.c`.
+///
+void RealtekPCIeCardReaderController::prepareToWakeUp()
+{
+    pinfo("Prepare to wake up...");
+    
+    // Set the host sleep state
+    using namespace RTSX::Chip;
+    
+    psoftassert(this->writeChipRegister(rHSSTA, HSSTA::kMask, HSSTA::kHostWakeup) == kIOReturnSuccess, "Failed to set the host sleep state.");
+    
+    // Initialize the hardware
+    psoftassert(this->initHardwareCommon() == kIOReturnSuccess, "Failed to initialize the hardware.");
+    
+    // All done
+    pinfo("The hardware is ready.");
+}
+
+///
+/// Adjust the power state in response to system-wide power events
+///
+/// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to
+/// @param whatDevice A pointer to the power management object which registered to manage power for this device
+/// @return `kIOPMAckImplied` always.
+///
+IOReturn RealtekPCIeCardReaderController::setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice)
+{
+    pinfo("Setting the power state from %u to %lu.", this->getPowerState(), powerStateOrdinal);
+    
+    if (powerStateOrdinal == 0)
+    {
+        this->prepareToSleep();
+    }
+    else
+    {
+        this->prepareToWakeUp();
+    }
+    
+    pinfo("The power state has been set to %lu.", powerStateOrdinal);
+    
+    return kIOPMAckImplied;
+}
+
+//
 // MARK: - Hardware Interrupt Management
 //
 
@@ -2624,6 +2707,26 @@ IOReturn RealtekPCIeCardReaderController::initHardwareCommon()
 //
 
 ///
+/// Setup the power management
+///
+/// @return `true` on success, `false` otherwise.
+///
+bool RealtekPCIeCardReaderController::setupPowerManagement()
+{
+    static IOPMPowerState kPowerStates[] =
+    {
+        { kIOPMPowerStateVersion1, kIOPMPowerOff, kIOPMPowerOff, kIOPMPowerOff, 0, 0, 0, 0, 0, 0, 0, 0 },
+        { kIOPMPowerStateVersion1, kIOPMPowerOn | kIOPMDeviceUsable | kIOPMInitialDeviceState, kIOPMPowerOn, kIOPMPowerOn, 0, 0, 0, 0, 0, 0, 0, 0 },
+    };
+    
+    this->PMinit();
+    
+    this->device->joinPMtree(this);
+    
+    return this->registerPowerDriver(this, kPowerStates, arrsize(kPowerStates)) == kIOPMNoErr;
+}
+
+///
 /// Map the device memory
 ///
 /// @return `true` on success, `false` otherwise.
@@ -2728,6 +2831,8 @@ int RealtekPCIeCardReaderController::probeMSIIndex()
         index += 1;
     }
     
+    pwarning("Failed to probe the MSI index. Will use the default value 0 instead.");
+    
     return 0;
 }
 
@@ -2740,8 +2845,6 @@ bool RealtekPCIeCardReaderController::setupInterrupts()
 {
     // Guard: Probe the MSI interrupt index
     int index = this->probeMSIIndex();
-    
-    psoftassert(index != 0, "Failed to probe the MSI index. Will use the default value 0 instead.");
     
     pinfo("The MSI index = %d. Will set up the interrupt event source.", index);
     
@@ -2990,6 +3093,14 @@ bool RealtekPCIeCardReaderController::createCardSlot()
 //
 
 ///
+/// Tear down the power management
+///
+void RealtekPCIeCardReaderController::tearDownPowerManagement()
+{
+    this->PMstop();
+}
+
+///
 /// Tear down the interrupt event source
 ///
 void RealtekPCIeCardReaderController::tearDownInterrupts()
@@ -3129,6 +3240,14 @@ bool RealtekPCIeCardReaderController::start(IOService* provider)
     
     this->device->setMemoryEnable(true);
     
+    // Setup the power management
+    if (!this->setupPowerManagement())
+    {
+        perr("Failed to setup the power management.");
+        
+        goto error1;
+    }
+    
     // Set up the memory map
     if (!this->mapDeviceMemory())
     {
@@ -3221,6 +3340,8 @@ error2:
     this->unmapDeviceMemory();
     
 error1:
+    this->tearDownPowerManagement();
+    
     this->device->setMemoryEnable(false);
     
     this->device->setBusMasterEnable(false);
@@ -3241,6 +3362,8 @@ error1:
 ///
 void RealtekPCIeCardReaderController::stop(IOService* provider)
 {
+    this->tearDownPowerManagement();
+    
     this->destroyCardSlot();
     
     this->tearDownHostBuffer();
