@@ -201,16 +201,7 @@ public:
     /// @note This function is invoked by `RealtekSDXCSlot::CMD*()` and `RealtekSDXCSlot::ACMD*()` that involve a DMA transfer.
     ///
     IOReturn runSDCommandWithOutboundDMATransfer(RealtekSDCommandWithBlockDataTransferRequest& request);
-    
-    ///
-    /// Preprocess the given SD command request
-    ///
-    /// @param request A SD command request
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces `sdmmc_pre_req()` defined in `rtsx_pci_sdmmc.c`.
-    ///
-    IOReturn preprocessRequest(RealtekSDRequest& request) override;
-    
+        
     ///
     /// Process the given SD command request
     ///
@@ -219,15 +210,6 @@ public:
     /// @note Port: This function replaces `sdmmc_request()` defined in `rtsx_pci_sdmmc.c`.
     ///
     IOReturn processRequest(RealtekSDRequest& request) override;
-    
-    ///
-    /// Postprocess the given SD command request
-    ///
-    /// @param request A SD command request
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces `sdmmc_post_req()` defined in `rtsx_pci_sdmmc.c`.
-    ///
-    IOReturn postprocessRequest(RealtekSDRequest& request) override;
     
     //
     // MARK: - SD Bus Configurator

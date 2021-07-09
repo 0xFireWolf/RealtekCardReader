@@ -15,6 +15,34 @@
 OSDefineMetaClassAndAbstractStructors(IOSDHostDevice, IOService);
 
 //
+// MARK: - SD Request Processors
+//
+
+///
+/// Preprocess the given SD command request
+///
+/// @param request A SD command request
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sdmmc_pre_req()` defined in `rtsx_pci_sdmmc.c`.
+///
+IOReturn IOSDHostDevice::preprocessRequest(RealtekSDRequest& request)
+{
+    return kIOReturnSuccess;
+}
+
+///
+/// Postprocess the given SD command request
+///
+/// @param request A SD command request
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sdmmc_post_req()` defined in `rtsx_pci_sdmmc.c`.
+///
+IOReturn IOSDHostDevice::postprocessRequest(RealtekSDRequest& request)
+{
+    return kIOReturnSuccess;
+}
+
+//
 // MARK: - Card Events Callbacks
 //
 

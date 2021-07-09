@@ -1053,19 +1053,6 @@ IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDMATransfer(RealtekSDCommandWi
 }
 
 ///
-/// Preprocess the given SD command request
-///
-/// @param request A SD command request
-/// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note Port: This function replaces `sdmmc_pre_req()` defined in `rtsx_pci_sdmmc.c`.
-///
-IOReturn RealtekSDXCSlot::preprocessRequest(RealtekSDRequest& request)
-{
-    // TODO: IMP THIS
-    return 0;
-}
-
-///
 /// Process the given SD command request
 ///
 /// @param request A SD command request
@@ -1138,19 +1125,6 @@ IOReturn RealtekSDXCSlot::processRequest(RealtekSDRequest& request)
     pinfo("The request has been serviced.");
     
     return kIOReturnSuccess;
-}
-
-///
-/// Postprocess the given SD command request
-///
-/// @param request A SD command request
-/// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note Port: This function replaces `sdmmc_post_req()` defined in `rtsx_pci_sdmmc.c`.
-///
-IOReturn RealtekSDXCSlot::postprocessRequest(RealtekSDRequest& request)
-{
-    // TODO: IMP THIS
-    return 0;
 }
 
 //

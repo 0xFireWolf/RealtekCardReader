@@ -172,7 +172,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `sdmmc_pre_req()` defined in `rtsx_pci_sdmmc.c`.
     ///
-    virtual IOReturn preprocessRequest(RealtekSDRequest& request) = 0;
+    virtual IOReturn preprocessRequest(RealtekSDRequest& request);
     
     ///
     /// Process the given SD command request
@@ -190,7 +190,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `sdmmc_post_req()` defined in `rtsx_pci_sdmmc.c`.
     ///
-    virtual IOReturn postprocessRequest(RealtekSDRequest& request) = 0;
+    virtual IOReturn postprocessRequest(RealtekSDRequest& request);
     
     //
     // MARK: - SD Bus Configurator
