@@ -935,7 +935,6 @@ void IOSDHostDriver::releaseDMABuffer(IODMACommand* command)
 ///
 IOReturn IOSDHostDriver::waitForRequest(RealtekSDRequest& request)
 {
-    // TODO: CHECK THIS & IMP THIS
     return this->host->processRequest(request);
 }
 

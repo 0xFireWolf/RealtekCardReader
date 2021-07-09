@@ -163,7 +163,10 @@ bool IOSDCard::init(IOSDHostDriver* driver, UInt32 ocr)
     
     pinfo("The card is now in the transfer state.");
     
-    // TODO: Setup Card (If not reinit)
+    // ==================================
+    // | BEGIN PORTED mmc_sd_setup_card |
+    // ==================================
+    
     // Fetch and parse the SD configuration data from the card
     pinfo("Fetching the card configuration data...");
     
@@ -202,31 +205,24 @@ bool IOSDCard::init(IOSDHostDriver* driver, UInt32 ocr)
     
     pinfo("The switch capabilities have been fetched.");
     
-    // TODO: CHECK ALREADY 1.8V
-    /*
-         * If the card has not been power cycled, it may still be using 1.8V
-         * signaling. Detect that situation and try to initialize a UHS-I (1.8V)
-         * transfer mode.
-         */
-    
+    // The Linux driver checks whether the card is already running under 1.8V.
+    // Our driver detaches and powers off the card when the machine goes to sleep.
+    // When the machines wakes up, the driver powers on the card and initializes it.
+    // So the card is always power cycled, so it should never be running under 1.8V at this moment.
+    // Please submit an issue if this is not true when you are testing this driver.
     BitOptions currentBusMode = this->switchCaps.sd3BusMode;
     
-    if (currentBusMode.contains(SwitchCaps::BusMode::kModeUHSSDR50) ||
-        currentBusMode.contains(SwitchCaps::BusMode::kModeUHSSDR104) ||
-        currentBusMode.contains(SwitchCaps::BusMode::kModeUHSDDR50))
+    if (currentBusMode.containsOneOf(SwitchCaps::BusMode::kModeUHSSDR50, SwitchCaps::BusMode::kModeUHSSDR104, SwitchCaps::BusMode::kModeUHSDDR50) &&
+        this->driver->getHostDevice()->getHostBusConfig().signalVoltage != IOSDBusConfig::SignalVoltage::k1d8V)
     {
-        if (this->driver->getHostDevice()->getHostBusConfig().signalVoltage != IOSDBusConfig::SignalVoltage::k1d8V)
-        {
-            pinfo("The card is already operating at 1.8V but the host does not.");
-            
-            pinfo("Abort the initialization. Not implemented.");
-            
-            return false;
-        }
+        pinfo("The card is already operating at 1.8V but the host does not.");
+        
+        pinfo("Abort the initialization. Should never happen. Not implemented.");
+        
+        return false;
     }
     
-    
-    // TODO: Consider fallback mechanism
+    // TODO: Consider fallback mechanism?
 
     // Guard: Check whether the card supports the high speed mode
     if (this->scr.spec < SCR::Spec::kVersion1d1x)
