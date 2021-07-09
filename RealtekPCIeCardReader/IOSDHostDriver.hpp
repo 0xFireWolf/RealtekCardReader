@@ -9,6 +9,7 @@
 #define IOSDHostDriver_hpp
 
 #include <IOKit/IOCommandPool.h>
+#include <IOKit/IOCommandGate.h>
 #include "IOSDHostDevice.hpp"
 #include "IOSDBusConfig.hpp"
 #include "IOSDBlockRequest.hpp"
@@ -74,6 +75,9 @@ class IOSDHostDriver: public IOService
     
     /// A dedicated workloop that initializes the card and processes the block request
     IOWorkLoop* processorWorkLoop;
+    
+    /// A command gate to run actions with respect to the processor workloop
+    IOCommandGate* processorCommandGate;
     
     ///
     /// An event source to signal the processor workloop to process a pending block request
@@ -961,11 +965,6 @@ public:
     //
     // MARK: - Query Card Information and Status
     //
-    
-    // TODO: Card is allocated, attached, detached, deallocated by the processor workloop.
-    // TODO: Should also query card information with respect to the processor workloop.
-    // TODO: It is possible that the card is removed by the user when the storage subsystem is querying the card information.
-    // TODO: USE PROCESS WORKLOOP IOCOMMANDGATE RUNACTION TO PROTECT THE FOLLOWING QUERY FUNCTIONS
     
     ///
     /// Check whether the card has write protection enabled
