@@ -1218,9 +1218,15 @@ IOReturn RealtekPCIeCardReaderController::performDMATransfer(IODMACommand* comma
     {
         perr("Failed to perform the DMA transfer. Error = 0x%x.", retVal);
         
-        // TODO: INCREMENT DMA ERROR COUNT
         psoftassert(this->stopTransfer() == kIOReturnSuccess,
                     "Failed to terminate the current transfer session.");
+        
+        if (this->dmaErrorCounter < kMaxDMATransferFailures)
+        {
+            this->dmaErrorCounter += 1;
+        }
+        
+        pinfo("DMA Error Counter = %u.", this->dmaErrorCounter);
         
         return retVal;
     }
@@ -2343,6 +2349,8 @@ void RealtekPCIeCardReaderController::interruptHandlerGated(IOInterruptEventSour
         {
             this->onSDCardRemovedGated();
         }
+        
+        this->dmaErrorCounter = 0;
     }
 }
 
@@ -3305,6 +3313,10 @@ bool RealtekPCIeCardReaderController::start(IOService* provider)
     }
     
     //this->registerService();
+
+    this->currentSSCClock = 0;
+    
+    this->dmaErrorCounter = 0;
     
     this->isIdle = true;
     

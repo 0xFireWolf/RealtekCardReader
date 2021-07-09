@@ -61,6 +61,32 @@ IOReturn RealtekRTS5227Controller::switchOutputVoltage(OutputVoltage outputVolta
 }
 
 //
+// MARK: - Clock Configurations
+//
+
+///
+/// Adjust the card clock if DMA transfer errors occurred
+///
+/// @param cardClock The current card clock
+/// @return The adjusted card clock.
+/// @note Port: This function replaces the code block that reduces the card clock in `rtsx_pci_switch_clock()` defined in `rtsx_psr.c`.
+///             By default, this function does not adjust the card clock and return the given clock.
+///             RTS5227 controller must override this function.
+///
+UInt32 RealtekRTS5227Controller::getAdjustedCardClockOnDMAError(UInt32 cardClock)
+{
+    if (cardClock == MHz2Hz(208) && this->dmaErrorCounter != 0)
+    {
+        // Reduce the card clock by 20 MHz each time a DMA transfer fails
+        return MHz2Hz(208) - this->dmaErrorCounter * MHz2Hz(20);
+    }
+    else
+    {
+        return cardClock;
+    }
+}
+
+//
 // MARK: - Power Management
 //
 

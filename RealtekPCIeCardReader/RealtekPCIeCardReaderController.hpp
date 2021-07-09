@@ -402,6 +402,9 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     /// The maximum number of DMA segments supported by the card reader
     static constexpr IOItemCount kMaxNumSegments = 256;
     
+    /// The maximum number of DMA transfer failures until the host should reduce the card clock
+    static constexpr IOItemCount kMaxDMATransferFailures = 8;
+    
     ///
     /// A descriptor that allocates the host command and data buffer
     ///
@@ -462,6 +465,9 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     
     /// The current SSC clock in MHz
     UInt32 currentSSCClock;
+    
+    /// The number of DMA errors
+    UInt32 dmaErrorCounter;
     
     /// `True` if the host is idle
     bool isIdle;
