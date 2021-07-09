@@ -126,6 +126,9 @@ public:
         /// Do not power up the bus before the scan
         /// @ref MMC_CAP2_NO_PRESCAN_POWERUP
         kNoPrescanPowerUp = 1ULL << (32 + 14),
+        
+        /// Optimize the function to set the chip select mode
+        kOptimizeChipSelect = 1ULL << (32 + 31),
     };
     
     //

@@ -2396,7 +2396,8 @@ bool RealtekSDXCSlot::init(OSDictionary* dictionary)
                          Capability::kUHSSDR12          |
                          Capability::kUHSSDR25          |
                          Capability::kNoPrescanPowerUp  |
-                         Capability::kFullPowerCycle;
+                         Capability::kFullPowerCycle    |
+                         Capability::kOptimizeChipSelect;
     
     this->dmaLimits = { 256, 65536, 524288 };
     

@@ -492,16 +492,18 @@ IOReturn IOSDHostDriver::setInitialBusConfig()
 ///
 IOReturn IOSDHostDriver::setChipSelect(IOSDBusConfig::ChipSelect chipSelect)
 {
-    // TODO: Optimize this: Realtek's hardware seems to put the chip select to High by default
-//    IOSDBusConfig& config = this->host->getHostBusConfig();
-//
-//    config.chipSelect = chipSelect;
-//
-//    return this->setBusConfig();
+    if (this->host->getCapabilities().contains(IOSDHostDevice::Capability::kOptimizeChipSelect))
+    {
+        pinfo("Optimization: The host device ignores the chip select mode.");
+        
+        return kIOReturnSuccess;
+    }
     
-    pinfo("Optimization: Realtek does not support the chip select.");
-  
-    return kIOReturnSuccess;
+    IOSDBusConfig& config = this->host->getHostBusConfig();
+
+    config.chipSelect = chipSelect;
+
+    return this->setBusConfig();
 }
 
 ///
