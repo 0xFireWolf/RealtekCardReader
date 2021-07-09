@@ -4,6 +4,7 @@
 - Fixed an issue that driving tables are not set for RTS5227 and RTS522A.  
 - Disabled the bonus feature temporarily: Your card reader will not be listed in System Information.  
 - Implemented the basic power management.
+- Support macOS Mojave.
 
 #### v0.9.3 Beta
 - Added support for RTS5227 and RTS522A.

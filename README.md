@@ -28,6 +28,7 @@ It uses the Linux driver as a reference implementation but is written from scrat
 ## Supported Systems
 - macOS Big Sur  
 - macOS Catalina  
+- macOS Mojave
 
 #### Notes:
 - Other systems are not tested yet.

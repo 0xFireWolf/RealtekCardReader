@@ -20,6 +20,30 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>IOKitPersonalities</key>
 	<dict>
+		<key>AppleSDXC</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.apple.driver.AppleSDXC</string>
+			<key>IOClass</key>
+			<string>AppleSDXCNull</string>
+			<key>IONameMatch</key>
+			<array>
+				<string>pci14e4,16bc</string>
+			</array>
+			<key>IOPCIPauseCompatible</key>
+			<true/>
+			<key>IOPCITunnelCompatible</key>
+			<true/>
+			<key>IOProviderClass</key>
+			<string>IOPCIDevice</string>
+			<key>Protocol Characteristics</key>
+			<dict>
+				<key>Physical Interconnect</key>
+				<string>Secure Digital</string>
+				<key>Physical Interconnect Location</key>
+				<string>Internal</string>
+			</dict>
+		</dict>
 		<key>AppleSDXCBlockStorageDevice</key>
 		<dict>
 			<key>CFBundleIdentifier</key>
@@ -32,7 +56,7 @@
 				<string>Apple</string>
 			</dict>
 			<key>IOClass</key>
-			<string>AppleSDXCBlockStorageDevice</string>
+			<string>AppleSDXCBlockStorageDeviceNull</string>
 			<key>IOMediaIcon</key>
 			<dict>
 				<key>CFBundleIdentifier</key>

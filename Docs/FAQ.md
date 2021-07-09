@@ -51,6 +51,7 @@ As a bonus, you should be able to see your card reader recognized as a native on
 
 ### How do I dump the log produced by the driver?
 
+#### macOS Big Sur and later
 Make sure that you are using the DEBUG version of the driver and have added the boot argument `msgbuf=10485760`. (Note that there is an extra zero at the end of `1048576`.)
 
 Run the following command in your terminal.
@@ -74,6 +75,14 @@ You should be able to see something similar to the following lines.
 ```
 If the log file is empty or is incomplete, please install the [DebugEnhancer](https://github.com/acidanthera/DebugEnhancer) and try again.
 
+#### macOS Catalina and earlier
+
+Make sure that you are using the DEBUG version of the driver.  
+Run the following command in your terminal instead.  
+
+```(sh)
+log show --last boot | grep RTSX > ~/Desktop/rtsx.log
+```
 
 ### What is the difference between the DEBUG and the RELEASE version?
 
