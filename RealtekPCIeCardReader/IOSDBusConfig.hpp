@@ -9,6 +9,7 @@
 #define IOSDBusConfig_hpp
 
 #include <libkern/OSTypes.h>
+#include "Debug.hpp"
 
 ///
 /// Reflects the struct `mmc_ios` and contains I/O related bus settings
@@ -155,9 +156,20 @@ struct IOSDBusConfig
         k35_36 = 0x00800000,
     };
     
-    void print() const
+    /// Print the bus config
+    inline void print() const
     {
-        // TODO: IMP THIS
+        pinfo("Bus Config:");
+        pinfo("|- Clock = %u Hz.", this->clock);
+        pinfo("|- VDD Index = %u.", this->vdd);
+        pinfo("|- Power Delay = %u ms.", this->powerDelay);
+        pinfo("|- Bus Mode = %hhu.", this->busMode);
+        pinfo("|- Chip Select = %hhu.", this->chipSelect);
+        pinfo("|- Power Mode = %hhu.", this->powerMode);
+        pinfo("|- Bus Width = %u.", 1 << static_cast<UInt32>(this->busWidth));
+        pinfo("|- Bus Timing = %hhu.", this->busTiming);
+        pinfo("|- Signal Voltage = %hhu.", this->signalVoltage);
+        pinfo("|- Driver Type = %hhu.", this->driverType);
     }
 };
 
