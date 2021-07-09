@@ -2653,21 +2653,6 @@ IOReturn RealtekPCIeCardReaderController::initHardwareCommon()
         return retVal;
     }
     
-    // TODO: RELOCATE THIS
-#define PCI_EXP_LNKCTL        16    /* Link Control */
-#define  PCI_EXP_LNKCTL_ASPMC    0x0003    /* ASPM Control */
-#define  PCI_EXP_LNKCTL_ASPM_L0S 0x0001    /* L0s Enable */
-#define  PCI_EXP_LNKCTL_ASPM_L1  0x0002    /* L1 Enable */
-#define  PCI_EXP_LNKCTL_RCB    0x0008    /* Read Completion Boundary */
-#define  PCI_EXP_LNKCTL_LD    0x0010    /* Link Disable */
-#define  PCI_EXP_LNKCTL_RL    0x0020    /* Retrain Link */
-#define  PCI_EXP_LNKCTL_CCC    0x0040    /* Common Clock Configuration */
-#define  PCI_EXP_LNKCTL_ES    0x0080    /* Extended Synch */
-#define  PCI_EXP_LNKCTL_CLKREQ_EN 0x0100 /* Enable clkreq */
-#define  PCI_EXP_LNKCTL_HAWD    0x0200    /* Hardware Autonomous Width Disable */
-#define  PCI_EXP_LNKCTL_LBMIE    0x0400    /* Link Bandwidth Management Interrupt Enable */
-#define  PCI_EXP_LNKCTL_LABIE    0x0800    /* Link Autonomous Bandwidth Interrupt Enable */
-    
     IOPCIeDeviceConfigSet16(this->device, PCI_EXP_LNKCTL, PCI_EXP_LNKCTL_CLKREQ_EN);
     
     pinfo("Clock power management has been enabled.");

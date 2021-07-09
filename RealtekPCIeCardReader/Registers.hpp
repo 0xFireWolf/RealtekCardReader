@@ -1899,18 +1899,4 @@ namespace RTSX::PCR
 #define  PCI_L1SS_CTL1_LTR_L12_TH_VALUE    0x03ff0000  /* LTR_L1.2_THRESHOLD_Value */
 #define  PCI_L1SS_CTL1_LTR_L12_TH_SCALE    0xe0000000  /* LTR_L1.2_THRESHOLD_Scale */
 
-// PCIe Capability (From Linux)
-#define PCI_EXP_DEVCTL2        40    /* Device Control 2 */
-#define  PCI_EXP_DEVCTL2_COMP_TIMEOUT    0x000f    /* Completion Timeout Value */
-#define  PCI_EXP_DEVCTL2_COMP_TMOUT_DIS    0x0010    /* Completion Timeout Disable */
-#define  PCI_EXP_DEVCTL2_ARI        0x0020    /* Alternative Routing-ID */
-#define  PCI_EXP_DEVCTL2_ATOMIC_REQ    0x0040    /* Set Atomic requests */
-#define  PCI_EXP_DEVCTL2_ATOMIC_EGRESS_BLOCK 0x0080 /* Block atomic egress */
-#define  PCI_EXP_DEVCTL2_IDO_REQ_EN    0x0100    /* Allow IDO for requests */
-#define  PCI_EXP_DEVCTL2_IDO_CMP_EN    0x0200    /* Allow IDO for completions */
-#define  PCI_EXP_DEVCTL2_LTR_EN        0x0400    /* Enable LTR mechanism */
-#define  PCI_EXP_DEVCTL2_OBFF_MSGA_EN    0x2000    /* Enable OBFF Message type A */
-#define  PCI_EXP_DEVCTL2_OBFF_MSGB_EN    0x4000    /* Enable OBFF Message type B */
-#define  PCI_EXP_DEVCTL2_OBFF_WAKE_EN    0x6000    /* OBFF using WAKE# signaling */
-
 #endif /* Registers_hpp */
