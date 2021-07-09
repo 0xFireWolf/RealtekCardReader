@@ -347,28 +347,29 @@ UInt32 IOSDHostDriver::getHostMaxCurrent()
 
     switch (1 << config.vdd)
     {
-        case MMC_VDD_165_195:
+        case IOSDBusConfig::VDD::k165_195:
         {
             maxCurrent = maxCurrents.v18;
 
             break;
         }
 
-        case MMC_VDD_29_30:
-        case MMC_VDD_30_31:
+        case IOSDBusConfig::VDD::k29_30:
+        case IOSDBusConfig::VDD::k30_31:
         {
             maxCurrent = maxCurrents.v30;
 
             break;
         }
 
-        case MMC_VDD_32_33:
-        case MMC_VDD_33_34:
+        case IOSDBusConfig::VDD::k32_33:
+        case IOSDBusConfig::VDD::k33_34:
         {
             maxCurrent = maxCurrents.v33;
 
             break;
         }
+            
         default:
         {
             perr("Unsupported host signal voltage level.");

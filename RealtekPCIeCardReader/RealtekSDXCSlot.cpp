@@ -2385,7 +2385,9 @@ bool RealtekSDXCSlot::init(OSDictionary* dictionary)
     
     this->initialClock = 0;
     
-    this->supportedVoltageRanges = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
+    this->supportedVoltageRanges = IOSDBusConfig::VDD::k32_33 |
+                                   IOSDBusConfig::VDD::k33_34 |
+                                   IOSDBusConfig::VDD::k165_195;
     
     this->capabilities = Capability::k4BitData          |
                          Capability::kSDHighSpeed       |
