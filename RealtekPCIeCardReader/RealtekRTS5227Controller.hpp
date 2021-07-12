@@ -37,13 +37,13 @@ class RealtekRTS5227Controller: public RealtekRTS5227SeriesController
     IOReturn switchOutputVoltage(OutputVoltage outputVoltage) override;
     
     //
-    // MARK: - Clock Configurations
+    // MARK: - Card Clock Configurations
     //
     
     ///
     /// Adjust the card clock if DMA transfer errors occurred
     ///
-    /// @param cardClock The current card clock
+    /// @param cardClock The current card clock in Hz
     /// @return The adjusted card clock.
     /// @note Port: This function replaces the code block that reduces the card clock in `rtsx_pci_switch_clock()` defined in `rtsx_psr.c`.
     ///             By default, this function does not adjust the card clock and return the given clock.

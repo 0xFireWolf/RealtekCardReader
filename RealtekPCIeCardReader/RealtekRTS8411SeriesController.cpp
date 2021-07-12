@@ -291,7 +291,7 @@ bool RealtekRTS8411SeriesController::isCardPresent()
 }
 
 //
-// MARK: - Clock Configurations
+// MARK: - Card Clock Configurations
 //
 
 ///

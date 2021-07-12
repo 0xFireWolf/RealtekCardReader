@@ -123,7 +123,7 @@ class RealtekRTS8411SeriesController: public RealtekPCIeCardReaderController
     bool isCardPresent() override;
     
     //
-    // MARK: - Clock Configurations
+    // MARK: - Card Clock Configurations
     //
     
     ///
