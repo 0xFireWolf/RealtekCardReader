@@ -31,6 +31,19 @@ struct Pair
         : first(first), second(second) {}
 };
 
+template <typename T1, typename T2, typename T3>
+struct Triplet
+{
+    T1 first;
+    
+    T2 second;
+    
+    T3 third;
+    
+    Triplet(T1 first, T2 second, T3 third)
+        : first(first), second(second), third(third) {}
+};
+
 #define KPTR(ptr) \
     static_cast<UInt32>(reinterpret_cast<UInt64>(ptr) >> 32), \
     static_cast<UInt32>(reinterpret_cast<UInt64>(ptr))
@@ -65,21 +78,18 @@ bool isNotOneOf(T value, Ts... args)
     return ((value != args) && ...);
 }
 
+/// Align the given numeric value to the next `boundary` bytes boundary
+template <typename T>
+T align(T value, T boundary)
+{
+    T mask = boundary - 1;
+    
+    return (value + mask) & (~mask);
+}
+
 static inline const char* YESNO(bool value)
 {
     return value ? "Yes" : "No";
-}
-
-template <typename T>
-T MIN(T lhs, T rhs)
-{
-    return lhs < rhs ? lhs : rhs;
-}
-
-template <typename T>
-T MAX(T lhs, T rhs)
-{
-    return lhs < rhs ? rhs : lhs;
 }
 
 static inline bool OSDictionaryAddStringToDictionary(OSDictionary* dictionary, const char* key, const char* value)
