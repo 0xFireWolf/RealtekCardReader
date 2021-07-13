@@ -1202,14 +1202,15 @@ IOReturn RealtekSDXCSlot::powerOn()
     
     using namespace RTSX::Chip::CARD;
     
+    // TODO: Launch a custom transfer session
     // Select the SD card and enable the clock
     pinfo("Selecting and enabling the SD card...");
     
     const ChipRegValuePair pairs[] =
     {
-        { rSEL, SEL::kMask, SEL::kSD },
-        { rSHAREMODE, SHAREMODE::kMask, SHAREMODE::k48SD },
-        { rCLK, CLK::kEnableSD, CLK::kEnableSD }
+        { rSEL, SEL::kMask, SEL::kSD },                         // TODO: REPLACED BY selectCard()
+        { rSHAREMODE, SHAREMODE::kMask, SHAREMODE::k48SD },     // TODO: REPLACED BY configureCardShareMode()
+        { rCLK, CLK::kEnableSD, CLK::kEnableSD }                // TODO: REPLACED BY enableCardClock()
     };
     
     IOReturn retVal = this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
@@ -1254,6 +1255,8 @@ IOReturn RealtekSDXCSlot::powerOn()
     // Enable the card output
     pinfo("Enabling the card output...");
     
+    // TODO: Launch a custom transfer session
+    // TODO: REPLACED BY withCustomTransferSession and disableCardOutput()
     retVal = this->controller->writeChipRegister(rOUTPUT, OUTPUT::kSDMask, OUTPUT::kEnableSDValue);
     
     if (retVal != kIOReturnSuccess)
@@ -1284,6 +1287,8 @@ IOReturn RealtekSDXCSlot::powerOff()
     // Disable the card clock and the output
     pinfo("Disabling the card clock and output...");
     
+    // TODO: Launch a custom transfer session
+    // TODO: Replaced by disableCardClock, disableCardOutput
     const ChipRegValuePair pairs[] =
     {
         { rCLK, CLK::kEnableSD, CLK::kDisable },

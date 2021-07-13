@@ -74,6 +74,8 @@ class RealtekSDXCSlot: public AppleSDXCSlot
     /// `True` if the card clock should be doubled
     bool doubleClock;
     
+    // TODO: Bus Timing Table struct: SDR50, DDR50, SDR25, SDR12
+    
     //
     // MARK: - SD Commander
     //
@@ -85,6 +87,7 @@ private:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `sd_clear_error()` defined in `rtsx_pci_sdmmc.c`.
     ///
+    DEPRECATE("Replaced by RealtekCardReaderController::clearError().")
     IOReturn clearError();
     
     ///
@@ -189,8 +192,6 @@ public:
     /// @note This function is invoked by `RealtekSDXCSlot::CMD*()` and `RealtekSDXCSlot::ACMD*()` that involve a DMA transfer.
     ///
     IOReturn runSDCommandWithInboundDMATransfer(RealtekSDCommandWithBlockDataTransferRequest& request);
-    
-    IOReturn runSDCommandWithInboundDMATransferV2(RealtekSDCommandWithBlockDataTransferRequest& request);
     
     ///
     /// [Case 3] Send a SD command along with an outbound DMA transfer
