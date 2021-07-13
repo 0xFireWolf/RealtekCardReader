@@ -502,6 +502,8 @@ IOReturn RealtekCardReaderController::switchCardClock(UInt32 cardClock, SSCDepth
     pinfo("Switching the clock to %u Hz with SSC depth = %u, Initial Mode = %s, Double Clock = %s, Use VPClock = %s.",
           cardClock, sscDepth, YESNO(initialMode), YESNO(doubleClock), YESNO(vpclock));
     
+    this->sscClockLimits.print();
+    
     // Adjust the clock divider and the frequency if the card is at its initial stage
     UInt8 clockDivider = SD::CFG1::kClockDivider0;
     
@@ -550,9 +552,16 @@ IOReturn RealtekCardReaderController::switchCardClock(UInt32 cardClock, SSCDepth
     // Calculate the SSC clock divider N
     UInt32 n = this->sscClock2DividerN(sscClock);
     
-    if (sscClock <= 2 || n > this->hostClockLimits.sscClockNRange.upperBound)
+    if (sscClock <= this->sscClockLimits.minFrequencyMHz)
     {
-        perr("The SSC clock divider N %d derived from the clock %d MHz is invalid.", n, sscClock);
+        perr("The SSC clock frequency %u MHz is too low.", sscClock);
+        
+        return kIOReturnInvalid;
+    }
+    
+    if (n > this->sscClockLimits.rangeN.upperBound)
+    {
+        perr("The SSC clock N = %d derived from the clock %d MHz is too large.", n, sscClock);
         
         return kIOReturnInvalid;
     }
@@ -565,11 +574,11 @@ IOReturn RealtekCardReaderController::switchCardClock(UInt32 cardClock, SSCDepth
     // Ensure that the SSC clock divider N is not too small
     UInt8 divider;
     
-    for (divider = this->hostClockLimits.sscClockDividerRange.lowerBound;
-         divider < this->hostClockLimits.sscClockDividerRange.upperBound;
+    for (divider = this->sscClockLimits.rangeDivider.lowerBound;
+         divider < this->sscClockLimits.rangeDivider.upperBound;
          divider += 1)
     {
-        if (n >= this->hostClockLimits.sscClockNRange.lowerBound)
+        if (n >= this->sscClockLimits.rangeN.lowerBound)
         {
             break;
         }
@@ -770,7 +779,7 @@ bool RealtekCardReaderController::init(OSDictionary* dictionary)
     
     this->hostCommandCounter.reset();
     
-    this->hostClockLimits.reset();
+    this->sscClockLimits.reset();
     
     this->currentSSCClock = 0;
     

@@ -1573,9 +1573,11 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
     
     using namespace RTSX::UCR::Chip;
     
-    this->hostClockLimits.sscClockNRange = { kMinSSCClockN, kMaxSSCClockN };
+    this->sscClockLimits.rangeN = { kMinSSCClockN, kMaxSSCClockN };
     
-    this->hostClockLimits.sscClockDividerRange = { CLK::DIV::k1, CLK::DIV::k4 };
+    this->sscClockLimits.rangeDivider = { CLK::DIV::k1, CLK::DIV::k4 };
+    
+    this->sscClockLimits.minFrequencyMHz = kMinSSCClockFrequencyMHz;
     
     return true;
 }

@@ -83,6 +83,9 @@ class RealtekPCIeCardReaderController: public RealtekCardReaderController
     /// The amount of time in microseconds to wait until the SSC clock becomes stable
     static constexpr UInt32 kWaitStableSSCClock = 130;
     
+    /// The minimum SSC clock frequency in MHz
+    static constexpr UInt32 kMinSSCClockFrequencyMHz = 2;
+    
     //
     // MARK: - Private Data Structures
     //
@@ -1659,6 +1662,7 @@ public:
     /// Initialize the controller
     ///
     /// @return `true` on success, `false` otherwise.
+    /// @note RTS5228 and RTS5261 controllers must override this function to adjust the minimum SSC clock frequency.
     ///
     bool init(OSDictionary* dictionary = nullptr) override;
     

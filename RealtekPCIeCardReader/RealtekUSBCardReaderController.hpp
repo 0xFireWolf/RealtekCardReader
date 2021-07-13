@@ -38,6 +38,9 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// The amount of time in microseconds to wait until the SSC clock becomes stable
     static constexpr UInt32 kWaitStableSSCClock = 130;
     
+    /// The minimum SSC clock frequency in MHz
+    static constexpr UInt32 kMinSSCClockFrequencyMHz = 2;
+    
     //
     // MARK: - SD Pull Control Tables
     //

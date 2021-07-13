@@ -334,20 +334,39 @@ protected:
     };
     
     /// Host limitations on the internal SSC clock
-    struct HostClockLimits
+    struct SSCClockLimits
     {
         /// The maximum and the minimum SSC clock N values
-        ClosedRange<UInt32> sscClockNRange;
+        ClosedRange<UInt32> rangeN;
         
         /// The maximum and the minimum clock divider register values (CLK_DIV)
-        ClosedRange<UInt32> sscClockDividerRange;
+        ClosedRange<UInt32> rangeDivider;
         
-        /// Reset the limits
+        /// The minimum SSC clock in MHz
+        UInt32 minFrequencyMHz;
+        
+        /// Reserved field
+        UInt32 reserved;
+        
+        /// Reset the limits to zeros
         inline void reset()
         {
-            this->sscClockNRange = {0, 0};
+            this->rangeN = {0, 0};
             
-            this->sscClockDividerRange = {0, 0};
+            this->rangeDivider = {0, 0};
+            
+            this->minFrequencyMHz = 0;
+            
+            this->reserved = 0;
+        }
+        
+        /// Print the limits
+        inline void print()
+        {
+            pinfo("SSC Clock Limits:");
+            pinfo("|- N = [%u, %u]", this->rangeN.lowerBound, this->rangeN.upperBound);
+            pinfo("|- Divider = [%u, %u]", this->rangeDivider.lowerBound, this->rangeDivider.upperBound);
+            pinfo("|- Min Freq = %u MHz", this->minFrequencyMHz);
         }
     };
     
@@ -412,7 +431,7 @@ protected:
     /// @note The concrete controller is responsbile for initializing its content, otherwise clock switches will fail.
     /// @see `RealtekCardReaderController::switchCardClock()`.
     ///
-    HostClockLimits hostClockLimits;
+    SSCClockLimits sscClockLimits;
     
     //
     // MARK: - Host States

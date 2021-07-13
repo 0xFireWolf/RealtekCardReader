@@ -2782,6 +2782,7 @@ void RealtekPCIeCardReaderController::destroyCardSlot()
 /// Initialize the controller
 ///
 /// @return `true` on success, `false` otherwise.
+/// @note RTS5228 and RTS5261 controllers must override this function to adjust the minimum SSC clock frequency.
 ///
 bool RealtekPCIeCardReaderController::init(OSDictionary* dictionary)
 {
@@ -2794,9 +2795,11 @@ bool RealtekPCIeCardReaderController::init(OSDictionary* dictionary)
     
     using namespace RTSX::Chip;
     
-    this->hostClockLimits.sscClockNRange = { kMinSSCClockN, kMaxSSCClockN };
+    this->sscClockLimits.rangeN = { kMinSSCClockN, kMaxSSCClockN };
     
-    this->hostClockLimits.sscClockDividerRange = { CLK::DIV::k1, CLK::DIV::k8 };
+    this->sscClockLimits.rangeDivider = { CLK::DIV::k1, CLK::DIV::k8 };
+    
+    this->sscClockLimits.minFrequencyMHz = kMinSSCClockFrequencyMHz;
     
     return true;
 }
