@@ -222,16 +222,16 @@ public:
     struct BusTimingTables
     {
         /// Bus timing table for SD UHS-I SDR50 and SDR104 mode
-        SimpleRegValuePairs* sdr50;
+        const SimpleRegValuePairs* sdr50;
         
         /// Bus timing table for SD UHS-I DDR50 mode
-        SimpleRegValuePairs* ddr50;
+        const SimpleRegValuePairs* ddr50;
         
         /// Bus timing table for SD High Speed mode
-        SimpleRegValuePairs* highSpeed;
+        const SimpleRegValuePairs* highSpeed;
         
         /// Bus timing table for SD Default Speed mode
-        SimpleRegValuePairs* defaultSpeed;
+        const SimpleRegValuePairs* defaultSpeed;
         
         /// Reset all tables to null
         inline void reset()
@@ -497,9 +497,6 @@ protected:
     // MARK: - Host States
     //
     
-    /// Bus timing tables
-    BusTimingTables busTimingTables;
-    
     ///
     /// The current SSC clock in MHz
     ///
@@ -507,6 +504,9 @@ protected:
     /// @see `RealtekCardReaderController::switchCardClock()`.
     ///
     UInt32 currentSSCClock;
+    
+    /// Bus timing tables
+    BusTimingTables busTimingTables;
     
     //
     // MARK: - Query UHS-I Capabilities

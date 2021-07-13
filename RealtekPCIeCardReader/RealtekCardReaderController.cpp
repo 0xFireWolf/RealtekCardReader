@@ -802,9 +802,9 @@ bool RealtekCardReaderController::init(OSDictionary* dictionary)
     
     this->uhsCaps.reset();
     
-    this->busTimingTables.reset();
-    
     this->currentSSCClock = 0;
+    
+    this->busTimingTables.reset();
     
     return true;
 }

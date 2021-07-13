@@ -26,7 +26,7 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     using super = RealtekCardReaderController;
     
     //
-    // MARK: - Constants
+    // MARK: - Constants: SSC Clock Properties
     //
 
     /// The minimum SSC clock N value
@@ -42,7 +42,27 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     static constexpr UInt32 kMinSSCClockFrequencyMHz = 2;
     
     //
-    // MARK: - SD Pull Control Tables
+    // MARK: - Constants: Bus Timing Tables
+    //
+    
+    /// A sequence of chip registers to switch the bus speed mode to UHS-I SDR50/SDR104
+    static const ChipRegValuePair kBusTimingTablePairsSDR50[];
+    static const SimpleRegValuePairs kBusTimingTableSDR50;
+    
+    /// A sequence of chip registers to switch the bus speed mode to UHS-I DDR50
+    static const ChipRegValuePair kBusTimingTablePairsDDR50[];
+    static const SimpleRegValuePairs kBusTimingTableDDR50;
+    
+    /// A sequence of chip registers to switch the bus speed mode to High Speed
+    static const ChipRegValuePair kBusTimingTablePairsHighSpeed[];
+    static const SimpleRegValuePairs kBusTimingTableHighSpeed;
+    
+    /// A sequence of chip registers to switch the bus speed mode to Default Speed
+    static const ChipRegValuePair kBusTimingTablePairsDefaultSpeed[];
+    static const SimpleRegValuePairs kBusTimingTableDefaultSpeed;
+    
+    //
+    // MARK: - Constants: SD Pull Control Tables
     //
     
     /// A sequence of chip registers to enable SD pull control (LQFP48 Package)
@@ -62,8 +82,11 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     static const SimpleRegValuePairs kSDDisablePullControlTable_qfn24;
     
     //
-    // MARK: - Data Structures (Private)
+    // MARK: - Constants: Host Command & Data Buffer
     //
+    
+    // TODO: Introduce a namespace `HostBuffer`
+    // TODO: HostBuffer::Offset, HostBuffer::kSize, HostBuffer::kMaxNumCommands
     
     /// Special host buffer offset
     enum Offset: IOByteCount
@@ -127,6 +150,16 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
         ///
         kSeqRegsVal = 12,
     };
+    
+    /// The host buffer size (by default 1024 bytes)
+    static constexpr IOByteCount kHostBufferSize = 1024;
+    
+    /// The host buffer can hold up to 254 commands
+    static constexpr IOItemCount kMaxNumCommands = (kHostBufferSize - Offset::kHostCmdOff) / 4;
+    
+    //
+    // MARK: - Data Structures (Private)
+    //
     
     /// Represents a packet in the host buffer
     struct PACKED Packet
@@ -373,16 +406,6 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     
     /// Chip revision
     UInt8 revision;
-    
-    //
-    // MARK: - Host Command & Data Buffer
-    //
-    
-    /// The host buffer size (by default 1024 bytes)
-    static constexpr IOByteCount kHostBufferSize = 1024;
-    
-    /// The host buffer can hold up to 254 commands
-    static constexpr IOItemCount kMaxNumCommands = (kHostBufferSize - Offset::kHostCmdOff) / 4;
     
     //
     // MARK: - Access Chip Registers (Common, Final)

@@ -16,6 +16,120 @@
 OSDefineMetaClassAndStructors(RealtekUSBCardReaderController, RealtekCardReaderController);
 
 //
+// MARK: - Constants: Bus Timing Tables
+//
+
+/// A sequence of chip registers to switch the bus speed mode to UHS-I SDR50/SDR104
+const RealtekUSBCardReaderController::ChipRegValuePair RealtekUSBCardReaderController::kBusTimingTablePairsSDR50[] =
+{
+    {
+        RTSX::UCR::Chip::SD::rCFG1,
+        RTSX::UCR::Chip::SD::CFG1::kModeMask | RTSX::UCR::Chip::SD::CFG1::kAsyncFIFONotRST,
+        RTSX::UCR::Chip::SD::CFG1::kModeSD30 | RTSX::UCR::Chip::SD::CFG1::kAsyncFIFONotRST
+    },
+    {
+        RTSX::UCR::Chip::CARD::rCLKSRC,
+        0xFF,
+        RTSX::UCR::Chip::CARD::CLKSRC::kCRCVarClock0 | RTSX::UCR::Chip::CARD::CLKSRC::kSD30FixClock | RTSX::UCR::Chip::CARD::CLKSRC::kSampleVarClock1
+    },
+};
+
+const RealtekUSBCardReaderController::SimpleRegValuePairs RealtekUSBCardReaderController::kBusTimingTableSDR50 =
+{
+    RealtekUSBCardReaderController::kBusTimingTablePairsSDR50
+};
+
+/// A sequence of chip registers to switch the bus speed mode to UHS-I DDR50
+const RealtekUSBCardReaderController::ChipRegValuePair RealtekUSBCardReaderController::kBusTimingTablePairsDDR50[] =
+{
+    {
+        RTSX::UCR::Chip::SD::rCFG1,
+        RTSX::UCR::Chip::SD::CFG1::kModeMask  | RTSX::UCR::Chip::SD::CFG1::kAsyncFIFONotRST,
+        RTSX::UCR::Chip::SD::CFG1::kModeSDDDR | RTSX::UCR::Chip::SD::CFG1::kAsyncFIFONotRST
+    },
+    {
+        RTSX::UCR::Chip::CARD::rCLKSRC,
+        0xFF,
+        RTSX::UCR::Chip::CARD::CLKSRC::kCRCVarClock0 | RTSX::UCR::Chip::CARD::CLKSRC::kSD30FixClock | RTSX::UCR::Chip::CARD::CLKSRC::kSampleVarClock1
+    },
+    {
+        RTSX::UCR::Chip::SD::rPPCTL,
+        RTSX::UCR::Chip::SD::PPCTL::kDDRVarTxCommandData,
+        RTSX::UCR::Chip::SD::PPCTL::kDDRVarTxCommandData
+    },
+    {
+        RTSX::UCR::Chip::SD::rSPCTL,
+        RTSX::UCR::Chip::SD::SPCTL::kDDRVarRxData | RTSX::UCR::Chip::SD::SPCTL::kDDRVarRxCommand,
+        RTSX::UCR::Chip::SD::SPCTL::kDDRVarRxData | RTSX::UCR::Chip::SD::SPCTL::kDDRVarRxCommand
+    },
+};
+
+const RealtekUSBCardReaderController::SimpleRegValuePairs RealtekUSBCardReaderController::kBusTimingTableDDR50 =
+{
+    RealtekUSBCardReaderController::kBusTimingTablePairsDDR50
+};
+
+/// A sequence of chip registers to switch the bus speed mode to High Speed
+const RealtekUSBCardReaderController::ChipRegValuePair RealtekUSBCardReaderController::kBusTimingTablePairsHighSpeed[] =
+{
+    {
+        RTSX::UCR::Chip::SD::rCFG1,
+        RTSX::UCR::Chip::SD::CFG1::kModeMask,
+        RTSX::UCR::Chip::SD::CFG1::kModeSD20
+    },
+    {
+        RTSX::UCR::Chip::CARD::rCLKSRC,
+        0xFF,
+        RTSX::UCR::Chip::CARD::CLKSRC::kCRCFixClock | RTSX::UCR::Chip::CARD::CLKSRC::kSD30VarClock0 | RTSX::UCR::Chip::CARD::CLKSRC::kSampleVarClock1
+    },
+    {
+        RTSX::UCR::Chip::SD::rPPCTL,
+        RTSX::UCR::Chip::SD::PPCTL::kSD20TxSelMask,
+        RTSX::UCR::Chip::SD::PPCTL::kSD20Tx14Ahead
+    },
+    {
+        RTSX::UCR::Chip::SD::rSPCTL,
+        RTSX::UCR::Chip::SD::SPCTL::kSD20RxSelMask,
+        RTSX::UCR::Chip::SD::SPCTL::kSD20Rx14Delay
+    },
+};
+
+const RealtekUSBCardReaderController::SimpleRegValuePairs RealtekUSBCardReaderController::kBusTimingTableHighSpeed =
+{
+    RealtekUSBCardReaderController::kBusTimingTablePairsHighSpeed
+};
+
+/// A sequence of chip registers to switch the bus speed mode to Default Speed
+const RealtekUSBCardReaderController::ChipRegValuePair RealtekUSBCardReaderController::kBusTimingTablePairsDefaultSpeed[] =
+{
+    {
+        RTSX::UCR::Chip::SD::rCFG1,
+        RTSX::UCR::Chip::SD::CFG1::kModeMask,
+        RTSX::UCR::Chip::SD::CFG1::kModeSD20
+    },
+    {
+        RTSX::UCR::Chip::CARD::rCLKSRC,
+        0xFF,
+        RTSX::UCR::Chip::CARD::CLKSRC::kCRCFixClock | RTSX::UCR::Chip::CARD::CLKSRC::kSD30VarClock0 | RTSX::UCR::Chip::CARD::CLKSRC::kSampleVarClock1
+    },
+    {
+        RTSX::UCR::Chip::SD::rPPCTL,
+        0xFF,
+        0x00
+    },
+    {
+        RTSX::UCR::Chip::SD::rSPCTL,
+        RTSX::UCR::Chip::SD::SPCTL::kSD20RxSelMask,
+        RTSX::UCR::Chip::SD::SPCTL::kSD20RxPosEdge
+    },
+};
+
+const RealtekUSBCardReaderController::SimpleRegValuePairs RealtekUSBCardReaderController::kBusTimingTableDefaultSpeed =
+{
+    RealtekUSBCardReaderController::kBusTimingTablePairsDefaultSpeed
+};
+
+//
 // MARK: - SD Pull Control Tables
 //
 
@@ -1573,7 +1687,7 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
     
     using namespace RTSX::UCR::Chip;
     
-    this->sscClockLimits.rangeN = { kMinSSCClockN, kMaxSSCClockN };
+    this->sscClockLimits.rangeN = { RealtekUSBCardReaderController::kMinSSCClockN, RealtekUSBCardReaderController::kMaxSSCClockN };
     
     this->sscClockLimits.rangeDivider = { CLK::DIV::k1, CLK::DIV::k4 };
     
@@ -1586,6 +1700,14 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
     this->uhsCaps.ddr50 = false;
     
     this->uhsCaps.reserved = false;
+    
+    this->busTimingTables.sdr50 = &RealtekUSBCardReaderController::kBusTimingTableSDR50;
+    
+    this->busTimingTables.ddr50 = &RealtekUSBCardReaderController::kBusTimingTableDDR50;
+    
+    this->busTimingTables.highSpeed = &RealtekUSBCardReaderController::kBusTimingTableHighSpeed;
+    
+    this->busTimingTables.defaultSpeed = &RealtekUSBCardReaderController::kBusTimingTableDefaultSpeed;
     
     return true;
 }

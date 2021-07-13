@@ -180,6 +180,22 @@ namespace RTSX::UCR::Chip::SSC
 /// Chip registers that manages the card
 namespace RTSX::UCR::Chip::CARD
 {
+    RTSXDeclareChipRegister(rCLKSRC, 0xFC2E); // Same as the PCIe one
+    namespace CLKSRC
+    {
+        RTSXDeclareChipRegisterValue(kCRCFixClock, 0x00 << 0);
+        RTSXDeclareChipRegisterValue(kCRCVarClock0, 0x01 << 0);
+        RTSXDeclareChipRegisterValue(kCRCVarClock1, 0x02 << 0);
+        
+        RTSXDeclareChipRegisterValue(kSD30FixClock, 0x00 << 2);
+        RTSXDeclareChipRegisterValue(kSD30VarClock0, 0x01 << 2);
+        RTSXDeclareChipRegisterValue(kSD30VarClock1, 0x02 << 2);
+        
+        RTSXDeclareChipRegisterValue(kSampleFixClock, 0x00 << 4);
+        RTSXDeclareChipRegisterValue(kSampleVarClock0, 0x01 << 4);
+        RTSXDeclareChipRegisterValue(kSampleVarClock1, 0x02 << 4);
+    }
+    
     RTSXDeclareChipRegister(rSHAREMODE, 0xFD51);
     namespace SHAREMODE
     {
