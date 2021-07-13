@@ -728,7 +728,16 @@ void RealtekCardReaderController::tearDownPowerManagement()
 ///
 void RealtekCardReaderController::tearDownWorkLoop()
 {
-    OSSafeReleaseNULL(this->commandGate);
+    if (this->commandGate != nullptr)
+    {
+        this->commandGate->disable();
+        
+        this->workLoop->removeEventSource(this->commandGate);
+        
+        this->commandGate->release();
+        
+        this->commandGate = nullptr;
+    }
     
     OSSafeReleaseNULL(this->workLoop);
 }
