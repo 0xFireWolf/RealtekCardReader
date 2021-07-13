@@ -517,10 +517,11 @@ protected:
     template <typename T>
     void writeHostBufferValueGated(IOByteCount offset, T value)
     {
-        passert(this->writeHostBufferGated(offset, &value, sizeof(T)),
+        passert(this->writeHostBufferGated(offset, &value, sizeof(T)) == kIOReturnSuccess,
                 "Failed to write %lu bytes at offset %llu.", sizeof(T), offset);
     }
     
+public:
     ///
     /// Read from the host buffer into the given buffer
     ///
@@ -573,7 +574,7 @@ protected:
     template <typename T>
     void writeHostBufferValue(IOByteCount offset, T value)
     {
-        passert(this->writeHostBuffer(offset, &value, sizeof(T)),
+        passert(this->writeHostBuffer(offset, &value, sizeof(T)) == kIOReturnSuccess,
                 "Failed to write %lu bytes at offset %llu.", sizeof(T), offset);
     }
     
