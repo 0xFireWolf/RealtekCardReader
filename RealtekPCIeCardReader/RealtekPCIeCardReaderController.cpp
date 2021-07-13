@@ -2793,6 +2793,34 @@ bool RealtekPCIeCardReaderController::init(OSDictionary* dictionary)
         return false;
     }
     
+    this->device = nullptr;
+    
+    this->deviceMemoryMap = nullptr;
+    
+    this->deviceMemoryDescriptor = nullptr;
+    
+    this->interruptEventSource = nullptr;
+    
+    this->hostBufferDMACommand = nullptr;
+    
+    this->hostBufferTimer = nullptr;
+    
+    this->hostBufferAddress = 0;
+    
+    this->hostBufferTransferStatus = kIOReturnSuccess;
+    
+    bzero(&this->parameters, sizeof(Parameters));
+    
+    this->dmaErrorCounter = 0;
+    
+    this->isIdle = true;
+    
+    this->reserved0 = 0;
+    
+    this->reserved1 = 0;
+    
+    this->reserved2 = 0;
+    
     using namespace RTSX::Chip;
     
     this->sscClockLimits.rangeN = { kMinSSCClockN, kMaxSSCClockN };
@@ -2877,6 +2905,15 @@ bool RealtekPCIeCardReaderController::start(IOService* provider)
         goto error4;
     }
     
+    // Initialize the host UHS-I capabilities
+    this->uhsCaps.sdr104 = this->parameters.caps.supportsSDSDR104;
+    
+    this->uhsCaps.sdr50 = this->parameters.caps.supportsSDSDR50;
+    
+    this->uhsCaps.ddr50 = this->parameters.caps.supportsSDDDR50;
+    
+    this->uhsCaps.reserved = this->parameters.caps.supportsSDExpress;
+    
     // Create the card slot
     if (!this->createCardSlot())
     {
@@ -2900,12 +2937,6 @@ bool RealtekPCIeCardReaderController::start(IOService* provider)
     }
     
     //this->registerService();
-
-    this->currentSSCClock = 0;
-    
-    this->dmaErrorCounter = 0;
-    
-    this->isIdle = true;
     
     pinfo("ASPM Enabled: %s.", YESNO(this->isASPMEnabled()));
     

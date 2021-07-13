@@ -206,29 +206,26 @@ class RealtekPCIeCardReaderController: public RealtekCardReaderController
         /// Host capabilities
         struct Capabilities
         {
-            /// Supports SD UHS SDR50 mode
-            bool supportsSDSDR50: 1;
-            
             /// Supports SD UHS SDR104 mode
-            bool supportsSDSDR104: 1;
+            bool supportsSDSDR104;
+            
+            /// Supports SD UHS SDR50 mode
+            bool supportsSDSDR50;
             
             /// Supports SD UHS DDR50 mode
-            bool supportsSDDDR50: 1;
-            
-            /// Supports MMC DDR 1.8V
-            bool supportsMMCDDR1d8V: 1;
-            
-            /// Supports 8 bit transfers
-            bool supportsMMC8BitTransfer: 1;
-            
-            /// Do not send MMC commands during initialization
-            bool noMMCCommandsDuringInitialization: 1;
+            bool supportsSDDDR50;
             
             /// Supports SD Express
-            bool supportsSDExpress: 1;
+            bool supportsSDExpress;
             
-            /// Reserved Bits
-            bool reserved: 1;
+            /// Supports MMC DDR 1.8V
+            bool supportsMMCDDR1d8V;
+            
+            /// Supports 8 bit transfers
+            bool supportsMMC8BitTransfer;
+            
+            /// Do not send MMC commands during initialization
+            bool noMMCCommandsDuringInitialization;
             
         } caps;
         
@@ -243,6 +240,9 @@ class RealtekPCIeCardReaderController: public RealtekCardReaderController
         
         /// SD 3.0 drive selector (3.3V)
         UInt8 sd30DriveSelector3d3V;
+        
+        /// Padding
+        UInt8 padding[3];
         
         /// SD 3.0 drive table (1.8V) (Nullable)
         const DrivingTable* sd30DriveTable1d8V;
@@ -428,30 +428,9 @@ class RealtekPCIeCardReaderController: public RealtekCardReaderController
     
     /// `True` if the host is idle
     bool isIdle;
-  
-    //
-    // MARK: - Query Controller Capabilities
-    //
     
-public:
-    // TODO: Introduce HostUHSCapability? MOVE TO BASE CONTROLLER
-    /// Check whether the card reader supports the UHS-I SDR50 mode
-    inline bool supportsSDR50()
-    {
-        return this->parameters.caps.supportsSDSDR50;
-    }
-    
-    /// Check whether the card reader supports the UHS-I SDR104 mode
-    inline bool supportsSDR104()
-    {
-        return this->parameters.caps.supportsSDSDR104;
-    }
-    
-    /// Check whether the card reader supports the UHS-I DDR50 mode
-    inline bool supportsDDR50()
-    {
-        return this->parameters.caps.supportsSDDDR50;
-    }
+    /// Reserved fields
+    UInt8 reserved0, reserved1, reserved2;
     
     //
     // MARK: - Access Memory Mapped Registers (Common, Final)
