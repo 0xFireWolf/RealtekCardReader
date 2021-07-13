@@ -800,6 +800,8 @@ bool RealtekCardReaderController::init(OSDictionary* dictionary)
     
     this->sscClockLimits.reset();
     
+    this->uhsCaps.reset();
+    
     this->currentSSCClock = 0;
     
     return true;

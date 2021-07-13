@@ -371,6 +371,34 @@ protected:
         }
     };
     
+    /// Host UHS-I capabilities
+    struct UHSCapabilities
+    {
+        /// True if the card reader supports UHS-I SDR104
+        bool sdr104;
+        
+        /// True if the card reader supports UHS-I SDR50
+        bool sdr50;
+        
+        /// True if the card reader supports UHS-I DDR50
+        bool ddr50;
+        
+        /// Reserved
+        bool reserved;
+        
+        /// Reset all capabilities to false
+        inline void reset()
+        {
+            this->sdr104 = false;
+            
+            this->sdr50 = false;
+            
+            this->ddr50 = false;
+            
+            this->reserved = false;
+        }
+    };
+    
     //
     // MARK: - IOKit Basics
     //
@@ -434,6 +462,9 @@ protected:
     ///
     SSCClockLimits sscClockLimits;
     
+    /// Host UHS-I capabilities
+    UHSCapabilities uhsCaps;
+    
     //
     // MARK: - Host States
     //
@@ -445,6 +476,29 @@ protected:
     /// @see `RealtekCardReaderController::switchCardClock()`.
     ///
     UInt32 currentSSCClock;
+    
+    //
+    // MARK: - Query UHS-I Capabilities
+    //
+    
+public:
+    /// Check whether the card reader supports the UHS-I SDR104 mode
+    inline bool supportsSDR104()
+    {
+        return this->uhsCaps.sdr104;
+    }
+    
+    /// Check whether the card reader supports the UHS-I SDR50 mode
+    inline bool supportsSDR50()
+    {
+        return this->uhsCaps.sdr50;
+    }
+    
+    /// Check whether the card reader supports the UHS-I DDR50 mode
+    inline bool supportsDDR50()
+    {
+        return this->uhsCaps.ddr50;
+    }
     
     //
     // MARK: - Access Chip Registers
