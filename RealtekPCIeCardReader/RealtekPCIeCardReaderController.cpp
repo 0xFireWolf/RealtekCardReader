@@ -3041,6 +3041,10 @@ bool RealtekPCIeCardReaderController::init(OSDictionary* dictionary)
     
     this->busTimingTables.defaultSpeed = &RealtekPCIeCardReaderController::kBusTimingTableDefaultSpeed;
     
+    this->tuningConfig.numPhases = RealtekPCIeCardReaderController::kTuningNumPhases;
+    
+    this->tuningConfig.enable80ClocksTimeout = RealtekPCIeCardReaderController::kTuningEnable80ClocksTimes;
+    
     return true;
 }
 
