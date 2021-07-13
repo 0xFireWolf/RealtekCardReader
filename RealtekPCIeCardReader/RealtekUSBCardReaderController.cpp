@@ -1761,6 +1761,10 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
     
     this->busTimingTables.defaultSpeed = &RealtekUSBCardReaderController::kBusTimingTableDefaultSpeed;
     
+    this->tuningConfig.numPhases = RealtekUSBCardReaderController::kTuningNumPhases;
+    
+    this->tuningConfig.enable80ClocksTimeout = RealtekUSBCardReaderController::kTuningEnable80ClocksTimes;
+    
     return true;
 }
 

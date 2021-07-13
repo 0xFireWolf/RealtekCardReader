@@ -42,6 +42,16 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     static constexpr UInt32 kMinSSCClockFrequencyMHz = 2;
     
     //
+    // MARK: - Constants: Tuning Configurations
+    //
+    
+    /// The number of phases
+    static constexpr UInt32 kTuningNumPhases = 16;
+    
+    /// The controller should not enable the 80 clocks timeout
+    static constexpr UInt32 kTuningEnable80ClocksTimes = false;
+    
+    //
     // MARK: - Constants: Bus Timing Tables
     //
     
