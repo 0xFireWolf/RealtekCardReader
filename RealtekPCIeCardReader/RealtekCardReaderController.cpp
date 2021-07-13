@@ -186,6 +186,7 @@ IOReturn RealtekCardReaderController::beginCommandTransfer()
 ///
 /// @param command The command
 /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+/// @note Port: This function replaces `rtsx_pci/usb_add_cmd()` defined in `rtsx_pcr/usb.c`.
 ///
 IOReturn RealtekCardReaderController::enqueueCommand(const Command& command)
 {
@@ -209,6 +210,7 @@ IOReturn RealtekCardReaderController::enqueueCommand(const Command& command)
 /// @param timeout Specify the amount of time in milliseconds
 /// @param flags An optional flag, 0 by default
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+/// @note Port: This function replaces `rtsx_pci/usb_send_cmd()` defined in `rtsx_pcr/usb.c`.
 /// @note This function sends all commands in the queue to the device.
 ///
 IOReturn RealtekCardReaderController::endCommandTransfer(UInt32 timeout, UInt32 flags)

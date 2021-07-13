@@ -608,6 +608,7 @@ protected:
     ///
     /// @param command The command
     /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note Port: This function replaces `rtsx_pci/usb_add_cmd()` defined in `rtsx_pcr/usb.c`.
     /// @note This function runs in a gated context.
     ///
     virtual IOReturn enqueueCommandGated(const Command& command) = 0;
@@ -618,6 +619,7 @@ protected:
     /// @param timeout Specify the amount of time in milliseconds
     /// @param flags An optional flag, 0 by default
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    /// @note Port: This function replaces `rtsx_pci/usb_send_cmd()` defined in `rtsx_pcr/usb.c`.
     /// @note This function sends all commands in the queue to the device.
     /// @note This function runs in a gated context.
     ///
@@ -629,8 +631,9 @@ public:
     ///
     /// @param command The command
     /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note Port: This function replaces `rtsx_pci/usb_add_cmd()` defined in `rtsx_pcr/usb.c`.
     ///
-    virtual IOReturn enqueueCommand(const Command& command);
+    IOReturn enqueueCommand(const Command& command);
     
     ///
     /// Finish the existing host command transfer session
@@ -638,6 +641,7 @@ public:
     /// @param timeout Specify the amount of time in milliseconds
     /// @param flags An optional flag, 0 by default
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    /// @note Port: This function replaces `rtsx_pci/usb_send_cmd()` defined in `rtsx_pcr/usb.c`.
     /// @note This function sends all commands in the queue to the device.
     ///
     IOReturn endCommandTransfer(UInt32 timeout = 100, UInt32 flags = 0);

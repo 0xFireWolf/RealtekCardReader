@@ -510,8 +510,9 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// @param command The command
     /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
     /// @note Port: This function replaces `rtsx_usb_add_cmd()` defined in `rtsx_usb.c`.
+    /// @note This function runs in a gated context.
     ///
-    IOReturn enqueueCommand(const Command& command) override final;
+    IOReturn enqueueCommandGated(const Command& command) override final;
     
     ///
     /// Finish the existing host command transfer session

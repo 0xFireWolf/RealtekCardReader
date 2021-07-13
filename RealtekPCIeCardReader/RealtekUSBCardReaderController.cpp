@@ -388,43 +388,31 @@ IOReturn RealtekUSBCardReaderController::writeHostBufferGated(IOByteCount offset
 /// @param command The command
 /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
 /// @note Port: This function replaces `rtsx_usb_add_cmd()` defined in `rtsx_usb.c`.
+/// @note This function runs in a gated context.
 ///
-IOReturn RealtekUSBCardReaderController::enqueueCommand(const Command& command)
+IOReturn RealtekUSBCardReaderController::enqueueCommandGated(const Command& command)
 {
-    // The enqueue routine will run in a gated context
-    auto action = [](OSObject* controller, void* command, void*, void*, void*) -> IOReturn
+    // Guard: Ensure that the queue is not full
+    if (this->hostCommandCounter.total >= kMaxNumCommands)
     {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekUSBCardReaderController, controller);
+        pwarning("The host command buffer queue is full.");
         
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
-        // Guard: Ensure that the queue is not full
-        if (instance->hostCommandCounter.total >= kMaxNumCommands)
-        {
-            pwarning("The host command buffer queue is full.");
-            
-            return kIOReturnBusy;
-        }
-        
-        // Retrieve and write the command value
-        auto hostcmd = reinterpret_cast<Command*>(command);
-        
-        IOByteCount offset = + Offset::kHostCmdOff + instance->hostCommandCounter.total * sizeof(Command);
-        
-        UInt32 value = OSSwapHostToBigInt32(hostcmd->getValue());
-        
-        // No need to use `writeHostBufferValue()`
-        // We can skip the checks because `&value` is non-null and `offset` is valid
-        instance->writeHostBufferValueGated(offset, value);
-        
-        // Increment the counter
-        instance->hostCommandCounter.increment(hostcmd->getType());
-        
-        return kIOReturnSuccess;
-    };
+        return kIOReturnBusy;
+    }
     
-    return this->commandGate->runAction(action, const_cast<void*>(reinterpret_cast<const void*>(&command)));
+    // Retrieve and write the command value
+    IOByteCount offset = + Offset::kHostCmdOff + this->hostCommandCounter.total * sizeof(Command);
+    
+    UInt32 value = OSSwapHostToBigInt32(command.getValue());
+    
+    // No need to use `writeHostBufferValue()`
+    // We can skip the checks because `&value` is non-null and `offset` is valid
+    this->writeHostBufferValueGated(offset, value);
+    
+    // Increment the counter
+    this->hostCommandCounter.increment(command.getType());
+    
+    return kIOReturnSuccess;
 }
 
 ///
