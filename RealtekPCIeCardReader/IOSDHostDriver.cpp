@@ -2975,61 +2975,61 @@ bool IOSDHostDriver::start(IOService* provider)
     // Setup the power managememt
     if (!this->setupPowerManagement())
     {
-        goto error;
+        goto error1;
     }
     
     // Preallocate DMA commands
     if (!this->setupPreallocatedDMACommands())
     {
-        goto error;
+        goto error2;
     }
     
     // Preallocate SD block requests
     if (!this->setupPreallocatedBlockRequests())
     {
-        goto error;
+        goto error3;
     }
     
     // Setup the shared work loop
     if (!this->setupSharedWorkLoop())
     {
-        goto error;
+        goto error4;
     }
     
     // Create the DMA command pool
     if (!this->setupDMACommandPool())
     {
-        goto error;
+        goto error5;
     }
     
     // Create the block request pool
     if (!this->setupBlockRequestPool())
     {
-        goto error;
+        goto error6;
     }
     
     // Create the request queue
     if (!this->setupBlockRequestQueue())
     {
-        goto error;
+        goto error7;
     }
     
     // Create the processor work loop
     if (!this->setupProcessorWorkLoop())
     {
-        goto error;
+        goto error8;
     }
     
     // Create the block request event source
     if (!this->setupBlockRequestEventSource())
     {
-        goto error;
+        goto error9;
     }
     
     // Create the card insertion and removal event sources
     if (!this->setupCardEventSources())
     {
-        goto error;
+        goto error10;
     }
     
     pinfo("========================================");
@@ -3038,27 +3038,34 @@ bool IOSDHostDriver::start(IOService* provider)
     
     return true;
     
-error:
-    this->tearDownCardEventSources();
-    
+error10:
     this->tearDownBlockRequestEventSource();
     
+error9:
     this->tearDownProcessorWorkLoop();
     
+error8:
     this->tearDownBlockRequestQueue();
     
+error7:
     this->tearDownBlockRequestPool();
     
+error6:
     this->tearDownDMACommandPool();
     
+error5:
     this->tearDownSharedWorkLoop();
     
+error4:
     this->tearDownPreallocatedBlockRequests();
     
+error3:
     this->tearDownPreallocatedDMACommands();
     
+error2:
     this->tearDownPowerManagement();
     
+error1:
     OSSafeReleaseNULL(this->host);
     
     pinfo("===================================");
