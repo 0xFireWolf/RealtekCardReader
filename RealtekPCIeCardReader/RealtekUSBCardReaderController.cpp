@@ -1579,6 +1579,14 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
     
     this->sscClockLimits.minFrequencyMHz = kMinSSCClockFrequencyMHz;
     
+    this->uhsCaps.sdr104 = false;
+    
+    this->uhsCaps.sdr50 = true;
+    
+    this->uhsCaps.ddr50 = false;
+    
+    this->uhsCaps.reserved = false;
+    
     return true;
 }
 
