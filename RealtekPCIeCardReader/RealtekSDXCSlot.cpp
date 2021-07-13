@@ -15,48 +15,6 @@
 OSDefineMetaClassAndStructors(RealtekSDXCSlot, AppleSDXCSlot);
 
 //
-// MARK: - Constants [Bus Timing Tables]
-//
-
-const ChipRegValuePair RealtekSDXCSlot::kBusTimingTableSDR50[] =
-{
-    { RTSX::Chip::SD::rCFG1, RTSX::Chip::SD::CFG1::kModeMask | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST, RTSX::Chip::SD::CFG1::kModeSD30 | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST },
-    { RTSX::Chip::CLK::rCTL, RTSX::Chip::CLK::CTL::kLowFrequency, RTSX::Chip::CLK::CTL::kLowFrequency },
-    { RTSX::Chip::CARD::rCLKSRC, 0xFF, RTSX::Chip::CARD::CLKSRC::kCRCVarClock0 | RTSX::Chip::CARD::CLKSRC::kSD30FixClock | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1 },
-    { RTSX::Chip::CLK::rCTL, RTSX::Chip::CLK::CTL::kLowFrequency, 0 },
-};
-
-const ChipRegValuePair RealtekSDXCSlot::kBusTimingTableDDR50[] =
-{
-    { RTSX::Chip::SD::rCFG1, RTSX::Chip::SD::CFG1::kModeMask | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST, RTSX::Chip::SD::CFG1::kModeSDDDR | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST },
-    { RTSX::Chip::CLK::rCTL, RTSX::Chip::CLK::CTL::kLowFrequency, RTSX::Chip::CLK::CTL::kLowFrequency },
-    { RTSX::Chip::CARD::rCLKSRC, 0xFF, RTSX::Chip::CARD::CLKSRC::kCRCVarClock0 | RTSX::Chip::CARD::CLKSRC::kSD30FixClock | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1 },
-    { RTSX::Chip::CLK::rCTL, RTSX::Chip::CLK::CTL::kLowFrequency, 0 },
-    { RTSX::Chip::SD::rPPCTL, RTSX::Chip::SD::PPCTL::kDDRVarTxCommandData, RTSX::Chip::SD::PPCTL::kDDRVarTxCommandData },
-    { RTSX::Chip::SD::rSPCTL, RTSX::Chip::SD::SPCTL::kDDRVarRxData | RTSX::Chip::SD::SPCTL::kDDRVarRxCommand, RTSX::Chip::SD::SPCTL::kDDRVarRxData | RTSX::Chip::SD::SPCTL::kDDRVarRxCommand },
-};
-
-const ChipRegValuePair RealtekSDXCSlot::kBusTimingTableHighSpeed[] =
-{
-    { RTSX::Chip::SD::rCFG1, RTSX::Chip::SD::CFG1::kModeMask, RTSX::Chip::SD::CFG1::kModeSD20 },
-    { RTSX::Chip::CLK::rCTL, RTSX::Chip::CLK::CTL::kLowFrequency, RTSX::Chip::CLK::CTL::kLowFrequency },
-    { RTSX::Chip::CARD::rCLKSRC, 0xFF, RTSX::Chip::CARD::CLKSRC::kCRCFixClock | RTSX::Chip::CARD::CLKSRC::kSD30VarClock0 | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1 },
-    { RTSX::Chip::CLK::rCTL, RTSX::Chip::CLK::CTL::kLowFrequency, 0 },
-    { RTSX::Chip::SD::rPPCTL, RTSX::Chip::SD::PPCTL::kSD20TxSelMask, RTSX::Chip::SD::PPCTL::kSD20Tx14Ahead },
-    { RTSX::Chip::SD::rSPCTL, RTSX::Chip::SD::SPCTL::kSD20RxSelMask, RTSX::Chip::SD::SPCTL::kSD20Rx14Delay },
-};
-
-const ChipRegValuePair RealtekSDXCSlot::kBusTimingTableDefault[] =
-{
-    { RTSX::Chip::SD::rCFG1, RTSX::Chip::SD::CFG1::kModeMask, RTSX::Chip::SD::CFG1::kModeSD20 },
-    { RTSX::Chip::CLK::rCTL, RTSX::Chip::CLK::CTL::kLowFrequency, RTSX::Chip::CLK::CTL::kLowFrequency },
-    { RTSX::Chip::CARD::rCLKSRC, 0xFF, RTSX::Chip::CARD::CLKSRC::kCRCFixClock | RTSX::Chip::CARD::CLKSRC::kSD30VarClock0 | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1 },
-    { RTSX::Chip::CLK::rCTL, RTSX::Chip::CLK::CTL::kLowFrequency, 0 },
-    { RTSX::Chip::SD::rPPCTL, 0xFF, 0 },
-    { RTSX::Chip::SD::rSPCTL, RTSX::Chip::SD::SPCTL::kSD20RxSelMask, RTSX::Chip::SD::SPCTL::kSD20RxPosEdge },
-};
-
-//
 // MARK: - SD Commander
 //
 
@@ -1368,6 +1326,8 @@ IOReturn RealtekSDXCSlot::setPowerMode(IOSDBusConfig::PowerMode mode)
 ///
 IOReturn RealtekSDXCSlot::setBusTiming(IOSDBusConfig::BusTiming timing)
 {
+    const SimpleRegValuePairs* pairs = nullptr;
+    
     switch (timing)
     {
         case IOSDBusConfig::BusTiming::kUHSSDR104:
@@ -1375,7 +1335,9 @@ IOReturn RealtekSDXCSlot::setBusTiming(IOSDBusConfig::BusTiming timing)
         {
             pinfo("Setting the bus timing for the UHS-I SDR50/SDR104 mode...");
             
-            return this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(RealtekSDXCSlot::kBusTimingTableSDR50));
+            pairs = this->controller->getBusTimingTables().sdr50;
+            
+            break;
         }
             
         case IOSDBusConfig::BusTiming::kMMCDDR52:
@@ -1383,7 +1345,9 @@ IOReturn RealtekSDXCSlot::setBusTiming(IOSDBusConfig::BusTiming timing)
         {
             pinfo("Setting the bus timing for the UHS-I DDR50 mode...");
             
-            return this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(RealtekSDXCSlot::kBusTimingTableDDR50));
+            pairs = this->controller->getBusTimingTables().ddr50;
+            
+            break;
         }
             
         case IOSDBusConfig::BusTiming::kMMCHighSpeed:
@@ -1391,16 +1355,24 @@ IOReturn RealtekSDXCSlot::setBusTiming(IOSDBusConfig::BusTiming timing)
         {
             pinfo("Setting the bus timing for the high speed mode...");
             
-            return this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(RealtekSDXCSlot::kBusTimingTableHighSpeed));
+            pairs = this->controller->getBusTimingTables().highSpeed;
+            
+            break;
         }
             
         default:
         {
             pinfo("Setting the bus timing for the default speed mode...");
             
-            return this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(RealtekSDXCSlot::kBusTimingTableDefault));
+            pairs = this->controller->getBusTimingTables().defaultSpeed;
+            
+            break;
         }
     }
+    
+    // Hack: Need to pass `Packet::Flags::kC` to the transfer function,
+    //       but the default value of the `flags` argument has the same value as `kC`.
+    return this->controller->transferWriteRegisterCommands(*pairs);
 }
 
 ///

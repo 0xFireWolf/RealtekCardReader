@@ -37,25 +37,11 @@ class RealtekSDXCSlot: public AppleSDXCSlot
     using super = AppleSDXCSlot;
     
     //
-    // MARK: - Constants [Bus Timing Tables]
-    //
-    
-    /// Bus Timing Table for SD UHS-I SDR50 and SDR104 mode
-    static const ChipRegValuePair kBusTimingTableSDR50[];
-    
-    /// Bus Timing Table for SD UHS-I DDR50 mode
-    static const ChipRegValuePair kBusTimingTableDDR50[];
-    
-    /// Bus Timing Table for SD High Speed mode
-    static const ChipRegValuePair kBusTimingTableHighSpeed[];
-    
-    /// Bus Timing Table for other modes
-    static const ChipRegValuePair kBusTimingTableDefault[];
-    
-    //
     // MARK: - Constants [Miscellaneous]
     //
     
+    // TODO: DEPRECATED: To be defined by the controller
+    // TODO: (USB controller has a smaller max phase value)
     /// The maximum phase value
     static constexpr UInt32 kMaxPhase = 32;
     
@@ -83,8 +69,6 @@ class RealtekSDXCSlot: public AppleSDXCSlot
     
     /// `True` if the card clock should be doubled
     bool doubleClock;
-    
-    // TODO: Bus Timing Table struct: SDR50, DDR50, SDR25, SDR12
     
     //
     // MARK: - SD Commander
