@@ -14,7 +14,7 @@
 // MARK: - Meta Class Definitions
 //
 
-OSDefineMetaClassAndAbstractStructors(RealtekPCIeCardReaderController, AppleSDXC);
+OSDefineMetaClassAndAbstractStructors(RealtekPCIeCardReaderController, RealtekCardReaderController);
 
 //
 // MARK: - Access Memory Mapped Registers (Generic, Final)
@@ -219,30 +219,6 @@ IOReturn RealtekPCIeCardReaderController::writeChipRegisters(const ChipRegValueP
     pinfo("Wrote %u chip registers. Returns 0x%x.", count, retVal);
     
     return retVal;
-}
-
-///
-/// Dump the chip registers in the given range
-///
-/// @param range The range of register addresses
-///
-void RealtekPCIeCardReaderController::dumpChipRegisters(ClosedRange<UInt16> range)
-{
-    pinfo("Dumping chip registers from 0x%04x to 0x%04x.", range.lowerBound, range.upperBound);
-    
-    UInt8 value = 0;
-    
-    for (auto address = range.lowerBound; address <= range.upperBound; address += 1)
-    {
-        if (this->readChipRegister(address, value) != kIOReturnSuccess)
-        {
-            pinfo("[0x%04d] 0x%02x", address, value);
-        }
-        else
-        {
-            pinfo("[0x%04d] ERROR", address);
-        }
-    }
 }
 
 //
@@ -584,51 +560,21 @@ IOReturn RealtekPCIeCardReaderController::appendPhysRegisters(const PhysRegMaskV
 //
 
 ///
-/// Read from the host command buffer into the given buffer
+/// Read from the host buffer into the given buffer
 ///
 /// @param offset A byte offset into the host buffer
 /// @param buffer A non-null buffer
 /// @param length The number of bytes to read
 /// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note This function coordinates all accesses to the host buffer.
+/// @note This function runs in a gated context.
 ///
-IOReturn RealtekPCIeCardReaderController::readHostBuffer(IOByteCount offset, void* buffer, IOByteCount length)
+IOReturn RealtekPCIeCardReaderController::readHostBufferGated(IOByteCount offset, void* buffer, IOByteCount length)
 {
-    // Guard: The given buffer must be non-null
-    if (buffer == nullptr)
-    {
-        perr("The given buffer is NULL.");
-        
-        return kIOReturnBadArgument;
-    }
+    // The non-gated version guarantees that the offset and the length are valid
+    passert(this->hostBufferDMACommand->readBytes(offset, buffer, length) == length,
+            "Should be able to read from the host buffer at this moment.");
     
-    // Guard: The number of bytes to read must not exceed 4096 bytes
-    if (offset + length > RealtekPCIeCardReaderController::kHostBufferSize)
-    {
-        perr("Detected an out-of-bounds read: Request to read %llu bytes at offset %llu.", length, offset);
-        
-        return kIOReturnBadArgument;
-    }
-    
-    // The read routine will run in a gated context
-    auto action = [](OSObject* controller, void* offset, void* buffer, void* length, void*) -> IOReturn
-    {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
-        auto off = *reinterpret_cast<IOByteCount*>(offset);
-        
-        auto len = *reinterpret_cast<IOByteCount*>(length);
-        
-        passert(instance->hostBufferDMACommand->readBytes(off, buffer, len) == len,
-                "Should be able to read from the host buffer at this moment.");
-        
-        return kIOReturnSuccess;
-    };
-    
-    return this->commandGate->runAction(action, &offset, buffer, &length);
+    return kIOReturnSuccess;
 }
 
 ///
@@ -638,98 +584,168 @@ IOReturn RealtekPCIeCardReaderController::readHostBuffer(IOByteCount offset, voi
 /// @param buffer A non-null buffer
 /// @param length The number of bytes to write
 /// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note This function coordinates all accesses to the host buffer.
+/// @note This function runs in a gated context.
 ///
-IOReturn RealtekPCIeCardReaderController::writeHostBuffer(IOByteCount offset, const void* buffer, IOByteCount length)
+IOReturn RealtekPCIeCardReaderController::writeHostBufferGated(IOByteCount offset, const void* buffer, IOByteCount length)
 {
-    // Guard: The given buffer must be non-null
-    if (buffer == nullptr)
-    {
-        perr("The given buffer is NULL.");
-        
-        return kIOReturnBadArgument;
-    }
+    // The non-gated version guarantees that the offset and the length are valid
+    passert(this->hostBufferDMACommand->writeBytes(offset, buffer, length) == length,
+            "Should be able to write to the host buffer at this moment.");
     
-    // Guard: The number of bytes to read must not exceed 4096 bytes
-    if (offset + length > RealtekPCIeCardReaderController::kHostBufferSize)
-    {
-        perr("Detected an out-of-bounds write: Request to write %llu bytes at offset %llu.", length, offset);
-        
-        return kIOReturnBadArgument;
-    }
-    
-    // The write routine will run in a gated context
-    auto action = [](OSObject* controller, void* offset, void* buffer, void* length, void*) -> IOReturn
-    {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
-        auto off = *reinterpret_cast<IOByteCount*>(offset);
-        
-        auto len = *reinterpret_cast<IOByteCount*>(length);
-        
-        passert(instance->hostBufferDMACommand->writeBytes(off, buffer, len) == len,
-                "Should be able to write to the host buffer at this moment.");
-        
-        return kIOReturnSuccess;
-    };
-    
-    return this->commandGate->runAction(action, &offset, const_cast<void*>(buffer), &length);
+    return kIOReturnSuccess;
 }
 
-///
-/// Dump the host buffer contents
-///
-/// @param offset A byte offset into the host data buffer
-/// @param length The number of bytes to dump
-/// @param column The number of columns to print
-///
-void RealtekPCIeCardReaderController::dumpHostBuffer(IOByteCount offset, IOByteCount length, IOByteCount column)
-{
-    UInt8* buffer = reinterpret_cast<UInt8*>(IOMalloc(length));
-    
-    this->readHostBuffer(offset, buffer, length);
-    
-    pbuf(buffer, length, column);
-    
-    IOFree(buffer, length);
-}
+//// TODO: DEPRECATED
+/////
+///// Read from the host command buffer into the given buffer
+/////
+///// @param offset A byte offset into the host buffer
+///// @param buffer A non-null buffer
+///// @param length The number of bytes to read
+///// @return `kIOReturnSuccess` on success, other values otherwise.
+///// @note This function coordinates all accesses to the host buffer.
+/////
+//IOReturn RealtekPCIeCardReaderController::readHostBuffer(IOByteCount offset, void* buffer, IOByteCount length)
+//{
+//    // Guard: The given buffer must be non-null
+//    if (buffer == nullptr)
+//    {
+//        perr("The given buffer is NULL.");
+//
+//        return kIOReturnBadArgument;
+//    }
+//
+//    // Guard: The number of bytes to read must not exceed 4096 bytes
+//    if (offset + length > RealtekPCIeCardReaderController::kHostBufferSize)
+//    {
+//        perr("Detected an out-of-bounds read: Request to read %llu bytes at offset %llu.", length, offset);
+//
+//        return kIOReturnBadArgument;
+//    }
+//
+//    // The read routine will run in a gated context
+//    auto action = [](OSObject* controller, void* offset, void* buffer, void* length, void*) -> IOReturn
+//    {
+//        // Retrieve the controller instance
+//        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
+//
+//        passert(instance != nullptr, "The controller instance is invalid.");
+//
+//        auto off = *reinterpret_cast<IOByteCount*>(offset);
+//
+//        auto len = *reinterpret_cast<IOByteCount*>(length);
+//
+//        passert(instance->hostBufferDMACommand->readBytes(off, buffer, len) == len,
+//                "Should be able to read from the host buffer at this moment.");
+//
+//        return kIOReturnSuccess;
+//    };
+//
+//    return this->commandGate->runAction(action, &offset, buffer, &length);
+//}
+//
+//// TODO: DEPRECATED
+/////
+///// Write to the host buffer form the given buffer
+/////
+///// @param offset A byte offset into the host buffer
+///// @param buffer A non-null buffer
+///// @param length The number of bytes to write
+///// @return `kIOReturnSuccess` on success, other values otherwise.
+///// @note This function coordinates all accesses to the host buffer.
+/////
+//IOReturn RealtekPCIeCardReaderController::writeHostBuffer(IOByteCount offset, const void* buffer, IOByteCount length)
+//{
+//    // Guard: The given buffer must be non-null
+//    if (buffer == nullptr)
+//    {
+//        perr("The given buffer is NULL.");
+//
+//        return kIOReturnBadArgument;
+//    }
+//
+//    // Guard: The number of bytes to read must not exceed 4096 bytes
+//    if (offset + length > RealtekPCIeCardReaderController::kHostBufferSize)
+//    {
+//        perr("Detected an out-of-bounds write: Request to write %llu bytes at offset %llu.", length, offset);
+//
+//        return kIOReturnBadArgument;
+//    }
+//
+//    // The write routine will run in a gated context
+//    auto action = [](OSObject* controller, void* offset, void* buffer, void* length, void*) -> IOReturn
+//    {
+//        // Retrieve the controller instance
+//        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
+//
+//        passert(instance != nullptr, "The controller instance is invalid.");
+//
+//        auto off = *reinterpret_cast<IOByteCount*>(offset);
+//
+//        auto len = *reinterpret_cast<IOByteCount*>(length);
+//
+//        passert(instance->hostBufferDMACommand->writeBytes(off, buffer, len) == len,
+//                "Should be able to write to the host buffer at this moment.");
+//
+//        return kIOReturnSuccess;
+//    };
+//
+//    return this->commandGate->runAction(action, &offset, const_cast<void*>(buffer), &length);
+//}
+//
+//// TODO: DEPRECATED
+/////
+///// Dump the host buffer contents
+/////
+///// @param offset A byte offset into the host data buffer
+///// @param length The number of bytes to dump
+///// @param column The number of columns to print
+/////
+//void RealtekPCIeCardReaderController::dumpHostBuffer(IOByteCount offset, IOByteCount length, IOByteCount column)
+//{
+//    UInt8* buffer = reinterpret_cast<UInt8*>(IOMalloc(length));
+//
+//    this->readHostBuffer(offset, buffer, length);
+//
+//    pbuf(buffer, length, column);
+//
+//    IOFree(buffer, length);
+//}
 
 //
-// MARK: - Host Command Management
+// MARK: - Host Command Management (Core)
 //
 
-///
-/// Start a new host command transfer session
-///
-/// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note The caller must invoke this function before any subsequent calls to `enqueue*Command()`.
-///       Any commands enqueued before this function call will be overwritten.
-///       Once all commands are enqueued, the caller should invoke `endCommandTransfer()` to send commands to the device.
-/// @note Port: This function replaces `rtsx_pci_init_cmd()` defined in `rtsx_pci.h`.
-///
-IOReturn RealtekPCIeCardReaderController::beginCommandTransfer()
-{
-    // The reset counter routine will run in a gated context
-    auto action = [](OSObject* controller, void*, void*, void*, void*) -> IOReturn
-    {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
-        // Reset the counter
-        instance->hostCommandCount = 0;
-        
-        return kIOReturnSuccess;
-    };
-    
-    pinfo("Begin a command transfer session.");
-    
-    return this->commandGate->runAction(action);
-}
+// TODO: DEPRECATED
+/////
+///// Start a new host command transfer session
+/////
+///// @return `kIOReturnSuccess` on success, other values otherwise.
+///// @note The caller must invoke this function before any subsequent calls to `enqueue*Command()`.
+/////       Any commands enqueued before this function call will be overwritten.
+/////       Once all commands are enqueued, the caller should invoke `endCommandTransfer()` to send commands to the device.
+///// @note Port: This function replaces `rtsx_pci_init_cmd()` defined in `rtsx_pci.h`.
+/////
+//IOReturn RealtekPCIeCardReaderController::beginCommandTransfer()
+//{
+//    // The reset counter routine will run in a gated context
+//    auto action = [](OSObject* controller, void*, void*, void*, void*) -> IOReturn
+//    {
+//        // Retrieve the controller instance
+//        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
+//
+//        passert(instance != nullptr, "The controller instance is invalid.");
+//
+//        // Reset the counter
+//        instance->hostCommandCount = 0;
+//
+//        return kIOReturnSuccess;
+//    };
+//
+//    pinfo("Begin a command transfer session.");
+//
+//    return this->commandGate->runAction(action);
+//}
 
 ///
 /// Enqueue a command
@@ -737,145 +753,218 @@ IOReturn RealtekPCIeCardReaderController::beginCommandTransfer()
 /// @param command The command
 /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
 /// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
+/// @note This function runs in a gated context.
 ///
-IOReturn RealtekPCIeCardReaderController::enqueueCommand(const Command& command)
+IOReturn RealtekPCIeCardReaderController::enqueueCommandGated(const Command& command)
 {
-    // The enqueue routine will run in a gated context
-    auto action = [](OSObject* controller, void* command, void*, void*, void*) -> IOReturn
+    // Guard: Ensure that the queue is not full
+    if (this->hostCommandCounter.total >= RTSX::MMIO::HCBAR::kMaxNumCmds)
     {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
+        pwarning("The host command buffer queue is full.");
         
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
-        // Guard: Ensure that the queue is not full
-        if (instance->hostCommandCount >= RTSX::MMIO::HCBAR::kMaxNumCmds)
-        {
-            pwarning("The host command buffer queue is full.");
-            
-            return kIOReturnBusy;
-        }
-        
-        // Retrieve and write the command value
-        UInt64 offset = instance->hostCommandCount * sizeof(UInt32);
-        
-        UInt32 value = OSSwapHostToLittleInt32(reinterpret_cast<Command*>(command)->value);
-        
-        passert(instance->hostBufferDMACommand->writeBytes(offset, &value, sizeof(UInt32)) == sizeof(UInt32),
-                "Should be able to write the command value to the host buffer at this moment.");
-        
-        instance->hostCommandCount += 1;
-        
-        return kIOReturnSuccess;
-    };
+        return kIOReturnBusy;
+    }
     
-    return this->commandGate->runAction(action, const_cast<void*>(reinterpret_cast<const void*>(&command)));
+    // Retrieve and write the command value
+    UInt64 offset = this->hostCommandCounter.total * sizeof(Command);
+    
+    UInt32 value = OSSwapHostToLittleInt32(command.getValue());
+    
+    // No need to use `writeHostBufferValue()`
+    // We can skip the checks because `&value` is non-null and `offset` is valid
+    this->writeHostBufferValueGated(offset, value);
+    
+    // Increment the counter
+    this->hostCommandCounter.increment(command.getType());
+    
+    return kIOReturnSuccess;
 }
 
-///
-/// Enqueue a command to read the register at the given address conveniently
-///
-/// @param address The register address
-/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
-/// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
-///
-IOReturn RealtekPCIeCardReaderController::enqueueReadRegisterCommand(UInt16 address)
-{
-    pinfo("Enqueue: Address = 0x%04x; Mask = 0x%02x; Value = 0x%02x.", address, 0, 0);
-    
-    return this->enqueueCommand(Command(Command::kReadRegister, address, 0, 0));
-}
-
-///
-/// Enqueue a command to write a value to the register at the given address conveniently
-///
-/// @param address The register address
-/// @param mask The register value mask
-/// @param value The register value
-/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
-/// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
-///
-IOReturn RealtekPCIeCardReaderController::enqueueWriteRegisterCommand(UInt16 address, UInt8 mask, UInt8 value)
-{
-    pinfo("Enqueue: Address = 0x%04x; Mask = 0x%02x; Value = 0x%02x.", address, mask, value);
-    
-    return this->enqueueCommand(Command(Command::kWriteRegister, address, mask, value));
-}
-
-///
-/// Enqueue a command to check the value of the register at the given address conveniently
-///
-/// @param address The register address
-/// @param mask The register value mask
-/// @param value The register value
-/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
-/// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
-///
-IOReturn RealtekPCIeCardReaderController::enqueueCheckRegisterCommand(UInt16 address, UInt8 mask, UInt8 value)
-{
-    pinfo("Enqueue: Address = 0x%04x; Mask = 0x%02x; Value = 0x%02x.", address, mask, value);
-    
-    return this->enqueueCommand(Command(Command::kCheckRegister, address, mask, value));
-}
+// TODO: DEPRECATED
+/////
+///// Enqueue a command
+/////
+///// @param command The command
+///// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+///// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
+/////
+//IOReturn RealtekPCIeCardReaderController::enqueueCommand(const Command& command)
+//{
+//    // The enqueue routine will run in a gated context
+//    auto action = [](OSObject* controller, void* command, void*, void*, void*) -> IOReturn
+//    {
+//        // Retrieve the controller instance
+//        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
+//
+//        passert(instance != nullptr, "The controller instance is invalid.");
+//
+//        // Guard: Ensure that the queue is not full
+//        if (instance->hostCommandCount >= RTSX::MMIO::HCBAR::kMaxNumCmds)
+//        {
+//            pwarning("The host command buffer queue is full.");
+//
+//            return kIOReturnBusy;
+//        }
+//
+//        // Retrieve and write the command value
+//        UInt64 offset = instance->hostCommandCount * sizeof(UInt32);
+//
+//        UInt32 value = OSSwapHostToLittleInt32(reinterpret_cast<Command*>(command)->value);
+//
+//        passert(instance->hostBufferDMACommand->writeBytes(offset, &value, sizeof(UInt32)) == sizeof(UInt32),
+//                "Should be able to write the command value to the host buffer at this moment.");
+//
+//        instance->hostCommandCount += 1;
+//
+//        return kIOReturnSuccess;
+//    };
+//
+//    return this->commandGate->runAction(action, const_cast<void*>(reinterpret_cast<const void*>(&command)));
+//}
+//
+//// TODO: DEPRECATED
+/////
+///// Enqueue a command to read the register at the given address conveniently
+/////
+///// @param address The register address
+///// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
+///// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
+/////
+//IOReturn RealtekPCIeCardReaderController::enqueueReadRegisterCommand(UInt16 address)
+//{
+//    pinfo("Enqueue: Address = 0x%04x; Mask = 0x%02x; Value = 0x%02x.", address, 0, 0);
+//
+//    return this->enqueueCommand(Command(Command::kReadRegister, address, 0, 0));
+//}
+//
+//// TODO: DEPRECATED
+/////
+///// Enqueue a command to write a value to the register at the given address conveniently
+/////
+///// @param address The register address
+///// @param mask The register value mask
+///// @param value The register value
+///// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
+///// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
+/////
+//IOReturn RealtekPCIeCardReaderController::enqueueWriteRegisterCommand(UInt16 address, UInt8 mask, UInt8 value)
+//{
+//    pinfo("Enqueue: Address = 0x%04x; Mask = 0x%02x; Value = 0x%02x.", address, mask, value);
+//
+//    return this->enqueueCommand(Command(Command::kWriteRegister, address, mask, value));
+//}
+//
+//// TODO: DEPRECATED
+/////
+///// Enqueue a command to check the value of the register at the given address conveniently
+/////
+///// @param address The register address
+///// @param mask The register value mask
+///// @param value The register value
+///// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
+///// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
+/////
+//IOReturn RealtekPCIeCardReaderController::enqueueCheckRegisterCommand(UInt16 address, UInt8 mask, UInt8 value)
+//{
+//    pinfo("Enqueue: Address = 0x%04x; Mask = 0x%02x; Value = 0x%02x.", address, mask, value);
+//
+//    return this->enqueueCommand(Command(Command::kCheckRegister, address, mask, value));
+//}
 
 ///
 /// Finish the existing host command transfer session
 ///
 /// @param timeout Specify the amount of time in milliseconds
+/// @param flags An optional flag, 0 by default
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-/// @note Port: This function replaces `rtsx_pci_send_cmd()` defined in `rtsx_psr.c`.
+/// @note Port: This function replaces `rtsx_pci_send_cmd()` defined in `rtsx_pcr.c`.
 /// @note This function sends all commands in the queue to the device.
+/// @note This function runs in a gated context.
 ///
-IOReturn RealtekPCIeCardReaderController::endCommandTransfer(UInt32 timeout)
+IOReturn RealtekPCIeCardReaderController::endCommandTransferGated(UInt32 timeout, UInt32 flags)
 {
-    // The transfer routine will run in a gated context
-    // Returns `kIOReturnTimeout` if the transfer has timed out;
-    //         `kIOReturnSuccess` if the transfer has succeeded;
-    //         `kIOReturnError` otherwise.
-    auto action = [](OSObject* controller, void* timeout, void*, void*, void*) -> IOReturn
-    {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
-        // Tell the device the location of the command buffer and to start executing commands
-        using namespace RTSX::MMIO;
-        
-        instance->hostBufferTransferStatus = kIOReturnNotReady;
-        
-        instance->writeRegister32(rHCBAR, instance->hostBufferAddress);
-        
-        instance->writeRegister32(rHCBCTLR, HCBCTLR::RegValueForStartCommand(instance->hostCommandCount));
-        
-        // Set up the timer
-        passert(instance->hostBufferTimer != nullptr, "The host buffer timer should not be NULL.");
-        
-        passert(instance->hostBufferTimer->setTimeoutMS(*reinterpret_cast<UInt32*>(timeout)) == kIOReturnSuccess, "Should be able to set the timeout.");
-        
-        // Wait for the transfer result
-        // Block the current thread and release the gate
-        // Either the timeout handler or the interrupt handler will modify the status and wakeup the current thread
-        instance->commandGate->commandSleep(&instance->hostBufferTransferStatus);
-        
-        // When the sleep function returns, the transfer is done
-        return instance->hostBufferTransferStatus;
-    };
+    // Tell the device the location of the command buffer and to start executing commands
+    using namespace RTSX::MMIO;
     
-    IOReturn retVal = this->commandGate->runAction(action, &timeout);
+    this->hostBufferTransferStatus = kIOReturnNotReady;
     
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to transfer host commands. Error = 0x%x.", retVal);
-        
-        psoftassert(this->stopTransfer() == kIOReturnSuccess,
-                    "Failed to terminate the current transfer session.");
-    }
+    this->writeRegister32(rHCBAR, this->hostBufferAddress);
     
-    pinfo("Finished a command transfer session. Returns 0x%x.", retVal);
+    this->writeRegister32(rHCBCTLR, HCBCTLR::RegValueForStartCommand(this->hostCommandCounter.total));
     
-    return retVal;
+    // Set up the timer
+    passert(this->hostBufferTimer != nullptr, "The host buffer timer should not be NULL.");
+    
+    passert(this->hostBufferTimer->setTimeoutMS(timeout) == kIOReturnSuccess, "Should be able to set the timeout.");
+    
+    // Wait for the transfer result
+    // Block the current thread and release the gate
+    // Either the timeout handler or the interrupt handler will modify the status and wakeup the current thread
+    this->commandGate->commandSleep(&this->hostBufferTransferStatus);
+    
+    // When the sleep function returns, the transfer is done
+    return this->hostBufferTransferStatus;
 }
+
+// TODO: DEPRECATED
+/////
+///// Finish the existing host command transfer session
+/////
+///// @param timeout Specify the amount of time in milliseconds
+///// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+///// @note Port: This function replaces `rtsx_pci_send_cmd()` defined in `rtsx_psr.c`.
+///// @note This function sends all commands in the queue to the device.
+/////
+//IOReturn RealtekPCIeCardReaderController::endCommandTransfer(UInt32 timeout)
+//{
+//    // The transfer routine will run in a gated context
+//    // Returns `kIOReturnTimeout` if the transfer has timed out;
+//    //         `kIOReturnSuccess` if the transfer has succeeded;
+//    //         `kIOReturnError` otherwise.
+//    auto action = [](OSObject* controller, void* timeout, void*, void*, void*) -> IOReturn
+//    {
+//        // Retrieve the controller instance
+//        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
+//
+//        passert(instance != nullptr, "The controller instance is invalid.");
+//
+//        // Tell the device the location of the command buffer and to start executing commands
+//        using namespace RTSX::MMIO;
+//
+//        instance->hostBufferTransferStatus = kIOReturnNotReady;
+//
+//        instance->writeRegister32(rHCBAR, instance->hostBufferAddress);
+//
+//        instance->writeRegister32(rHCBCTLR, HCBCTLR::RegValueForStartCommand(instance->hostCommandCount));
+//
+//        // Set up the timer
+//        passert(instance->hostBufferTimer != nullptr, "The host buffer timer should not be NULL.");
+//
+//        passert(instance->hostBufferTimer->setTimeoutMS(*reinterpret_cast<UInt32*>(timeout)) == kIOReturnSuccess, "Should be able to set the timeout.");
+//
+//        // Wait for the transfer result
+//        // Block the current thread and release the gate
+//        // Either the timeout handler or the interrupt handler will modify the status and wakeup the current thread
+//        instance->commandGate->commandSleep(&instance->hostBufferTransferStatus);
+//
+//        // When the sleep function returns, the transfer is done
+//        return instance->hostBufferTransferStatus;
+//    };
+//
+//    IOReturn retVal = this->commandGate->runAction(action, &timeout);
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to transfer host commands. Error = 0x%x.", retVal);
+//
+//        psoftassert(this->stopTransfer() == kIOReturnSuccess,
+//                    "Failed to terminate the current transfer session.");
+//    }
+//
+//    pinfo("Finished a command transfer session. Returns 0x%x.", retVal);
+//
+//    return retVal;
+//}
 
 ///
 /// Finish the existing host command transfer session without waiting for the completion interrupt
@@ -900,7 +989,7 @@ void RealtekPCIeCardReaderController::endCommandTransferNoWait()
         
         instance->writeRegister32(rHCBAR, instance->hostBufferAddress);
         
-        instance->writeRegister32(rHCBCTLR, HCBCTLR::RegValueForStartCommand(instance->hostCommandCount));
+        instance->writeRegister32(rHCBCTLR, HCBCTLR::RegValueForStartCommand(instance->hostCommandCounter.total));
         
         return kIOReturnSuccess;
     };
@@ -908,164 +997,169 @@ void RealtekPCIeCardReaderController::endCommandTransferNoWait()
     this->commandGate->runAction(action);
 }
 
-///
-/// Enqueue a sequence of commands to read registers conveniently
-///
-/// @param pairs A sequence of pairs of register address and value
-/// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-/// @note This function provides an elegant way to enqueue multiple commands and handle errors.
-///
-IOReturn RealtekPCIeCardReaderController::enqueueReadRegisterCommands(const ChipRegValuePairs& pairs)
-{
-    IOItemCount count = pairs.size();
-    
-    for (auto index = 0; index < count; index += 1)
-    {
-        auto retVal = this->enqueueReadRegisterCommand(pairs.get(index).address);
-        
-        if (retVal != kIOReturnSuccess)
-        {
-            perr("Failed to enqueue the command at index %d. Error = 0x%x.", index, retVal);
-            
-            return retVal;
-        }
-    }
-    
-    return kIOReturnSuccess;
-}
+//// TODO: DEPRECATED
+/////
+///// Enqueue a sequence of commands to read registers conveniently
+/////
+///// @param pairs A sequence of pairs of register address and value
+///// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
+///// @note This function provides an elegant way to enqueue multiple commands and handle errors.
+/////
+//IOReturn RealtekPCIeCardReaderController::enqueueReadRegisterCommands(const ChipRegValuePairs& pairs)
+//{
+//    IOItemCount count = pairs.size();
+//
+//    for (auto index = 0; index < count; index += 1)
+//    {
+//        auto retVal = this->enqueueReadRegisterCommand(pairs.get(index).address);
+//
+//        if (retVal != kIOReturnSuccess)
+//        {
+//            perr("Failed to enqueue the command at index %d. Error = 0x%x.", index, retVal);
+//
+//            return retVal;
+//        }
+//    }
+//
+//    return kIOReturnSuccess;
+//}
+//
+//// TODO: DEPRECATED
+/////
+///// Enqueue a sequence of commands to write registers conveniently
+/////
+///// @param pairs A sequence of pairs of register address and value
+///// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
+///// @note This function provides an elegant way to enqueue multiple commands and handle errors.
+/////
+//IOReturn RealtekPCIeCardReaderController::enqueueWriteRegisterCommands(const ChipRegValuePairs& pairs)
+//{
+//    IOItemCount count = pairs.size();
+//
+//    for (auto index = 0; index < count; index += 1)
+//    {
+//        ChipRegValuePair pair = pairs.get(index);
+//
+//        auto retVal = this->enqueueWriteRegisterCommand(pair.address, pair.mask, pair.value);
+//
+//        if (retVal != kIOReturnSuccess)
+//        {
+//            perr("Failed to enqueue the command at index %d. Error = 0x%x.", index, retVal);
+//
+//            return retVal;
+//        }
+//    }
+//
+//    return kIOReturnSuccess;
+//}
+//
+//// TODO: DEPRECATED
+/////
+///// Transfer a sequence of commands to read registers conveniently
+/////
+///// @param pairs A sequence of pairs of register address and value
+///// @param timeout Specify the amount of time in milliseconds
+///// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
+///// @note This function provides an elegant way to start a command transfer session and handle errors.
+/////       Same as calling `startCommandTransfer`, a sequence of `enqueueReadRegisterCommand` and `endCommandTransfer`.
+/////
+//IOReturn RealtekPCIeCardReaderController::transferReadRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout)
+//{
+//    IOReturn retVal;
+//
+//    // Guard: Begin command transfer
+//    retVal = this->beginCommandTransfer();
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to initiate a new command transfer session. Error = 0x%x.", retVal);
+//
+//        return retVal;
+//    }
+//
+//    // Guard: Enqueue commands
+//    retVal = this->enqueueReadRegisterCommands(pairs);
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to enqueue the given sequence of commands. Error = 0x%x.", retVal);
+//
+//        return retVal;
+//    }
+//
+//    // Guard: Transfer commands
+//    return this->endCommandTransfer(timeout);
+//}
+//
+//// TODO: DEPRECATED
+/////
+///// Transfer a sequence of commands to write registers conveniently
+/////
+///// @param pairs A sequence of pairs of register address and value
+///// @param timeout Specify the amount of time in milliseconds
+///// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+///// @note This function provides an elegant way to start a command transfer session and handle errors.
+/////       Same as calling `startCommandTransfer`, a sequence of `enqueueWriteRegisterCommand` and `endCommandTransfer`.
+/////
+//
+//IOReturn RealtekPCIeCardReaderController::transferWriteRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout)
+//{
+//    IOReturn retVal;
+//
+//    // Guard: Begin command transfer
+//    retVal = this->beginCommandTransfer();
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to initiate a new command transfer session. Error = 0x%x.", retVal);
+//
+//        return retVal;
+//    }
+//
+//    // Guard: Enqueue commands
+//    retVal = this->enqueueWriteRegisterCommands(pairs);
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to enqueue the given sequence of commands. Error = 0x%x.", retVal);
+//
+//        return retVal;
+//    }
+//
+//    // Guard: Transfer commands
+//    return this->endCommandTransfer(timeout);
+//}
 
-///
-/// Enqueue a sequence of commands to write registers conveniently
-///
-/// @param pairs A sequence of pairs of register address and value
-/// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-/// @note This function provides an elegant way to enqueue multiple commands and handle errors.
-///
-IOReturn RealtekPCIeCardReaderController::enqueueWriteRegisterCommands(const ChipRegValuePairs& pairs)
-{
-    IOItemCount count = pairs.size();
-    
-    for (auto index = 0; index < count; index += 1)
-    {
-        ChipRegValuePair pair = pairs.get(index);
-        
-        auto retVal = this->enqueueWriteRegisterCommand(pair.address, pair.mask, pair.value);
-        
-        if (retVal != kIOReturnSuccess)
-        {
-            perr("Failed to enqueue the command at index %d. Error = 0x%x.", index, retVal);
-            
-            return retVal;
-        }
-    }
-    
-    return kIOReturnSuccess;
-}
-
-///
-/// Transfer a sequence of commands to read registers conveniently
-///
-/// @param pairs A sequence of pairs of register address and value
-/// @param timeout Specify the amount of time in milliseconds
-/// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-/// @note This function provides an elegant way to start a command transfer session and handle errors.
-///       Same as calling `startCommandTransfer`, a sequence of `enqueueReadRegisterCommand` and `endCommandTransfer`.
-///
-IOReturn RealtekPCIeCardReaderController::transferReadRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout)
-{
-    IOReturn retVal;
-    
-    // Guard: Begin command transfer
-    retVal = this->beginCommandTransfer();
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to initiate a new command transfer session. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    // Guard: Enqueue commands
-    retVal = this->enqueueReadRegisterCommands(pairs);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to enqueue the given sequence of commands. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    // Guard: Transfer commands
-    return this->endCommandTransfer(timeout);
-}
-
-///
-/// Transfer a sequence of commands to write registers conveniently
-///
-/// @param pairs A sequence of pairs of register address and value
-/// @param timeout Specify the amount of time in milliseconds
-/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-/// @note This function provides an elegant way to start a command transfer session and handle errors.
-///       Same as calling `startCommandTransfer`, a sequence of `enqueueWriteRegisterCommand` and `endCommandTransfer`.
-///
-
-IOReturn RealtekPCIeCardReaderController::transferWriteRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout)
-{
-    IOReturn retVal;
-    
-    // Guard: Begin command transfer
-    retVal = this->beginCommandTransfer();
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to initiate a new command transfer session. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    // Guard: Enqueue commands
-    retVal = this->enqueueWriteRegisterCommands(pairs);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to enqueue the given sequence of commands. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    // Guard: Transfer commands
-    return this->endCommandTransfer(timeout);
-}
-
-///
-/// Tell the device to stop executing commands
-///
-/// @note Port: This function replaces `rtsx_pci_stop_cmd()` defined in `rtsx_psr.c`.
-/// @note Subclasses may override this function to inject additional code before calling the generic routine.
-///
-IOReturn RealtekPCIeCardReaderController::stopTransfer()
-{
-    pinfo("Stopping the transfer...");
-    
-    using namespace RTSX::MMIO;
-    
-    this->writeRegister32(rHCBCTLR, HCBCTLR::kStopCommand);
-    
-    this->writeRegister32(rHDBCTLR, HDBCTLR::kStopDMA);
-    
-    using namespace RTSX::Chip;
-    
-    const ChipRegValuePair pairs[] =
-    {
-        // Reset DMA
-        { DMA::rCTL, DMA::CTL::kResetMask, DMA::CTL::kResetValue },
-        
-        // Flush the ring buffer
-        { RBUF::rCTL, RBUF::CTL::kFlushMask, RBUF::CTL::kFlushValue }
-    };
-    
-    return this->writeChipRegisters(SimpleRegValuePairs(pairs));
-}
+// TODO: DEPRECATED
+/////
+///// Tell the device to stop executing commands
+/////
+///// @note Port: This function replaces `rtsx_pci_stop_cmd()` defined in `rtsx_psr.c`.
+///// @note Subclasses may override this function to inject additional code before calling the generic routine.
+/////
+//IOReturn RealtekPCIeCardReaderController::stopTransfer()
+//{
+//    pinfo("Stopping the transfer...");
+//
+//    using namespace RTSX::MMIO;
+//
+//    this->writeRegister32(rHCBCTLR, HCBCTLR::kStopCommand);
+//
+//    this->writeRegister32(rHDBCTLR, HDBCTLR::kStopDMA);
+//
+//    using namespace RTSX::Chip;
+//
+//    const ChipRegValuePair pairs[] =
+//    {
+//        // Reset DMA
+//        { DMA::rCTL, DMA::CTL::kResetMask, DMA::CTL::kResetValue },
+//
+//        // Flush the ring buffer
+//        { RBUF::rCTL, RBUF::CTL::kFlushMask, RBUF::CTL::kFlushValue }
+//    };
+//
+//    return this->writeChipRegisters(SimpleRegValuePairs(pairs));
+//}
 
 //
 // MARK: - Host Data Management
@@ -1218,8 +1312,7 @@ IOReturn RealtekPCIeCardReaderController::performDMATransfer(IODMACommand* comma
     {
         perr("Failed to perform the DMA transfer. Error = 0x%x.", retVal);
         
-        psoftassert(this->stopTransfer() == kIOReturnSuccess,
-                    "Failed to terminate the current transfer session.");
+        this->clearHostError();
         
         if (this->dmaErrorCounter < kMaxDMATransferFailures)
         {
@@ -1266,6 +1359,53 @@ IOReturn RealtekPCIeCardReaderController::performDMAWrite(IODMACommand* command,
     pinfo("The host device requests a DMA write operation.");
     
     return this->performDMATransfer(command, timeout, HDBCTLR::kStartDMA | HDBCTLR::kUseADMA);
+}
+
+//
+// MARK: - Clear Error
+//
+
+///
+/// Clear any transfer error on the card side
+///
+/// @note Port: This function replaces the code block that stops the card and clears the card errorin `sd_clear_error()` defined in `rtsx_pci_sdmmc.c`.
+///
+void RealtekPCIeCardReaderController::clearCardError()
+{
+    using namespace RTSX::Chip::CARD;
+    
+    psoftassert(this->writeChipRegister(rSTOP, STOP::kStopSD | STOP::kClearSDError, STOP::kStopSD | STOP::kClearSDError) == kIOReturnSuccess,
+                "Failed to clear the card error.");
+}
+
+///
+/// Clear any transfer error on the host side
+///
+/// @note This function is invoked when a command or data transfer has failed.
+/// @note Port: This function replaces `rtsx_pci_stop_cmd()` defined in `rtsx_psr.c`.
+///             RTS5228, RTS5260 and RTS5261 controllers must override this function.
+///
+void RealtekPCIeCardReaderController::clearHostError()
+{
+    using namespace RTSX::MMIO;
+    
+    this->writeRegister32(rHCBCTLR, HCBCTLR::kStopCommand);
+    
+    this->writeRegister32(rHDBCTLR, HDBCTLR::kStopDMA);
+    
+    using namespace RTSX::Chip;
+    
+    const ChipRegValuePair pairs[] =
+    {
+        // Reset DMA
+        { DMA::rCTL, DMA::CTL::kResetMask, DMA::CTL::kResetValue },
+        
+        // Flush the ring buffer
+        { RBUF::rCTL, RBUF::CTL::kFlushMask, RBUF::CTL::kFlushValue }
+    };
+    
+    psoftassert(this->writeChipRegisters(SimpleRegValuePairs(pairs)) == kIOReturnSuccess,
+                "Failed to stop clear the host error.");
 }
 
 //
@@ -1333,8 +1473,96 @@ IOReturn RealtekPCIeCardReaderController::disableLEDBlinking()
 }
 
 //
+// MARK: - Card Selection & Share Mode
+//
+
+///
+/// Select the SD card
+///
+/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+/// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+/// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+///
+IOReturn RealtekPCIeCardReaderController::selectCard()
+{
+    using namespace RTSX::Chip;
+    
+    return this->enqueueWriteRegisterCommand(CARD::rSEL, CARD::SEL::kMask, CARD::SEL::kSD);
+}
+
+///
+/// Configure the card share mode
+///
+/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+/// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+/// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+///
+IOReturn RealtekPCIeCardReaderController::configureCardShareMode()
+{
+    using namespace RTSX::Chip;
+    
+    return this->enqueueWriteRegisterCommand(CARD::rSHAREMODE, CARD::SHAREMODE::kMask, CARD::SHAREMODE::k48SD);
+}
+
+//
 // MARK: - Card Power Management
 //
+
+///
+/// Enable the card clock
+///
+/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+/// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+/// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+///
+IOReturn RealtekPCIeCardReaderController::enableCardClock()
+{
+    using namespace RTSX::Chip;
+    
+    return this->enqueueWriteRegisterCommand(CARD::rCLK, CARD::CLK::kEnableSD, CARD::CLK::kEnableSD);
+}
+
+///
+/// Disable the card clock
+///
+/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+/// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+/// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+///
+IOReturn RealtekPCIeCardReaderController::disableCardClock()
+{
+    using namespace RTSX::Chip;
+    
+    return this->enqueueWriteRegisterCommand(CARD::rCLK, CARD::CLK::kEnableSD, CARD::CLK::kDisable);
+}
+
+///
+/// Enable the card output
+///
+/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+/// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+/// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+///
+IOReturn RealtekPCIeCardReaderController::enableCardOutput()
+{
+    using namespace RTSX::Chip;
+    
+    return this->enqueueWriteRegisterCommand(CARD::rOUTPUT, CARD::OUTPUT::kSDMask, CARD::OUTPUT::kEnableSDValue);
+}
+
+///
+/// Disable the card output
+///
+/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+/// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+/// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+///
+IOReturn RealtekPCIeCardReaderController::disableCardOutput()
+{
+    using namespace RTSX::Chip;
+    
+    return this->enqueueWriteRegisterCommand(CARD::rOUTPUT, CARD::OUTPUT::kSDMask, CARD::OUTPUT::kDisableSDValue);
+}
 
 ///
 /// Set the driving parameters for the given output voltage
@@ -1399,191 +1627,168 @@ IOReturn RealtekPCIeCardReaderController::setDrivingForOutputVoltage(OutputVolta
 // MARK: - Card Clock Configurations
 //
 
-///
-/// Adjust the card clock if DMA transfer errors occurred
-///
-/// @param cardClock The current card clock
-/// @return The adjusted card clock.
-/// @note Port: This function replaces the code block that reduces the card clock in `rtsx_pci_switch_clock()` defined in `rtsx_psr.c`.
-///             By default, this function does not adjust the card clock and return the given clock.
-///             RTS5227 controller must override this function.
-///
-UInt32 RealtekPCIeCardReaderController::getAdjustedCardClockOnDMAError(UInt32 cardClock)
-{
-    return cardClock;
-}
+//// TODO: DEPRECATED
+/////
+///// Adjust the card clock if DMA transfer errors occurred
+/////
+///// @param cardClock The current card clock
+///// @return The adjusted card clock.
+///// @note Port: This function replaces the code block that reduces the card clock in `rtsx_pci_switch_clock()` defined in `rtsx_psr.c`.
+/////             By default, this function does not adjust the card clock and return the given clock.
+/////             RTS5227 controller must override this function.
+/////
+//UInt32 RealtekPCIeCardReaderController::getAdjustedCardClockOnDMAError(UInt32 cardClock)
+//{
+//    return cardClock;
+//}
+//
+//// TODO: DEPRECATED
+/////
+///// Convert the given SSC clock to the divider N
+/////
+///// @param clock The SSC clock in MHz
+///// @return The divider N.
+///// @note Port: This function replaces `conv_clk_and_div_n()` defined in `rtsx_psr.c`.
+/////             RTL8411 series controllers must override this function.
+/////
+//UInt32 RealtekPCIeCardReaderController::sscClock2DividerN(UInt32 clock)
+//{
+//    return clock - 2;
+//}
+//
+//// TODO: DEPRECATED
+/////
+///// Convert the given divider N back to the SSC clock
+/////
+///// @param n The divider N
+///// @return The SSC clock in MHz.
+///// @note Port: This function replaces `conv_clk_and_div_n()` defined in `rtsx_psr.c`.
+/////             RTL8411 series controllers must override this function.
+/////
+//UInt32 RealtekPCIeCardReaderController::dividerN2SSCClock(UInt32 n)
+//{
+//    return n + 2;
+//}
 
 ///
-/// Convert the given SSC clock to the divider N
+/// Calculate the number of MCUs from the given SSC clock
 ///
 /// @param clock The SSC clock in MHz
-/// @return The divider N.
-/// @note Port: This function replaces `conv_clk_and_div_n()` defined in `rtsx_psr.c`.
-///             RTL8411 series controllers must override this function.
+/// @return The MCU count.
+/// @note Port: This function replaces the code block that calculates the MCU count in `rtsx_pci_switch_clock()` defined in `rtsx_psr.c`.
+/// @note Concrete controllers must ensure that the returned MCU count is less than or equal to 15.
 ///
-UInt32 RealtekPCIeCardReaderController::sscClock2DividerN(UInt32 clock)
+UInt32 RealtekPCIeCardReaderController::sscClock2MCUCount(UInt32 clock)
 {
-    return clock - 2;
+    return min(125 / clock + 3, 15);
 }
 
 ///
-/// Convert the given divider N back to the SSC clock
+/// Convert the given SSC depth to the actual register value
 ///
-/// @param n The divider N
-/// @return The SSC clock in MHz.
-/// @note Port: This function replaces `conv_clk_and_div_n()` defined in `rtsx_psr.c`.
-///             RTL8411 series controllers must override this function.
-///
-UInt32 RealtekPCIeCardReaderController::dividerN2SSCClock(UInt32 n)
-{
-    return n + 2;
-}
-
-///
-/// Switch to the given card clock
-///
-/// @param cardClock The card clock in Hz
-/// @param sscDepth The SSC depth value
-/// @param initialMode Pass `true` if the card is at its initial stage
-/// @param doubleClock Pass `true` if the SSC clock should be doubled
-/// @param vpclock Pass `true` if VPCLOCK is used
-/// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note Port: This function replaces `rtsx_pci_switch_clock()`  defined in `rtsx_psr.c`.
+/// @param depth The SSC depth
+/// @return The register value.
 /// @note Port: RTS5261 and RTS5228 controllers must override this function.
 ///
-IOReturn RealtekPCIeCardReaderController::switchCardClock(UInt32 cardClock, SSCDepth sscDepth, bool initialMode, bool doubleClock, bool vpclock)
+UInt8 RealtekPCIeCardReaderController::sscDepth2RegValue(SSCDepth depth)
 {
     using namespace RTSX::Chip;
     
-    // Adjust the clock divider and the frequency if the card is at its initial stage
-    UInt8 clockDivider = SD::CFG1::kClockDivider0;
-    
-    if (initialMode)
+    switch (depth)
     {
-        clockDivider = SD::CFG1::kClockDivider128;
-        
-        cardClock = MHz2Hz(30);
-    }
-    
-    // Set the clock divider
-    IOReturn retVal = this->writeChipRegister(SD::rCFG1, SD::CFG1::kClockDividerMask, clockDivider);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to set the clock divider to %d. Error = 0x%x.", clockDivider, retVal);
-        
-        return retVal;
-    }
-    
-    // Get the new card clock if DMA transfer errors have occurred
-    cardClock = this->getAdjustedCardClockOnDMAError(cardClock);
-    
-    cardClock = Hz2MHz(cardClock);
-    
-    pinfo("The card clock will be switched to %d MHz.", cardClock);
-    
-    // Check whether the host should double the SSC clock
-    UInt32 sscClock = cardClock;
-    
-    if (doubleClock && !initialMode)
-    {
-        sscClock *= 2;
-    }
-    
-    // Check whether the host should switch the clock
-    pinfo("Internal SSC Clock = %d MHz; Current Clock = %d MHz.", sscClock, this->currentSSCClock);
-    
-    if (sscClock == this->currentSSCClock)
-    {
-        pinfo("No need to switch the clock.");
-        
-        return kIOReturnSuccess;
-    }
-    
-    // Calculate the SSC clock divider N
-    UInt32 n = this->sscClock2DividerN(sscClock);
-    
-    if (sscClock <= 2 || n > RealtekPCIeCardReaderController::kMaxSSCClockDividerN)
-    {
-        perr("The SSC clock divider N %d derived from the clock %d MHz is invalid.", n, sscClock);
-        
-        return kIOReturnInvalid;
-    }
-    
-    // Calculate the MCU count
-    UInt32 mcus = 125 / sscClock + 3;
-    
-    pinfo("MCU Count = %d.", mcus);
-    
-    if (mcus > 15)
-    {
-        mcus = 15;
-    }
-    
-    // Ensure that the SSC clock divider N is not too small
-    UInt8 divider;
-    
-    for (divider = CLK::DIV::k1; divider < CLK::DIV::k8; divider += 1)
-    {
-        if (n >= RealtekPCIeCardReaderController::kMinSSCClockDividerN)
+        case SSCDepth::k4M:
         {
-            break;
+            return SSC::CTL2::kDepth4M;
         }
-        
-        n = this->sscClock2DividerN(this->dividerN2SSCClock(n) * 2);
+            
+        case SSCDepth::k2M:
+        {
+            return SSC::CTL2::kDepth2M;
+        }
+            
+        case SSCDepth::k1M:
+        {
+            return SSC::CTL2::kDepth1M;
+        }
+            
+        case SSCDepth::k500K:
+        {
+            return SSC::CTL2::kDepth500K;
+        }
+            
+        case SSCDepth::k250K:
+        {
+            return SSC::CTL2::kDepth250K;
+        }
+            
+        default:
+        {
+            pfatal("The given SSC depth %u is unsupported by the PCIe card reader.", depth);
+        }
     }
+}
+
+///
+/// Revise the given SSC depth register value
+///
+/// @param depth The SSC depth register value
+/// @param divider The SSC clock divider value
+/// @return The revised SSC depth register value.
+/// @note Port: RTS5261 and RTS5228 controllers must override this function.
+///
+UInt8 RealtekPCIeCardReaderController::reviseSSCDepthRegValue(UInt8 depth, UInt8 divider)
+{
+    using namespace RTSX::Chip;
     
-    pinfo("SSC clock divider N = %d; Divider register value = %d.", n, divider);
-    
-    // Calculate the SSC depth
-    static constexpr UInt8 kSSCDepthTable[] =
-    {
-        [static_cast<UInt32>(SSCDepth::k4M)] = SSC::CTL2::kDepth4M,
-        [static_cast<UInt32>(SSCDepth::k2M)] = SSC::CTL2::kDepth2M,
-        [static_cast<UInt32>(SSCDepth::k1M)] = SSC::CTL2::kDepth1M,
-        [static_cast<UInt32>(SSCDepth::k500K)] = SSC::CTL2::kDepth500K,
-        [static_cast<UInt32>(SSCDepth::k250K)] = SSC::CTL2::kDepth250K,
-    };
-    
-    UInt8 sscDepthRegValue = kSSCDepthTable[static_cast<UInt32>(sscDepth)];
-    
-    pinfo("SSC Depth RegVal = %d.", sscDepthRegValue);
-    
-    // Double the SSC depth if necessary
-    if (doubleClock)
-    {
-        sscDepthRegValue = SSC::CTL2::doubleDepth(sscDepthRegValue);
-    }
-    
-    // Revise the SSC depth
     if (divider > CLK::DIV::k1)
     {
-        if (sscDepthRegValue > (divider - 1))
+        if (depth > (divider - 1))
         {
-            sscDepthRegValue -= (divider - 1);
+            depth -= (divider - 1);
         }
         else
         {
-            sscDepthRegValue = SSC::CTL2::kDepth4M;
+            depth = SSC::CTL2::kDepth4M;
         }
     }
     
-    pinfo("Revised SSC Depth RegVal = %d.", sscDepthRegValue);
+    return depth;
+}
+
+///
+/// Switch to the given SSC clock
+///
+/// @param depth The SSC depth register value
+/// @param n The SSC clock n value
+/// @param divider The SSC clock divider
+/// @param mcus The number of MCUs
+/// @param vpclock `true` if VPCLOCK should be used
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note This function does the actual clock switching and is controller-dependent.
+///
+IOReturn RealtekPCIeCardReaderController::switchCardClock(UInt8 depth, UInt8 n, UInt8 divider, UInt8 mcus, bool vpclock)
+{
+    using namespace RTSX::Chip;
     
-    // Send the command
+    pinfo("Switching the card clock with SSC depth = %u, N = %u, Divider = %u, MCU Count = %u, Use VPClock = %s.",
+          depth, n, divider, mcus, YESNO(vpclock));
+    
+    // Host commands to change the card clock
     const ChipRegValuePair pairs[] =
     {
         { CLK::rCTL, CLK::CTL::kLowFrequency, CLK::CTL::kLowFrequency },
         { CLK::rDIV, 0xFF, static_cast<UInt8>(divider << 4 | mcus) },
         { SSC::rCTL1, SSC::CTL1::kRSTB, 0 },
-        { SSC::rCTL2, SSC::CTL2::kDepthMask, sscDepthRegValue },
-        { SSC::rDIVN0, 0xFF, static_cast<UInt8>(n) },
+        { SSC::rCTL2, SSC::CTL2::kDepthMask, depth },
+        { SSC::rDIVN0, 0xFF, n },
         { SSC::rCTL1, SSC::CTL1::kRSTB, SSC::CTL1::kRSTB },
         
         // Send the following commands if vpclock is true
         { SD::rVPCLK0CTL, SD::VPCTL::kPhaseNotReset, 0 },
         { SD::rVPCLK0CTL, SD::VPCTL::kPhaseNotReset, SD::VPCTL::kPhaseNotReset }
     };
+    
+    IOReturn retVal = kIOReturnSuccess;
     
     if (vpclock)
     {
@@ -1604,21 +1809,190 @@ IOReturn RealtekPCIeCardReaderController::switchCardClock(UInt32 cardClock, SSCD
     // Wait until the SSC clock becomes stable
     IODelay(RealtekPCIeCardReaderController::kWaitStableSSCClock);
     
-    retVal = this->writeChipRegister(CLK::rCTL, CLK::CTL::kLowFrequency, 0);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to toggle the clock. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    pinfo("SSC clock has been switched to %d MHz.", sscClock);
-    
-    this->currentSSCClock = sscClock;
-    
-    return kIOReturnSuccess;
+    return this->writeChipRegister(CLK::rCTL, CLK::CTL::kLowFrequency, 0);
 }
+
+//// TODO: DEPRECATED
+/////
+///// Switch to the given card clock
+/////
+///// @param cardClock The card clock in Hz
+///// @param sscDepth The SSC depth value
+///// @param initialMode Pass `true` if the card is at its initial stage
+///// @param doubleClock Pass `true` if the SSC clock should be doubled
+///// @param vpclock Pass `true` if VPCLOCK is used
+///// @return `kIOReturnSuccess` on success, other values otherwise.
+///// @note Port: This function replaces `rtsx_pci_switch_clock()`  defined in `rtsx_psr.c`.
+///// @note Port: RTS5261 and RTS5228 controllers must override this function.
+/////
+//IOReturn RealtekPCIeCardReaderController::switchCardClock(UInt32 cardClock, SSCDepth sscDepth, bool initialMode, bool doubleClock, bool vpclock)
+//{
+//    using namespace RTSX::Chip;
+//
+//    // Adjust the clock divider and the frequency if the card is at its initial stage
+//    UInt8 clockDivider = SD::CFG1::kClockDivider0;
+//
+//    if (initialMode)
+//    {
+//        clockDivider = SD::CFG1::kClockDivider128;
+//
+//        cardClock = MHz2Hz(30);
+//    }
+//
+//    // Set the clock divider
+//    IOReturn retVal = this->writeChipRegister(SD::rCFG1, SD::CFG1::kClockDividerMask, clockDivider);
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to set the clock divider to %d. Error = 0x%x.", clockDivider, retVal);
+//
+//        return retVal;
+//    }
+//
+//    // Get the new card clock if DMA transfer errors have occurred
+//    cardClock = this->getAdjustedCardClockOnDMAError(cardClock);
+//
+//    cardClock = Hz2MHz(cardClock);
+//
+//    pinfo("The card clock will be switched to %d MHz.", cardClock);
+//
+//    // Check whether the host should double the SSC clock
+//    UInt32 sscClock = cardClock;
+//
+//    if (doubleClock && !initialMode)
+//    {
+//        sscClock *= 2;
+//    }
+//
+//    // Check whether the host should switch the clock
+//    pinfo("Internal SSC Clock = %d MHz; Current Clock = %d MHz.", sscClock, this->currentSSCClock);
+//
+//    if (sscClock == this->currentSSCClock)
+//    {
+//        pinfo("No need to switch the clock.");
+//
+//        return kIOReturnSuccess;
+//    }
+//
+//    // Calculate the SSC clock divider N
+//    UInt32 n = this->sscClock2DividerN(sscClock);
+//
+//    if (sscClock <= 2 || n > RealtekPCIeCardReaderController::kMaxSSCClockDividerN)
+//    {
+//        perr("The SSC clock divider N %d derived from the clock %d MHz is invalid.", n, sscClock);
+//
+//        return kIOReturnInvalid;
+//    }
+//
+//    // Calculate the MCU count
+//    UInt32 mcus = 125 / sscClock + 3;
+//
+//    pinfo("MCU Count = %d.", mcus);
+//
+//    if (mcus > 15)
+//    {
+//        mcus = 15;
+//    }
+//
+//    // Ensure that the SSC clock divider N is not too small
+//    UInt8 divider;
+//
+//    for (divider = CLK::DIV::k1; divider < CLK::DIV::k8; divider += 1)
+//    {
+//        if (n >= RealtekPCIeCardReaderController::kMinSSCClockDividerN)
+//        {
+//            break;
+//        }
+//
+//        n = this->sscClock2DividerN(this->dividerN2SSCClock(n) * 2);
+//    }
+//
+//    pinfo("SSC clock divider N = %d; Divider register value = %d.", n, divider);
+//
+//    // Calculate the SSC depth
+//    static constexpr UInt8 kSSCDepthTable[] =
+//    {
+//        [static_cast<UInt32>(SSCDepth::k4M)] = SSC::CTL2::kDepth4M,
+//        [static_cast<UInt32>(SSCDepth::k2M)] = SSC::CTL2::kDepth2M,
+//        [static_cast<UInt32>(SSCDepth::k1M)] = SSC::CTL2::kDepth1M,
+//        [static_cast<UInt32>(SSCDepth::k500K)] = SSC::CTL2::kDepth500K,
+//        [static_cast<UInt32>(SSCDepth::k250K)] = SSC::CTL2::kDepth250K,
+//    };
+//
+//    UInt8 sscDepthRegValue = kSSCDepthTable[static_cast<UInt32>(sscDepth)];
+//
+//    pinfo("SSC Depth RegVal = %d.", sscDepthRegValue);
+//
+//    // Double the SSC depth if necessary
+//    if (doubleClock)
+//    {
+//        sscDepthRegValue = SSC::CTL2::doubleDepth(sscDepthRegValue);
+//    }
+//
+//    // Revise the SSC depth
+//    if (divider > CLK::DIV::k1)
+//    {
+//        if (sscDepthRegValue > (divider - 1))
+//        {
+//            sscDepthRegValue -= (divider - 1);
+//        }
+//        else
+//        {
+//            sscDepthRegValue = SSC::CTL2::kDepth4M;
+//        }
+//    }
+//
+//    pinfo("Revised SSC Depth RegVal = %d.", sscDepthRegValue);
+//
+//    // Send the command
+//    const ChipRegValuePair pairs[] =
+//    {
+//        { CLK::rCTL, CLK::CTL::kLowFrequency, CLK::CTL::kLowFrequency },
+//        { CLK::rDIV, 0xFF, static_cast<UInt8>(divider << 4 | mcus) },
+//        { SSC::rCTL1, SSC::CTL1::kRSTB, 0 },
+//        { SSC::rCTL2, SSC::CTL2::kDepthMask, sscDepthRegValue },
+//        { SSC::rDIVN0, 0xFF, static_cast<UInt8>(n) },
+//        { SSC::rCTL1, SSC::CTL1::kRSTB, SSC::CTL1::kRSTB },
+//
+//        // Send the following commands if vpclock is true
+//        { SD::rVPCLK0CTL, SD::VPCTL::kPhaseNotReset, 0 },
+//        { SD::rVPCLK0CTL, SD::VPCTL::kPhaseNotReset, SD::VPCTL::kPhaseNotReset }
+//    };
+//
+//    if (vpclock)
+//    {
+//        retVal = this->transferWriteRegisterCommands(SimpleRegValuePairs(pairs), 2000);
+//    }
+//    else
+//    {
+//        retVal = this->transferWriteRegisterCommands(SimpleRegValuePairs(pairs, arrsize(pairs) - 2), 2000);
+//    }
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to transfer commands to set the card clock. Error = 0x%x.", retVal);
+//
+//        return retVal;
+//    }
+//
+//    // Wait until the SSC clock becomes stable
+//    IODelay(RealtekPCIeCardReaderController::kWaitStableSSCClock);
+//
+//    retVal = this->writeChipRegister(CLK::rCTL, CLK::CTL::kLowFrequency, 0);
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to toggle the clock. Error = 0x%x.", retVal);
+//
+//        return retVal;
+//    }
+//
+//    pinfo("SSC clock has been switched to %d MHz.", sscClock);
+//
+//    this->currentSSCClock = sscClock;
+//
+//    return kIOReturnSuccess;
+//}
 
 //
 // MARK: - Card Detection and Write Protection
@@ -2234,30 +2608,31 @@ void RealtekPCIeCardReaderController::prepareToWakeUp()
     pinfo("The hardware is ready.");
 }
 
-///
-/// Adjust the power state in response to system-wide power events
-///
-/// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to
-/// @param whatDevice A pointer to the power management object which registered to manage power for this device
-/// @return `kIOPMAckImplied` always.
-///
-IOReturn RealtekPCIeCardReaderController::setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice)
-{
-    pinfo("Setting the power state from %u to %lu.", this->getPowerState(), powerStateOrdinal);
-    
-    if (powerStateOrdinal == 0)
-    {
-        this->prepareToSleep();
-    }
-    else
-    {
-        this->prepareToWakeUp();
-    }
-    
-    pinfo("The power state has been set to %lu.", powerStateOrdinal);
-    
-    return kIOPMAckImplied;
-}
+// TODO: DEPRECATED
+/////
+///// Adjust the power state in response to system-wide power events
+/////
+///// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to
+///// @param whatDevice A pointer to the power management object which registered to manage power for this device
+///// @return `kIOPMAckImplied` always.
+/////
+//IOReturn RealtekPCIeCardReaderController::setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice)
+//{
+//    pinfo("Setting the power state from %u to %lu.", this->getPowerState(), powerStateOrdinal);
+//
+//    if (powerStateOrdinal == 0)
+//    {
+//        this->prepareToSleep();
+//    }
+//    else
+//    {
+//        this->prepareToWakeUp();
+//    }
+//
+//    pinfo("The power state has been set to %lu.", powerStateOrdinal);
+//
+//    return kIOPMAckImplied;
+//}
 
 //
 // MARK: - Hardware Interrupt Management
@@ -2703,25 +3078,26 @@ IOReturn RealtekPCIeCardReaderController::initHardwareCommon()
 // MARK: - Startup Routines
 //
 
-///
-/// Setup the power management
-///
-/// @return `true` on success, `false` otherwise.
-///
-bool RealtekPCIeCardReaderController::setupPowerManagement()
-{
-    static IOPMPowerState kPowerStates[] =
-    {
-        { kIOPMPowerStateVersion1, kIOPMPowerOff, kIOPMPowerOff, kIOPMPowerOff, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { kIOPMPowerStateVersion1, kIOPMPowerOn | kIOPMDeviceUsable | kIOPMInitialDeviceState, kIOPMPowerOn, kIOPMPowerOn, 0, 0, 0, 0, 0, 0, 0, 0 },
-    };
-    
-    this->PMinit();
-    
-    this->device->joinPMtree(this);
-    
-    return this->registerPowerDriver(this, kPowerStates, arrsize(kPowerStates)) == kIOPMNoErr;
-}
+// TODO: DEPRECATED
+/////
+///// Setup the power management
+/////
+///// @return `true` on success, `false` otherwise.
+/////
+//bool RealtekPCIeCardReaderController::setupPowerManagement()
+//{
+//    static IOPMPowerState kPowerStates[] =
+//    {
+//        { kIOPMPowerStateVersion1, kIOPMPowerOff, kIOPMPowerOff, kIOPMPowerOff, 0, 0, 0, 0, 0, 0, 0, 0 },
+//        { kIOPMPowerStateVersion1, kIOPMPowerOn | kIOPMDeviceUsable | kIOPMInitialDeviceState, kIOPMPowerOn, kIOPMPowerOn, 0, 0, 0, 0, 0, 0, 0, 0 },
+//    };
+//
+//    this->PMinit();
+//
+//    this->device->joinPMtree(this);
+//
+//    return this->registerPowerDriver(this, kPowerStates, arrsize(kPowerStates)) == kIOPMNoErr;
+//}
 
 ///
 /// Map the device memory
@@ -2762,48 +3138,49 @@ bool RealtekPCIeCardReaderController::mapDeviceMemory()
     return true;
 }
 
-///
-/// Setup the workloop
-///
-/// @return `true` on success, `false` otherwise.
-///
-bool RealtekPCIeCardReaderController::setupWorkLoop()
-{
-    pinfo("Creating the workloop and the command gate...");
-    
-    this->workLoop = IOWorkLoop::workLoop();
-    
-    if (this->workLoop == nullptr)
-    {
-        perr("Failed to create the workloop.");
-        
-        goto error;
-    }
-    
-    this->commandGate = IOCommandGate::commandGate(this);
-    
-    if (this->commandGate == nullptr)
-    {
-        perr("Failed to create the command gate.");
-        
-        goto error;
-    }
-    
-    this->workLoop->addEventSource(this->commandGate);
-    
-    pinfo("The workloop and the command gate have been created.");
-    
-    return true;
-    
-error:
-    OSSafeReleaseNULL(this->commandGate);
-    
-    OSSafeReleaseNULL(this->workLoop);
-    
-    pinfo("Failed to create the workloop and the command gate.");
-    
-    return false;
-}
+// TODO: DEPRECATED
+/////
+///// Setup the workloop
+/////
+///// @return `true` on success, `false` otherwise.
+/////
+//bool RealtekPCIeCardReaderController::setupWorkLoop()
+//{
+//    pinfo("Creating the workloop and the command gate...");
+//
+//    this->workLoop = IOWorkLoop::workLoop();
+//
+//    if (this->workLoop == nullptr)
+//    {
+//        perr("Failed to create the workloop.");
+//
+//        goto error;
+//    }
+//
+//    this->commandGate = IOCommandGate::commandGate(this);
+//
+//    if (this->commandGate == nullptr)
+//    {
+//        perr("Failed to create the command gate.");
+//
+//        goto error;
+//    }
+//
+//    this->workLoop->addEventSource(this->commandGate);
+//
+//    pinfo("The workloop and the command gate have been created.");
+//
+//    return true;
+//
+//error:
+//    OSSafeReleaseNULL(this->commandGate);
+//
+//    OSSafeReleaseNULL(this->workLoop);
+//
+//    pinfo("Failed to create the workloop and the command gate.");
+//
+//    return false;
+//}
 
 ///
 /// Probe the index of the message signaled interrupt
@@ -2951,8 +3328,6 @@ bool RealtekPCIeCardReaderController::setupHostBuffer()
     // All done: Save the address
     this->hostBufferAddress = segment.fIOVMAddr;
     
-    this->hostCommandCount = 0;
-    
     this->hostBufferTransferStatus = kIOReturnSuccess;
     
     pinfo("The host command and data buffer has been created. Bus address = 0x%08x.", segment.fIOVMAddr);
@@ -3089,13 +3464,14 @@ bool RealtekPCIeCardReaderController::createCardSlot()
 // MARK: - Teardown Routines
 //
 
-///
-/// Tear down the power management
-///
-void RealtekPCIeCardReaderController::tearDownPowerManagement()
-{
-    this->PMstop();
-}
+// TODO: DEPRECATED
+/////
+///// Tear down the power management
+/////
+//void RealtekPCIeCardReaderController::tearDownPowerManagement()
+//{
+//    this->PMstop();
+//}
 
 ///
 /// Tear down the interrupt event source
@@ -3114,15 +3490,16 @@ void RealtekPCIeCardReaderController::tearDownInterrupts()
     }
 }
 
-///
-/// Tear down the workloop
-///
-void RealtekPCIeCardReaderController::tearDownWorkLoop()
-{
-    OSSafeReleaseNULL(this->commandGate);
-    
-    OSSafeReleaseNULL(this->workLoop);
-}
+// TODO: DEPRECATED
+/////
+///// Tear down the workloop
+/////
+//void RealtekPCIeCardReaderController::tearDownWorkLoop()
+//{
+//    OSSafeReleaseNULL(this->commandGate);
+//
+//    OSSafeReleaseNULL(this->workLoop);
+//}
 
 ///
 /// Tear down the host command and buffer management module
@@ -3202,6 +3579,29 @@ void RealtekPCIeCardReaderController::destroyCardSlot()
 //
 
 ///
+/// Initialize the controller
+///
+/// @return `true` on success, `false` otherwise.
+///
+bool RealtekPCIeCardReaderController::init(OSDictionary* dictionary)
+{
+    if (!super::init(dictionary))
+    {
+        perr("Failed to initialize the super class.");
+        
+        return false;
+    }
+    
+    using namespace RTSX::Chip;
+    
+    this->hostClockLimits.sscClockNRange = { kMinSSCClockN, kMaxSSCClockN };
+    
+    this->hostClockLimits.sscClockDividerRange = { CLK::DIV::k1, CLK::DIV::k8 };
+    
+    return true;
+}
+
+///
 /// Start the controller
 ///
 /// @param provider An instance of PCI device that represents the card reader
@@ -3237,14 +3637,6 @@ bool RealtekPCIeCardReaderController::start(IOService* provider)
     
     this->device->setMemoryEnable(true);
     
-    // Setup the power management
-    if (!this->setupPowerManagement())
-    {
-        perr("Failed to setup the power management.");
-        
-        goto error1;
-    }
-    
     // Set up the memory map
     if (!this->mapDeviceMemory())
     {
@@ -3253,20 +3645,12 @@ bool RealtekPCIeCardReaderController::start(IOService* provider)
         goto error1;
     }
     
-    // Set up the work loop
-    if (!this->setupWorkLoop())
-    {
-        perr("Failed to set up the work loop.");
-        
-        goto error2;
-    }
-    
     // Set up the hardware interrupt
     if (!this->setupInterrupts())
     {
         perr("Failed to set up the hardware interrupt.");
         
-        goto error3;
+        goto error2;
     }
     
     // Set up the host buffer
@@ -3274,7 +3658,7 @@ bool RealtekPCIeCardReaderController::start(IOService* provider)
     {
         perr("Failed to set up the host buffer.");
         
-        goto error4;
+        goto error3;
     }
     
     // Fetch the current ASPM state
@@ -3287,7 +3671,7 @@ bool RealtekPCIeCardReaderController::start(IOService* provider)
     {
         perr("Failed to set up the card reader.");
         
-        goto error5;
+        goto error4;
     }
     
     // Create the card slot
@@ -3295,7 +3679,7 @@ bool RealtekPCIeCardReaderController::start(IOService* provider)
     {
         perr("Failed to create the card slot.");
         
-        goto error5;
+        goto error4;
     }
     
     // If the card is already inserted when the driver starts,
@@ -3328,21 +3712,16 @@ bool RealtekPCIeCardReaderController::start(IOService* provider)
     
     return true;
     
-error5:
+error4:
     this->tearDownHostBuffer();
     
-error4:
-    this->tearDownInterrupts();
-    
 error3:
-    this->tearDownWorkLoop();
+    this->tearDownInterrupts();
     
 error2:
     this->unmapDeviceMemory();
     
 error1:
-    this->tearDownPowerManagement();
-    
     this->device->setMemoryEnable(false);
     
     this->device->setBusMasterEnable(false);
@@ -3363,15 +3742,11 @@ error1:
 ///
 void RealtekPCIeCardReaderController::stop(IOService* provider)
 {
-    this->tearDownPowerManagement();
-    
     this->destroyCardSlot();
     
     this->tearDownHostBuffer();
     
     this->tearDownInterrupts();
-    
-    this->tearDownWorkLoop();
     
     this->unmapDeviceMemory();
     

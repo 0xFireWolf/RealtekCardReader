@@ -43,25 +43,25 @@ const RealtekRTS5227SeriesController::DrivingTable RealtekRTS5227SeriesControlle
 //
 
 /// A sequence of registers to transfer to enable SD pull control
-const ChipRegValuePair RealtekRTS5227SeriesController::kSDEnablePullControlTablePairs[] =
+const RealtekRTS5227SeriesController::ChipRegValuePair RealtekRTS5227SeriesController::kSDEnablePullControlTablePairs[] =
 {
     { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
     { RTSX::Chip::CARD::PULL::rCTL3, 0xE9 },
 };
 
-const SimpleRegValuePairs RealtekRTS5227SeriesController::kSDEnablePullControlTable =
+const RealtekRTS5227SeriesController::SimpleRegValuePairs RealtekRTS5227SeriesController::kSDEnablePullControlTable =
 {
     RealtekRTS5227SeriesController::kSDEnablePullControlTablePairs
 };
 
 /// A sequence of registers to transfer to disable SD pull control
-const ChipRegValuePair RealtekRTS5227SeriesController::kSDDisablePullControlTablePairs[] =
+const RealtekRTS5227SeriesController::ChipRegValuePair RealtekRTS5227SeriesController::kSDDisablePullControlTablePairs[] =
 {
     { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
     { RTSX::Chip::CARD::PULL::rCTL3, 0xD5 },
 };
 
-const SimpleRegValuePairs RealtekRTS5227SeriesController::kSDDisablePullControlTable =
+const RealtekRTS5227SeriesController::SimpleRegValuePairs RealtekRTS5227SeriesController::kSDDisablePullControlTable =
 {
     RealtekRTS5227SeriesController::kSDDisablePullControlTablePairs
 };

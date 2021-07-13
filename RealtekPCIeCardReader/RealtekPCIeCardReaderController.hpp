@@ -25,14 +25,6 @@
 #include "BitOptions.hpp"
 #include "ClosedRange.hpp"
 
-// TODO: Temp Definitions
-// TODO: REMOVE THIS LATER
-using ChipRegValuePair = RealtekCardReaderController::ChipRegValuePair;
-using ChipRegValuePairs = RealtekCardReaderController::ChipRegValuePairs;
-using SimpleRegValuePairs = RealtekCardReaderController::SimpleRegValuePairs;
-using ContiguousRegValuePairsForReadAccess = RealtekCardReaderController::ContiguousRegValuePairsForReadAccess;
-using ContiguousRegValuePairsForWriteAccess = RealtekCardReaderController::ContiguousRegValuePairsForWriteAccess;
-
 // TODO: RELOCATED THIS
 /// TX/RX clock phase
 struct ClockPhase
@@ -46,22 +38,24 @@ struct ClockPhase
         : sdr104(sdr104), sdr50(sdr50), ddr50(ddr50) {}
 };
 
+// TODO: DEPRECATED
 // TODO: RELOCATE THIS TO BASE CONTROLLER
 /// The card output volage
-enum class OutputVoltage: UInt32
-{
-    k3d3V, k1d8V
-};
-
-/// Enumerates all possible SSC depth values
-enum class SSCDepth: UInt32
-{
-    k4M = 0x01,
-    k2M = 0x02,
-    k1M = 0x03,
-    k500K = 0x04,
-    k250K = 0x05
-};
+//enum class OutputVoltage: UInt32
+//{
+//    k3d3V, k1d8V
+//};
+//
+//// TODO: DEPRECATED
+///// Enumerates all possible SSC depth values
+//enum class SSCDepth: UInt32
+//{
+//    k4M = 0x01,
+//    k2M = 0x02,
+//    k1M = 0x03,
+//    k500K = 0x04,
+//    k250K = 0x05
+//};
 
 #define LTR_ACTIVE_LATENCY_DEF        0x883C
 #define LTR_IDLE_LATENCY_DEF        0x892C
@@ -82,7 +76,7 @@ class RealtekSDXCSlot;
 ///
 /// @note This is the base class of all device-specific controllers.
 ///
-class RealtekPCIeCardReaderController: public AppleSDXC
+class RealtekPCIeCardReaderController: public RealtekCardReaderController
 {
     //
     // MARK: - Constructors & Destructors
@@ -90,17 +84,17 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     
     OSDeclareAbstractStructors(RealtekPCIeCardReaderController);
     
-    using super = AppleSDXC;
+    using super = RealtekCardReaderController;
     
     //
     // MARK: - Constants
     //
 
     /// The minimum SSC clock divider value
-    static constexpr UInt32 kMinSSCClockDividerN = 80;
+    static constexpr UInt32 kMinSSCClockN = 80;
     
     /// The maximum SSC clock divider value
-    static constexpr UInt32 kMaxSSCClockDividerN = 208;
+    static constexpr UInt32 kMaxSSCClockN = 208;
     
     /// The amount of time in microseconds to wait until the SSC clock becomes stable
     static constexpr UInt32 kWaitStableSSCClock = 130;
@@ -138,41 +132,42 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     };
     
     // TODO: COMM MOVE
-    /// Represents a command in the host command buffer
-    struct Command
-    {
-        /// All supported command types
-        enum Type
-        {
-            kReadRegister = 0,
-            kWriteRegister = 1,
-            kCheckRegister = 2,
-        };
-        
-        /// The 32-bit value that will be written to the command buffer
-        UInt32 value;
-        
-        ///
-        /// Create a command of the given type and arguments
-        ///
-        /// @param type The command type
-        /// @param address The register address
-        /// @param mask The register value mask (ignored if `type` is `kReadRegister`)
-        /// @param value The register value (ignored if `type` is `kReadRegister`)
-        ///
-        Command(Type type, UInt16 address, UInt8 mask, UInt8 value)
-        {
-            this->value = 0;
-            
-            this->value |= static_cast<UInt32>(type & 0x03) << 30;
-            
-            this->value |= static_cast<UInt32>(address & 0x3FFF) << 16;
-            
-            this->value |= static_cast<UInt32>(mask) << 8;
-            
-            this->value |= static_cast<UInt32>(value);
-        }
-    };
+    // TODO: DEPRECATED
+//    /// Represents a command in the host command buffer
+//    struct Command
+//    {
+//        /// All supported command types
+//        enum Type
+//        {
+//            kReadRegister = 0,
+//            kWriteRegister = 1,
+//            kCheckRegister = 2,
+//        };
+//
+//        /// The 32-bit value that will be written to the command buffer
+//        UInt32 value;
+//
+//        ///
+//        /// Create a command of the given type and arguments
+//        ///
+//        /// @param type The command type
+//        /// @param address The register address
+//        /// @param mask The register value mask (ignored if `type` is `kReadRegister`)
+//        /// @param value The register value (ignored if `type` is `kReadRegister`)
+//        ///
+//        Command(Type type, UInt16 address, UInt8 mask, UInt8 value)
+//        {
+//            this->value = 0;
+//
+//            this->value |= static_cast<UInt32>(type & 0x03) << 30;
+//
+//            this->value |= static_cast<UInt32>(address & 0x3FFF) << 16;
+//
+//            this->value |= static_cast<UInt32>(mask) << 8;
+//
+//            this->value |= static_cast<UInt32>(value);
+//        }
+//    };
     
     /// An entry in the driving table
     struct DrivingEntry
@@ -404,8 +399,8 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     IOPCIDevice* device;
     
     // TODO: DEPRECATED
-    /// The SD card slot (client)
-    RealtekSDXCSlot* slot;
+//    /// The SD card slot (client)
+//    RealtekSDXCSlot* slot;
     
     /// A mapping for the device memory
     IOMemoryMap* deviceMemoryMap;
@@ -414,18 +409,18 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     IOMemoryDescriptor* deviceMemoryDescriptor;
     
     // TODO: DEPRECATED
-    /// Protect shared resources and serialize operations
-    IOWorkLoop* workLoop;
+//    /// Protect shared resources and serialize operations
+//    IOWorkLoop* workLoop;
     
     // TODO: DEPRECATED
-    ///
-    /// A command gate to serialize executions with respect to the work loop
-    ///
-    /// @note This command gate is not associated with any specific actions.
-    ///       The caller should use `runAction` to execute a function in a gated context.
-    /// @note The target action is still executed in the context of the calling thread.
-    ///
-    IOCommandGate* commandGate;
+//    ///
+//    /// A command gate to serialize executions with respect to the work loop
+//    ///
+//    /// @note This command gate is not associated with any specific actions.
+//    ///       The caller should use `runAction` to execute a function in a gated context.
+//    /// @note The target action is still executed in the context of the calling thread.
+//    ///
+//    IOCommandGate* commandGate;
     
     /// An event source that delivers the hardware interrupt
     IOFilterInterruptEventSource* interruptEventSource;
@@ -433,6 +428,8 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     // MARK: - Host Command & Data Buffer
     
     /// The host buffer size (by default 4096 bytes)
+    /// 1 KB is reserved for the host command buffer, allowing 256 commands to be queued;
+    /// 3 KB is reserved for the host data buffer, allowing 384 scatter/gather list items to be queued.
     static constexpr IOByteCount kHostBufferSize = RTSX::MMIO::HCBAR::kMaxNumCmds * 4 + RTSX::MMIO::HDBAR::kMaxNumElements * 8;
     
     /// The host command buffer starts at the offset 0 in the host buffer
@@ -448,17 +445,17 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     static constexpr IOItemCount kMaxDMATransferFailures = 8;
     
     // TODO: DEPRECATED
-    ///
-    /// A descriptor that allocates the host command and data buffer
-    ///
-    /// @note The buffer size is 4 KB, in which
-    ///       1 KB is reserved for the host command buffer, allowing 256 commands to be queued;
-    ///       3 KB is reserved for the host data buffer, allowing 384 scatter/gather list items to be queued.
-    /// @note The buffer remains "prepared" until the driver is stopped by the system.
-    ///       The lifecycle is managed by `setupHostBuffer()` and `tearDownHostBuffer()`.
-    /// @note The buffer direction is set to be `kIODirectionInOut`.
-    ///
-    IOBufferMemoryDescriptor* hostBufferDescriptor;
+//    ///
+//    /// A descriptor that allocates the host command and data buffer
+//    ///
+//    /// @note The buffer size is 4 KB, in which
+//    ///       1 KB is reserved for the host command buffer, allowing 256 commands to be queued;
+//    ///       3 KB is reserved for the host data buffer, allowing 384 scatter/gather list items to be queued.
+//    /// @note The buffer remains "prepared" until the driver is stopped by the system.
+//    ///       The lifecycle is managed by `setupHostBuffer()` and `tearDownHostBuffer()`.
+//    /// @note The buffer direction is set to be `kIODirectionInOut`.
+//    ///
+//    IOBufferMemoryDescriptor* hostBufferDescriptor;
     
     ///
     /// Translate the host buffer address to I/O bus address
@@ -481,9 +478,9 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     ///
     IOPhysicalAddress32 hostBufferAddress;
     
-    // TODO: DEPRECATED
-    /// The number of commands in the host command buffer
-    IOItemCount hostCommandCount;
+//    // TODO: DEPRECATED
+//    /// The number of commands in the host command buffer
+//    IOItemCount hostCommandCount;
     
     ///
     /// Status of the current buffer transfer session
@@ -507,8 +504,9 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     // MARK: - Host States
     //
     
+    // TODO: DEPRECATED
     /// The current SSC clock in MHz
-    UInt32 currentSSCClock;
+//    UInt32 currentSSCClock;
     
     /// The number of DMA errors
     UInt32 dmaErrorCounter;
@@ -641,7 +639,7 @@ public:
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out.
     /// @note Port: This function replaces `rtsx_pci_read_register()` defined in `rtsx_psr.c`.
     ///
-    IOReturn readChipRegister(UInt16 address, UInt8& value);
+    IOReturn readChipRegister(UInt16 address, UInt8& value) override final;
     
     ///
     /// Write a byte to the chip register at the given address
@@ -654,7 +652,7 @@ public:
     ///         `kIOReturnError` if the new register value is not `value`.
     /// @note Port: This function replaces `rtsx_pci_write_register()` defined in `rtsx_psr.c`.
     ///
-    IOReturn writeChipRegister(UInt16 address, UInt8 mask, UInt8 value);
+    IOReturn writeChipRegister(UInt16 address, UInt8 mask, UInt8 value) override final;
     
     ///
     /// Write to multiple chip registers conveniently
@@ -665,14 +663,6 @@ public:
     ///         `kIOReturnError` if the new register value is not `value`.
     ///
     IOReturn writeChipRegisters(const ChipRegValuePairs& pairs);
-    
-    // TODO: DEPRECATED
-    ///
-    /// Dump the chip registers in the given range
-    ///
-    /// @param range The range of register addresses
-    ///
-    void dumpChipRegisters(ClosedRange<UInt16> range);
     
     //
     // MARK: - Access Physical Layer Registers (Default, Overridable)
@@ -788,7 +778,6 @@ public:
     // MARK: - Host Buffer Management
     //
     
-    // TODO: DEPRECATED
     ///
     /// Read from the host buffer into the given buffer
     ///
@@ -796,11 +785,10 @@ public:
     /// @param buffer A non-null buffer
     /// @param length The number of bytes to read
     /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note This function coordinates all accesses to the host buffer.
+    /// @note This function runs in a gated context.
     ///
-    IOReturn readHostBuffer(IOByteCount offset, void* buffer, IOByteCount length);
+    IOReturn readHostBufferGated(IOByteCount offset, void* buffer, IOByteCount length) override final;
     
-    // TODO: DEPRECATED
     ///
     /// Write to the host buffer form the given buffer
     ///
@@ -808,9 +796,33 @@ public:
     /// @param buffer A non-null buffer
     /// @param length The number of bytes to write
     /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note This function coordinates all accesses to the host buffer.
+    /// @note This function runs in a gated context.
     ///
-    IOReturn writeHostBuffer(IOByteCount offset, const void* buffer, IOByteCount length);
+    IOReturn writeHostBufferGated(IOByteCount offset, const void* buffer, IOByteCount length) override final;
+    
+//    // TODO: DEPRECATED
+//    ///
+//    /// Read from the host buffer into the given buffer
+//    ///
+//    /// @param offset A byte offset into the host buffer
+//    /// @param buffer A non-null buffer
+//    /// @param length The number of bytes to read
+//    /// @return `kIOReturnSuccess` on success, other values otherwise.
+//    /// @note This function coordinates all accesses to the host buffer.
+//    ///
+//    IOReturn readHostBuffer(IOByteCount offset, void* buffer, IOByteCount length);
+//
+//    // TODO: DEPRECATED
+//    ///
+//    /// Write to the host buffer form the given buffer
+//    ///
+//    /// @param offset A byte offset into the host buffer
+//    /// @param buffer A non-null buffer
+//    /// @param length The number of bytes to write
+//    /// @return `kIOReturnSuccess` on success, other values otherwise.
+//    /// @note This function coordinates all accesses to the host buffer.
+//    ///
+//    IOReturn writeHostBuffer(IOByteCount offset, const void* buffer, IOByteCount length);
     
     ///
     /// Write to the host data buffer form the given buffer conveniently
@@ -829,49 +841,50 @@ public:
     }
     
     // TODO: DEPRECATED
-    ///
-    /// Peek a numeric value in the host buffer conveniently
-    ///
-    /// @tparam T Specify a numeric type, e.g., S/UInt{8, 16, 32, 64}
-    /// @param offset A byte offset into the host command buffer
-    /// @return The numeric value.
-    /// @note This function will trigger a kernel panic if the given offset is invalid.
-    ///
-    template <typename T>
-    T peekHostBuffer(IOByteCount offset)
-    {
-        T value;
-        
-        passert(this->readHostBuffer(offset, &value, sizeof(T)) == kIOReturnSuccess,
-                "Failed to peek %lu bytes at offset %llu.", sizeof(T), offset);
-        
-        return value;
-    }
+//    ///
+//    /// Peek a numeric value in the host buffer conveniently
+//    ///
+//    /// @tparam T Specify a numeric type, e.g., S/UInt{8, 16, 32, 64}
+//    /// @param offset A byte offset into the host command buffer
+//    /// @return The numeric value.
+//    /// @note This function will trigger a kernel panic if the given offset is invalid.
+//    ///
+//    template <typename T>
+//    T peekHostBuffer(IOByteCount offset)
+//    {
+//        T value;
+//
+//        passert(this->readHostBuffer(offset, &value, sizeof(T)) == kIOReturnSuccess,
+//                "Failed to peek %lu bytes at offset %llu.", sizeof(T), offset);
+//
+//        return value;
+//    }
     
     // TODO: DEPRECATED
-    ///
-    /// Dump the host buffer contents
-    ///
-    /// @param offset A byte offset into the host data buffer
-    /// @param length The number of bytes to dump
-    /// @param column The number of columns to print
-    ///
-    void dumpHostBuffer(IOByteCount offset, IOByteCount length, IOByteCount column = 8);
+//    ///
+//    /// Dump the host buffer contents
+//    ///
+//    /// @param offset A byte offset into the host data buffer
+//    /// @param length The number of bytes to dump
+//    /// @param column The number of columns to print
+//    ///
+//    void dumpHostBuffer(IOByteCount offset, IOByteCount length, IOByteCount column = 8);
     
     //
-    // MARK: - Host Command Management
+    // MARK: - Host Command Management (Core)
     //
     
-    ///
-    /// Start a new host command transfer session
-    ///
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note The caller must invoke this function before any subsequent calls to `enqueue*Command()`.
-    ///       Any commands enqueued before this function call will be overwritten.
-    ///       Once all commands are enqueued, the caller should invoke `endCommandTransfer()` to send commands to the device.
-    /// @note Port: This function replaces `rtsx_pci_init_cmd()` defined in `rtsx_pci.h`.
-    ///
-    IOReturn beginCommandTransfer();
+    // TODO: DEPRECATED
+//    ///
+//    /// Start a new host command transfer session
+//    ///
+//    /// @return `kIOReturnSuccess` on success, other values otherwise.
+//    /// @note The caller must invoke this function before any subsequent calls to `enqueue*Command()`.
+//    ///       Any commands enqueued before this function call will be overwritten.
+//    ///       Once all commands are enqueued, the caller should invoke `endCommandTransfer()` to send commands to the device.
+//    /// @note Port: This function replaces `rtsx_pci_init_cmd()` defined in `rtsx_pci.h`.
+//    ///
+//    IOReturn beginCommandTransfer();
     
     ///
     /// Enqueue a command
@@ -879,52 +892,66 @@ public:
     /// @param command The command
     /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
     /// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
+    /// @note This function runs in a gated context.
     ///
-    IOReturn enqueueCommand(const Command& command);
+    IOReturn enqueueCommandGated(const Command& command) override final;
     
-    // TODO: DEPRECATED
-    ///
-    /// Enqueue a command to read the register at the given address conveniently
-    ///
-    /// @param address The register address
-    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
-    /// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
-    ///
-    IOReturn enqueueReadRegisterCommand(UInt16 address);
-    
-    // TODO: DEPRECATED
-    ///
-    /// Enqueue a command to write a value to the register at the given address conveniently
-    ///
-    /// @param address The register address
-    /// @param mask The register value mask
-    /// @param value The register value
-    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
-    /// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
-    ///
-    IOReturn enqueueWriteRegisterCommand(UInt16 address, UInt8 mask, UInt8 value);
-    
-    // TODO: DEPRECATED
-    ///
-    /// Enqueue a command to check the value of the register at the given address conveniently
-    ///
-    /// @param address The register address
-    /// @param mask The register value mask
-    /// @param value The register value
-    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
-    /// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
-    ///
-    IOReturn enqueueCheckRegisterCommand(UInt16 address, UInt8 mask, UInt8 value);
+//    // TODO: DEPRECATED
+//    ///
+//    /// Enqueue a command to read the register at the given address conveniently
+//    ///
+//    /// @param address The register address
+//    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
+//    /// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
+//    ///
+//    IOReturn enqueueReadRegisterCommand(UInt16 address);
+//
+//    // TODO: DEPRECATED
+//    ///
+//    /// Enqueue a command to write a value to the register at the given address conveniently
+//    ///
+//    /// @param address The register address
+//    /// @param mask The register value mask
+//    /// @param value The register value
+//    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
+//    /// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
+//    ///
+//    IOReturn enqueueWriteRegisterCommand(UInt16 address, UInt8 mask, UInt8 value);
+//
+//    // TODO: DEPRECATED
+//    ///
+//    /// Enqueue a command to check the value of the register at the given address conveniently
+//    ///
+//    /// @param address The register address
+//    /// @param mask The register value mask
+//    /// @param value The register value
+//    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full.
+//    /// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
+//    ///
+//    IOReturn enqueueCheckRegisterCommand(UInt16 address, UInt8 mask, UInt8 value);
     
     ///
     /// Finish the existing host command transfer session
     ///
     /// @param timeout Specify the amount of time in milliseconds
+    /// @param flags An optional flag, 0 by default
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    /// @note Port: This function replaces `rtsx_pci_send_cmd()` defined in `rtsx_psr.c`.
+    /// @note Port: This function replaces `rtsx_pci_send_cmd()` defined in `rtsx_pcr.c`.
     /// @note This function sends all commands in the queue to the device.
+    /// @note This function runs in a gated context.
     ///
-    IOReturn endCommandTransfer(UInt32 timeout = 100);
+    IOReturn endCommandTransferGated(UInt32 timeout, UInt32 flags) override final;
+    
+    // TODO: DEPRECATED
+//    ///
+//    /// Finish the existing host command transfer session
+//    ///
+//    /// @param timeout Specify the amount of time in milliseconds
+//    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+//    /// @note Port: This function replaces `rtsx_pci_send_cmd()` defined in `rtsx_psr.c`.
+//    /// @note This function sends all commands in the queue to the device.
+//    ///
+//    IOReturn endCommandTransfer(UInt32 timeout = 100);
     
     ///
     /// Finish the existing host command transfer session without waiting for the completion interrupt
@@ -934,57 +961,58 @@ public:
     ///
     void endCommandTransferNoWait();
     
-    // TODO: DEPRECATED
-    ///
-    /// Enqueue a sequence of commands to read registers conveniently
-    ///
-    /// @param pairs A sequence of pairs of register address and value
-    /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-    /// @note This function provides an elegant way to enqueue multiple commands and handle errors.
-    ///
-    IOReturn enqueueReadRegisterCommands(const ChipRegValuePairs& pairs);
+//    // TODO: DEPRECATED
+//    ///
+//    /// Enqueue a sequence of commands to read registers conveniently
+//    ///
+//    /// @param pairs A sequence of pairs of register address and value
+//    /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
+//    /// @note This function provides an elegant way to enqueue multiple commands and handle errors.
+//    ///
+//    IOReturn enqueueReadRegisterCommands(const ChipRegValuePairs& pairs);
+//
+//    // TODO: DEPRECATED
+//    ///
+//    /// Enqueue a sequence of commands to write registers conveniently
+//    ///
+//    /// @param pairs A sequence of pairs of register address and value
+//    /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
+//    /// @note This function provides an elegant way to enqueue multiple commands and handle errors.
+//    ///
+//    IOReturn enqueueWriteRegisterCommands(const ChipRegValuePairs& pairs);
+//
+//    // TODO: DEPRECATED
+//    ///
+//    /// Transfer a sequence of commands to read registers conveniently
+//    ///
+//    /// @param pairs A sequence of pairs of register address and value
+//    /// @param timeout Specify the amount of time in milliseconds
+//    /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
+//    /// @note This function provides an elegant way to start a command transfer session and handle errors.
+//    ///       Same as calling `startCommandTransfer`, a sequence of `enqueueReadRegisterCommand` and `endCommandTransfer`.
+//    ///
+//    IOReturn transferReadRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout = 100);
+//
+//    // TODO: DEPRECATED
+//    ///
+//    /// Transfer a sequence of commands to write registers conveniently
+//    ///
+//    /// @param pairs A sequence of pairs of register address and value
+//    /// @param timeout Specify the amount of time in milliseconds
+//    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+//    /// @note This function provides an elegant way to start a command transfer session and handle errors.
+//    ///       Same as calling `startCommandTransfer`, a sequence of `enqueueWriteRegisterCommand` and `endCommandTransfer`.
+//    ///
+//    IOReturn transferWriteRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout = 100);
     
     // TODO: DEPRECATED
-    ///
-    /// Enqueue a sequence of commands to write registers conveniently
-    ///
-    /// @param pairs A sequence of pairs of register address and value
-    /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-    /// @note This function provides an elegant way to enqueue multiple commands and handle errors.
-    ///
-    IOReturn enqueueWriteRegisterCommands(const ChipRegValuePairs& pairs);
-    
-    // TODO: DEPRECATED
-    ///
-    /// Transfer a sequence of commands to read registers conveniently
-    ///
-    /// @param pairs A sequence of pairs of register address and value
-    /// @param timeout Specify the amount of time in milliseconds
-    /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-    /// @note This function provides an elegant way to start a command transfer session and handle errors.
-    ///       Same as calling `startCommandTransfer`, a sequence of `enqueueReadRegisterCommand` and `endCommandTransfer`.
-    ///
-    IOReturn transferReadRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout = 100);
-    
-    // TODO: DEPRECATED
-    ///
-    /// Transfer a sequence of commands to write registers conveniently
-    ///
-    /// @param pairs A sequence of pairs of register address and value
-    /// @param timeout Specify the amount of time in milliseconds
-    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    /// @note This function provides an elegant way to start a command transfer session and handle errors.
-    ///       Same as calling `startCommandTransfer`, a sequence of `enqueueWriteRegisterCommand` and `endCommandTransfer`.
-    ///
-    IOReturn transferWriteRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout = 100);
-    
-    ///
-    /// Tell the device to stop transferring commands
-    ///
-    /// @note Port: This function replaces `rtsx_pci_stop_cmd()` defined in `rtsx_psr.c`.
-    /// @note Subclasses may override this function to provide device-specific implementation.
-    ///
-    virtual IOReturn stopTransfer();
+//    ///
+//    /// Tell the device to stop transferring commands
+//    ///
+//    /// @note Port: This function replaces `rtsx_pci_stop_cmd()` defined in `rtsx_psr.c`.
+//    /// @note Subclasses may override this function to provide device-specific implementation.
+//    ///
+//    virtual IOReturn stopTransfer();
     
     //
     // MARK: - Host Data Management
@@ -1043,6 +1071,26 @@ public:
     IOReturn performDMAWrite(IODMACommand* command, UInt32 timeout);
     
     //
+    // MARK: - Clear Error
+    //
+    
+    ///
+    /// Clear any transfer error on the card side
+    ///
+    /// @note Port: This function replaces the code block that stops the card and clears the card errorin `sd_clear_error()` defined in `rtsx_pci_sdmmc.c`.
+    ///
+    void clearCardError() override final;
+    
+    ///
+    /// Clear any transfer error on the host side
+    ///
+    /// @note This function is invoked when a command or data transfer has failed.
+    /// @note Port: This function replaces `rtsx_pci_stop_cmd()` defined in `rtsx_psr.c`.
+    ///             RTS5228, RTS5260 and RTS5261 controllers must override this function.
+    ///
+    void clearHostError() override;
+    
+    //
     // MARK: - LED Management
     //
     
@@ -1074,7 +1122,7 @@ public:
     ///             The base controller class implements this function by changing the value of `GPIO_CTL`.
     ///             RTS5209, 5260, 5286, 5287 and 5289 controllers must override this function.
     ///
-    virtual IOReturn turnOnLED();
+    IOReturn turnOnLED() override;
     
     ///
     /// Turn off the LED
@@ -1084,7 +1132,7 @@ public:
     ///             The base controller class implements this function by changing the value of `GPIO_CTL`.
     ///             RTS5209, 5286, 5287 and 5289 controllers must override this function.
     ///
-    virtual IOReturn turnOffLED();
+    IOReturn turnOffLED() override;
     
     ///
     /// Enable LED blinking
@@ -1094,7 +1142,7 @@ public:
     ///             The base controller class implements this function by changing the value of `OLT_LED_CTL`.
     ///             RTS5209, 5286, 5287 and 5289 controllers must override this function.
     ///
-    virtual IOReturn enableLEDBlinking();
+    IOReturn enableLEDBlinking() override;
     
     ///
     /// Disable LED blinking
@@ -1104,11 +1152,69 @@ public:
     ///             The base controller class implements this function by changing the value of `OLT_LED_CTL`.
     ///             RTS5209, 5286, 5287 and 5289 controllers must override this function.
     ///
-    virtual IOReturn disableLEDBlinking();
+    IOReturn disableLEDBlinking() override;
+    
+    //
+    // MARK: - Card Selection & Share Mode
+    //
+    
+    ///
+    /// Select the SD card
+    ///
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+    /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+    ///
+    IOReturn selectCard() override final;
+    
+    ///
+    /// Configure the card share mode
+    ///
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+    /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+    ///
+    IOReturn configureCardShareMode() override final;
     
     //
     // MARK: - Card Power Management
     //
+    
+    ///
+    /// Enable the card clock
+    ///
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+    /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+    ///
+    IOReturn enableCardClock() override final;
+    
+    ///
+    /// Disable the card clock
+    ///
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+    /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+    ///
+    IOReturn disableCardClock() override final;
+    
+    ///
+    /// Enable the card output
+    ///
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+    /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+    ///
+    IOReturn enableCardOutput() override final;
+    
+    ///
+    /// Disable the card output
+    ///
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+    /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+    ///
+    IOReturn disableCardOutput() override final;
     
     ///
     /// Power on the SD card
@@ -1116,7 +1222,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_card_power_on()` defined in `rtsx_psr.c`.
     ///
-    virtual IOReturn powerOnCard() = 0;
+    virtual IOReturn powerOnCard() override = 0;
     
     ///
     /// Power off the SD card
@@ -1124,7 +1230,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_card_power_off()` defined in `rtsx_psr.c`.
     ///
-    virtual IOReturn powerOffCard() = 0;
+    virtual IOReturn powerOffCard() override = 0;
     
     ///
     /// Switch to the given output voltage
@@ -1133,7 +1239,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_switch_output_voltage()` defined in `rtsx_psr.c`.
     ///
-    virtual IOReturn switchOutputVoltage(OutputVoltage outputVoltage) = 0;
+    virtual IOReturn switchOutputVoltage(OutputVoltage outputVoltage) override = 0;
     
     ///
     /// Set the driving parameters for the given output voltage
@@ -1151,66 +1257,111 @@ public:
     // MARK: - Card Clock Configurations
     //
     
-    // TODO: COMM
-    ///
-    /// Adjust the card clock if DMA transfer errors occurred
-    ///
-    /// @param cardClock The current card clock
-    /// @return The adjusted card clock.
-    /// @note Port: This function replaces the code block that reduces the card clock in `rtsx_pci_switch_clock()` defined in `rtsx_psr.c`.
-    ///             By default, this function does not adjust the card clock and return the given clock.
-    ///             RTS5227 controller must override this function.
-    ///
-    virtual UInt32 getAdjustedCardClockOnDMAError(UInt32 cardClock);
+//    // TODO: DEPRECATED
+//    ///
+//    /// Adjust the card clock if DMA transfer errors occurred
+//    ///
+//    /// @param cardClock The current card clock
+//    /// @return The adjusted card clock.
+//    /// @note Port: This function replaces the code block that reduces the card clock in `rtsx_pci_switch_clock()` defined in `rtsx_psr.c`.
+//    ///             By default, this function does not adjust the card clock and return the given clock.
+//    ///             RTS5227 controller must override this function.
+//    ///
+//    virtual UInt32 getAdjustedCardClockOnDMAError(UInt32 cardClock);
+//
+//    // TODO: DEPRECATED
+//    ///
+//    /// Convert the given SSC clock to the divider N
+//    ///
+//    /// @param clock The SSC clock in MHz
+//    /// @return The divider N.
+//    /// @note Port: This function replaces `conv_clk_and_div_n()` defined in `rtsx_psr.c`.
+//    ///             RTL8411 series controllers must override this function.
+//    ///
+//    virtual UInt32 sscClock2DividerN(UInt32 clock);
+//
+//    // TODO: DEPRECATED
+//    ///
+//    /// Convert the given divider N back to the SSC clock
+//    ///
+//    /// @param n The divider N
+//    /// @return The SSC clock in MHz.
+//    /// @note Port: This function replaces `conv_clk_and_div_n()` defined in `rtsx_psr.c`.
+//    ///             RTL8411 series controllers must override this function.
+//    ///
+//    virtual UInt32 dividerN2SSCClock(UInt32 n);
+    
+    // TODO: DEPRECATED
+//    ///
+//    /// Switch to the given card clock
+//    ///
+//    /// @param cardClock The card clock in Hz
+//    /// @param sscDepth The SSC depth value
+//    /// @param initialMode Pass `true` if the card is at its initial stage
+//    /// @param doubleClock Pass `true` if the SSC clock should be doubled
+//    /// @param vpclock Pass `true` if VPCLOCK is used
+//    /// @return `kIOReturnSuccess` on success, other values otherwise.
+//    /// @note Port: This function replaces `rtsx_pci_switch_clock()` defined in `rtsx_psr.c`.
+//    ///             RTS5261 and RTS5228 controllers must override this function.
+//    ///
+//    virtual IOReturn switchCardClock(UInt32 cardClock, SSCDepth sscDepth, bool initialMode, bool doubleClock, bool vpclock);
+//    // TODO: Examine RTS5261 and RTS5228's implementations
+//    // TODO: These two controllers may need to overwrite this function as well
+    
     
     ///
-    /// Convert the given SSC clock to the divider N
+    /// Calculate the number of MCUs from the given SSC clock
     ///
     /// @param clock The SSC clock in MHz
-    /// @return The divider N.
-    /// @note Port: This function replaces `conv_clk_and_div_n()` defined in `rtsx_psr.c`.
-    ///             RTL8411 series controllers must override this function.
+    /// @return The MCU count.
+    /// @note Port: This function replaces the code block that calculates the MCU count in `rtsx_pci_switch_clock()` defined in `rtsx_psr.c`.
+    /// @note Concrete controllers must ensure that the returned MCU count is less than or equal to 15.
     ///
-    virtual UInt32 sscClock2DividerN(UInt32 clock);
+    UInt32 sscClock2MCUCount(UInt32 clock) override final;
     
     ///
-    /// Convert the given divider N back to the SSC clock
+    /// Convert the given SSC depth to the actual register value
     ///
-    /// @param n The divider N
-    /// @return The SSC clock in MHz.
-    /// @note Port: This function replaces `conv_clk_and_div_n()` defined in `rtsx_psr.c`.
-    ///             RTL8411 series controllers must override this function.
+    /// @param depth The SSC depth
+    /// @return The register value.
+    /// @note Port: RTS5261 and RTS5228 controllers must override this function.
     ///
-    virtual UInt32 dividerN2SSCClock(UInt32 n);
+    UInt8 sscDepth2RegValue(SSCDepth depth) override;
     
-    // TODO: COMM
     ///
-    /// Switch to the given card clock
+    /// Revise the given SSC depth register value
     ///
-    /// @param cardClock The card clock in Hz
-    /// @param sscDepth The SSC depth value
-    /// @param initialMode Pass `true` if the card is at its initial stage
-    /// @param doubleClock Pass `true` if the SSC clock should be doubled
-    /// @param vpclock Pass `true` if VPCLOCK is used
+    /// @param depth The SSC depth register value
+    /// @param divider The SSC clock divider value
+    /// @return The revised SSC depth register value.
+    /// @note Port: RTS5261 and RTS5228 controllers must override this function.
+    ///
+    UInt8 reviseSSCDepthRegValue(UInt8 depth, UInt8 divider) override;
+    
+    ///
+    /// Switch to the given SSC clock
+    ///
+    /// @param depth The SSC depth register value
+    /// @param n The SSC clock n value
+    /// @param divider The SSC clock divider
+    /// @param mcus The number of MCUs
+    /// @param vpclock `true` if VPCLOCK should be used
     /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces `rtsx_pci_switch_clock()` defined in `rtsx_psr.c`.
-    ///             RTS5261 and RTS5228 controllers must override this function.
+    /// @note This function does the actual clock switching and is controller-dependent.
     ///
-    virtual IOReturn switchCardClock(UInt32 cardClock, SSCDepth sscDepth, bool initialMode, bool doubleClock, bool vpclock);
+    IOReturn switchCardClock(UInt8 depth, UInt8 n, UInt8 divider, UInt8 mcus, bool vpclock) override;
     
     //
     // MARK: - Card Detection and Write Protection
     //
     
-    // TODO: COMM
     ///
     /// Check whether the card has write protection enabled
     ///
     /// @return `true` if the card is write protected, `false` otherwise.
     ///
-    bool isCardWriteProtected();
+    bool isCardWriteProtected() override final;
     
-    // TODO: COMM
     ///
     /// Check whether a card is present
     ///
@@ -1218,7 +1369,7 @@ public:
     /// @note Port: This function replaces `rtsx_pci_card_exist()` and `cd_deglitch()` defined in `rtsx_psr.c`.
     /// @warning: This function supports SD cards only.
     ///
-    virtual bool isCardPresent();
+    bool isCardPresent() override;
     
     //
     // MARK: - Overcurrent Protection Support
@@ -1275,7 +1426,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_card_pull_ctl_enable()` defined in `rtsx_psr.c`.
     ///
-    IOReturn enablePullControlForSDCard();
+    IOReturn enablePullControlForSDCard() override final;
     
     ///
     /// Disable pull control for the SD card
@@ -1283,7 +1434,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_card_pull_ctl_disable()` defined in `rtsx_psr.c`.
     ///
-    IOReturn disablePullControlForSDCard();
+    IOReturn disablePullControlForSDCard() override final;
     
     //
     // MARK: - OOBS Polling
@@ -1332,7 +1483,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_read_ppbuf()` defined in `rtsx_psr.c`.
     ///
-    IOReturn readPingPongBuffer(UInt8* destination, IOByteCount length);
+    IOReturn readPingPongBuffer(UInt8* destination, IOByteCount length) override final;
     
     ///
     /// Write to the ping pong buffer
@@ -1342,7 +1493,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_write_ppbuf()` defined in `rtsx_psr.c`.
     ///
-    IOReturn writePingPongBuffer(const UInt8* source, IOByteCount length);
+    IOReturn writePingPongBuffer(const UInt8* source, IOByteCount length) override final;
     
     //
     // MARK: - Rx/Tx Phases
@@ -1471,23 +1622,24 @@ public:
     ///
     /// @note Port: This function replaces `rtsx_pci_suspend()` defined in `rtsx_psr.c`.
     ///
-    void prepareToSleep(); // TODO: RELOCATE VIRTUAL
+    void prepareToSleep() override final;
     
     ///
     /// Prepare to wake up from sleep
     ///
     /// @note Port: This function replaces `rtsx_pci_resume()` defined in `rtsx_psr.c`.
     ///
-    void prepareToWakeUp(); // TODO: RELOCATE VIRTUAL
+    void prepareToWakeUp() override final;
     
-    ///
-    /// Adjust the power state in response to system-wide power events
-    ///
-    /// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to
-    /// @param whatDevice A pointer to the power management object which registered to manage power for this device
-    /// @return `kIOPMAckImplied` always.
-    ///
-    IOReturn setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice) override; // TODO: RELOCATE BASE IMP
+    // TODO: DEPRECATED
+//    ///
+//    /// Adjust the power state in response to system-wide power events
+//    ///
+//    /// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to
+//    /// @param whatDevice A pointer to the power management object which registered to manage power for this device
+//    /// @return `kIOPMAckImplied` always.
+//    ///
+//    IOReturn setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice) override; // TODO: RELOCATE BASE IMP
     
     //
     // MARK: - Hardware Interrupt Management
@@ -1707,12 +1859,13 @@ public:
     // MARK: - Startup Routines
     //
     
-    ///
-    /// Setup the power management
-    ///
-    /// @return `true` on success, `false` otherwise.
-    ///
-    bool setupPowerManagement(); // TODO: RELOCATED TO BASE
+    // TODO: DEPRECATED
+//    ///
+//    /// Setup the power management
+//    ///
+//    /// @return `true` on success, `false` otherwise.
+//    ///
+//    bool setupPowerManagement(); // TODO: RELOCATED TO BASE
     
     ///
     /// [Helper] Get the 8-bit base address register to map the device memory
@@ -1730,12 +1883,13 @@ public:
     ///
     bool mapDeviceMemory();
     
-    ///
-    /// Setup the workloop
-    ///
-    /// @return `true` on success, `false` otherwise.
-    ///
-    bool setupWorkLoop(); // TODO: RELOCATED TO BASE
+    // TODO: DEPRECATED
+//    ///
+//    /// Setup the workloop
+//    ///
+//    /// @return `true` on success, `false` otherwise.
+//    ///
+//    bool setupWorkLoop(); // TODO: RELOCATED TO BASE
     
     ///
     /// [Helper] Probe the index of the message signaled interrupt
@@ -1778,20 +1932,22 @@ public:
     // MARK: - Teardown Routines
     //
     
-    ///
-    /// Tear down the power management
-    ///
-    void tearDownPowerManagement(); // TODO: RELOCATED TO BASE
+    // TODO: DEPRECATED
+//    ///
+//    /// Tear down the power management
+//    ///
+//    void tearDownPowerManagement(); // TODO: RELOCATED TO BASE
     
     ///
     /// Unmap the device memory
     ///
     void unmapDeviceMemory();
     
-    ///
-    /// Tear down the workloop
-    ///
-    void tearDownWorkLoop(); // TODO: RELOCATED TO BASE
+    // TODO: DEPRECATED
+//    ///
+//    /// Tear down the workloop
+//    ///
+//    void tearDownWorkLoop(); // TODO: RELOCATED TO BASE
     
     ///
     /// Tear down the interrupt event source
@@ -1812,6 +1968,13 @@ public:
     //
     // MARK: - IOService Implementations
     //
+    
+    ///
+    /// Initialize the controller
+    ///
+    /// @return `true` on success, `false` otherwise.
+    ///
+    bool init(OSDictionary* dictionary = nullptr) override;
     
     ///
     /// Start the controller

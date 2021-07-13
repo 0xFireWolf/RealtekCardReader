@@ -18,33 +18,33 @@ OSDefineMetaClassAndStructors(RealtekRTS5287Controller, RealtekRTS8411SeriesCont
 //
 
 /// A sequence of registers to transfer to enable SD pull control (QFN48)
-const ChipRegValuePair RealtekRTS5287Controller::kSDEnablePullControlTablePairsQFN48[] =
+const RealtekRTS5287Controller::ChipRegValuePair RealtekRTS5287Controller::kSDEnablePullControlTablePairsQFN48[] =
 {
     { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
     { RTSX::Chip::CARD::PULL::rCTL3, 0x69 | 0x90 },
     { RTSX::Chip::CARD::PULL::rCTL6, 0x08 | 0x11 },
 };
 
-const SimpleRegValuePairs RealtekRTS5287Controller::kSDEnablePullControlTableQFN48 =
+const RealtekRTS5287Controller::SimpleRegValuePairs RealtekRTS5287Controller::kSDEnablePullControlTableQFN48 =
 {
     RealtekRTS5287Controller::kSDEnablePullControlTablePairsQFN48
 };
 
 /// A sequence of registers to transfer to disable SD pull control (QFN48)
-const ChipRegValuePair RealtekRTS5287Controller::kSDDisablePullControlTablePairsQFN48[] =
+const RealtekRTS5287Controller::ChipRegValuePair RealtekRTS5287Controller::kSDDisablePullControlTablePairsQFN48[] =
 {
     { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
     { RTSX::Chip::CARD::PULL::rCTL3, 0x65 | 0x90 },
     { RTSX::Chip::CARD::PULL::rCTL6, 0x04 | 0x11 },
 };
 
-const SimpleRegValuePairs RealtekRTS5287Controller::kSDDisablePullControlTableQFN48 =
+const RealtekRTS5287Controller::SimpleRegValuePairs RealtekRTS5287Controller::kSDDisablePullControlTableQFN48 =
 {
     RealtekRTS5287Controller::kSDDisablePullControlTablePairsQFN48
 };
 
 /// A sequence of registers to transfer to enable SD pull control (QFN64)
-const ChipRegValuePair RealtekRTS5287Controller::kSDEnablePullControlTablePairsQFN64[] =
+const RealtekRTS5287Controller::ChipRegValuePair RealtekRTS5287Controller::kSDEnablePullControlTablePairsQFN64[] =
 {
     { RTSX::Chip::CARD::PULL::rCTL1, 0xAA },
     { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
@@ -54,13 +54,13 @@ const ChipRegValuePair RealtekRTS5287Controller::kSDEnablePullControlTablePairsQ
     { RTSX::Chip::CARD::PULL::rCTL6, 0x04 | 0x11 },
 };
 
-const SimpleRegValuePairs RealtekRTS5287Controller::kSDEnablePullControlTableQFN64 =
+const RealtekRTS5287Controller::SimpleRegValuePairs RealtekRTS5287Controller::kSDEnablePullControlTableQFN64 =
 {
     RealtekRTS5287Controller::kSDEnablePullControlTablePairsQFN64
 };
 
 /// A sequence of registers to transfer to disable SD pull control (QFN64)
-const ChipRegValuePair RealtekRTS5287Controller::kSDDisablePullControlTablePairsQFN64[] =
+const RealtekRTS5287Controller::ChipRegValuePair RealtekRTS5287Controller::kSDDisablePullControlTablePairsQFN64[] =
 {
     { RTSX::Chip::CARD::PULL::rCTL1, 0x65 },
     { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
@@ -70,7 +70,7 @@ const ChipRegValuePair RealtekRTS5287Controller::kSDDisablePullControlTablePairs
     { RTSX::Chip::CARD::PULL::rCTL6, 0x04 | 0x11 },
 };
 
-const SimpleRegValuePairs RealtekRTS5287Controller::kSDDisablePullControlTableQFN64 =
+const RealtekRTS5287Controller::SimpleRegValuePairs RealtekRTS5287Controller::kSDDisablePullControlTableQFN64 =
 {
     RealtekRTS5287Controller::kSDDisablePullControlTablePairsQFN64
 };

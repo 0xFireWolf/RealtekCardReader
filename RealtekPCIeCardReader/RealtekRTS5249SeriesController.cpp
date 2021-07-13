@@ -43,7 +43,7 @@ const RealtekRTS5249SeriesController::DrivingTable RealtekRTS5249SeriesControlle
 //
 
 /// A sequence of registers to transfer to enable SD pull control
-const ChipRegValuePair RealtekRTS5249SeriesController::kSDEnablePullControlTablePairs[] =
+const RealtekRTS5249SeriesController::ChipRegValuePair RealtekRTS5249SeriesController::kSDEnablePullControlTablePairs[] =
 {
     { RTSX::Chip::CARD::PULL::rCTL1, 0x66 },
     { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
@@ -51,13 +51,13 @@ const ChipRegValuePair RealtekRTS5249SeriesController::kSDEnablePullControlTable
     { RTSX::Chip::CARD::PULL::rCTL4, 0xAA },
 };
 
-const SimpleRegValuePairs RealtekRTS5249SeriesController::kSDEnablePullControlTable =
+const RealtekRTS5249SeriesController::SimpleRegValuePairs RealtekRTS5249SeriesController::kSDEnablePullControlTable =
 {
     RealtekRTS5249SeriesController::kSDEnablePullControlTablePairs
 };
 
 /// A sequence of registers to transfer to disable SD pull control
-const ChipRegValuePair RealtekRTS5249SeriesController::kSDDisablePullControlTablePairs[] =
+const RealtekRTS5249SeriesController::ChipRegValuePair RealtekRTS5249SeriesController::kSDDisablePullControlTablePairs[] =
 {
     { RTSX::Chip::CARD::PULL::rCTL1, 0x66 },
     { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
@@ -65,7 +65,7 @@ const ChipRegValuePair RealtekRTS5249SeriesController::kSDDisablePullControlTabl
     { RTSX::Chip::CARD::PULL::rCTL4, 0x55 },
 };
 
-const SimpleRegValuePairs RealtekRTS5249SeriesController::kSDDisablePullControlTable =
+const RealtekRTS5249SeriesController::SimpleRegValuePairs RealtekRTS5249SeriesController::kSDDisablePullControlTable =
 {
     RealtekRTS5249SeriesController::kSDDisablePullControlTablePairs
 };

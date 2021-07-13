@@ -291,7 +291,7 @@ IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDCommand& command, UInt32 timeout
     // Offset LB: Value of `SD_STAT1`
     //
     // Guard: Verify the transfer status
-    BitOptions transferStatus = this->controller->peekHostBuffer<UInt8>(0);
+    BitOptions transferStatus = this->controller->readHostBufferValue<UInt8>(0);
     
     if (!transferStatus.contains(SD::TRANSFER::kTransferEnd | SD::TRANSFER::kTransferIdle))
     {
@@ -488,7 +488,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndReadData(const RealtekSDCommand& comman
     // Verify the transfer status
     pinfo("Verifying the transfer result...");
     
-    BitOptions<UInt8> transferStatus = this->controller->peekHostBuffer<UInt8>(0);
+    BitOptions<UInt8> transferStatus = this->controller->readHostBufferValue<UInt8>(0);
     
     if (!transferStatus.contains(SD::TRANSFER::kTransferEnd))
     {
@@ -640,7 +640,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndWriteData(RealtekSDCommand& command, co
     // Verify the transfer status
     pinfo("Verifying the transfer result...");
     
-    BitOptions<UInt8> transferStatus = this->controller->peekHostBuffer<UInt8>(0);
+    BitOptions<UInt8> transferStatus = this->controller->readHostBufferValue<UInt8>(0);
     
     if (!transferStatus.contains(SD::TRANSFER::kTransferEnd))
     {
@@ -1077,7 +1077,8 @@ IOReturn RealtekSDXCSlot::processRequest(RealtekSDRequest& request)
     // Guard: Switch the clock
     pinfo("Switching the clock...");
     
-    IOReturn retVal = this->controller->switchCardClock(this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
+    // TODO: Remove `RealtekCardReaderController::` once the host device uses the new interface
+    IOReturn retVal = this->controller->RealtekCardReaderController::switchCardClock(this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -1507,7 +1508,8 @@ IOReturn RealtekSDXCSlot::setBusConfig(const IOSDBusConfig& config)
     pinfo("Switching the clock to %d Hz with SSC depth = %d; Initial Mode = %d; Use Double Clock = %d; Use VPCLK = %d...",
           this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
     
-    retVal = this->controller->switchCardClock(this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
+    // TODO: Remove `RealtekCardReaderController::` once the host device uses the new interface
+    retVal = this->controller->RealtekCardReaderController::switchCardClock(this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
     
     if (retVal != kIOReturnSuccess)
     {

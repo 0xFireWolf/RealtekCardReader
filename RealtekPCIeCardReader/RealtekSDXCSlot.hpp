@@ -13,6 +13,16 @@
 #include "AppleSDXCSlot.hpp"
 #include "Utilities.hpp"
 
+// TODO: Temp Definitions
+// TODO: REMOVE THIS LATER
+using ChipRegValuePair = RealtekCardReaderController::ChipRegValuePair;
+using ChipRegValuePairs = RealtekCardReaderController::ChipRegValuePairs;
+using SimpleRegValuePairs = RealtekCardReaderController::SimpleRegValuePairs;
+using ContiguousRegValuePairsForReadAccess = RealtekCardReaderController::ContiguousRegValuePairsForReadAccess;
+using ContiguousRegValuePairsForWriteAccess = RealtekCardReaderController::ContiguousRegValuePairsForWriteAccess;
+using OutputVoltage = RealtekCardReaderController::OutputVoltage;
+using SSCDepth = RealtekCardReaderController::SSCDepth;
+
 ///
 /// Represents a generic Realtek SD (SC/HC/XC) card slot independent of the concrete card reader controller
 ///

@@ -18,27 +18,27 @@ OSDefineMetaClassAndStructors(RealtekRTS5209Controller, RealtekPCIeCardReaderCon
 //
 
 /// A sequence of registers to transfer to enable SD pull control
-const ChipRegValuePair RealtekRTS5209Controller::kSDEnablePullControlTablePairs[] =
+const RealtekRTS5209Controller::ChipRegValuePair RealtekRTS5209Controller::kSDEnablePullControlTablePairs[] =
 {
     { RTSX::Chip::CARD::PULL::rCTL1, 0xAA },
     { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
     { RTSX::Chip::CARD::PULL::rCTL3, 0xE9 },
 };
 
-const SimpleRegValuePairs RealtekRTS5209Controller::kSDEnablePullControlTable =
+const RealtekRTS5209Controller::SimpleRegValuePairs RealtekRTS5209Controller::kSDEnablePullControlTable =
 {
     RealtekRTS5209Controller::kSDEnablePullControlTablePairs
 };
 
 /// A sequence of registers to transfer to disable SD pull control
-const ChipRegValuePair RealtekRTS5209Controller::kSDDisablePullControlTablePairs[] =
+const RealtekRTS5209Controller::ChipRegValuePair RealtekRTS5209Controller::kSDDisablePullControlTablePairs[] =
 {
     { RTSX::Chip::CARD::PULL::rCTL1, 0x55 },
     { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
     { RTSX::Chip::CARD::PULL::rCTL3, 0xD5 },
 };
 
-const SimpleRegValuePairs RealtekRTS5209Controller::kSDDisablePullControlTable =
+const RealtekRTS5209Controller::SimpleRegValuePairs RealtekRTS5209Controller::kSDDisablePullControlTable =
 {
     RealtekRTS5209Controller::kSDDisablePullControlTablePairs
 };
