@@ -182,6 +182,28 @@ IOReturn RealtekCardReaderController::beginCommandTransfer()
 }
 
 ///
+/// Enqueue a command
+///
+/// @param command The command
+/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+///
+IOReturn RealtekCardReaderController::enqueueCommand(const Command& command)
+{
+    // The enqueue routine will run in a gated context
+    auto action = [](OSObject* controller, void* command, void*, void*, void*) -> IOReturn
+    {
+        // Retrieve the controller instance
+        auto instance = OSDynamicCast(RealtekCardReaderController, controller);
+        
+        passert(instance != nullptr, "The controller instance is invalid.");
+        
+        return instance->enqueueCommandGated(*reinterpret_cast<Command*>(command));
+    };
+    
+    return this->commandGate->runAction(action, const_cast<void*>(reinterpret_cast<const void*>(&command)));
+}
+
+///
 /// Finish the existing host command transfer session
 ///
 /// @param timeout Specify the amount of time in milliseconds

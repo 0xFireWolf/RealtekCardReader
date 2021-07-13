@@ -602,15 +602,16 @@ public:
     ///
     IOReturn beginCommandTransfer();
     
+protected:
     ///
     /// Enqueue a command
     ///
     /// @param command The command
     /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function runs in a gated context.
     ///
-    virtual IOReturn enqueueCommand(const Command& command) = 0;
+    virtual IOReturn enqueueCommandGated(const Command& command) = 0;
     
-protected:
     ///
     /// Finish the existing host command transfer session
     ///
@@ -623,6 +624,14 @@ protected:
     virtual IOReturn endCommandTransferGated(UInt32 timeout, UInt32 flags) = 0;
     
 public:
+    ///
+    /// Enqueue a command
+    ///
+    /// @param command The command
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    ///
+    virtual IOReturn enqueueCommand(const Command& command);
+    
     ///
     /// Finish the existing host command transfer session
     ///
