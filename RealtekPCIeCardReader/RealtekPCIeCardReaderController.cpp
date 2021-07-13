@@ -913,7 +913,7 @@ void RealtekPCIeCardReaderController::endCommandTransferNoWait()
 ///
 /// @param pairs A sequence of pairs of register address and value
 /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-/// @note This function provides a elegant way to enqueue multiple commands and handle errors.
+/// @note This function provides an elegant way to enqueue multiple commands and handle errors.
 ///
 IOReturn RealtekPCIeCardReaderController::enqueueReadRegisterCommands(const ChipRegValuePairs& pairs)
 {
@@ -939,7 +939,7 @@ IOReturn RealtekPCIeCardReaderController::enqueueReadRegisterCommands(const Chip
 ///
 /// @param pairs A sequence of pairs of register address and value
 /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-/// @note This function provides a elegant way to enqueue multiple commands and handle errors.
+/// @note This function provides an elegant way to enqueue multiple commands and handle errors.
 ///
 IOReturn RealtekPCIeCardReaderController::enqueueWriteRegisterCommands(const ChipRegValuePairs& pairs)
 {
@@ -968,7 +968,7 @@ IOReturn RealtekPCIeCardReaderController::enqueueWriteRegisterCommands(const Chi
 /// @param pairs A sequence of pairs of register address and value
 /// @param timeout Specify the amount of time in milliseconds
 /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-/// @note This function provides a elegant way to start a command transfer session and handle errors.
+/// @note This function provides an elegant way to start a command transfer session and handle errors.
 ///       Same as calling `startCommandTransfer`, a sequence of `enqueueReadRegisterCommand` and `endCommandTransfer`.
 ///
 IOReturn RealtekPCIeCardReaderController::transferReadRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout)
@@ -1005,7 +1005,7 @@ IOReturn RealtekPCIeCardReaderController::transferReadRegisterCommands(const Chi
 /// @param pairs A sequence of pairs of register address and value
 /// @param timeout Specify the amount of time in milliseconds
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-/// @note This function provides a elegant way to start a command transfer session and handle errors.
+/// @note This function provides an elegant way to start a command transfer session and handle errors.
 ///       Same as calling `startCommandTransfer`, a sequence of `enqueueWriteRegisterCommand` and `endCommandTransfer`.
 ///
 
@@ -1396,7 +1396,7 @@ IOReturn RealtekPCIeCardReaderController::setDrivingForOutputVoltage(OutputVolta
 }
 
 //
-// MARK: - Clock Configurations
+// MARK: - Card Clock Configurations
 //
 
 ///

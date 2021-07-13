@@ -46,191 +46,197 @@
 #define RTSXDeclarePhysRegisterValue(name, value) \
     static constexpr UInt16 name = value;
 
+// TODO: Consider to move to the base controller class
+// TODO: RELOCATED REMOVE THIS
+///// Represents a pair of register address and its value
+//struct ChipRegValuePair
+//{
+//    /// The register address
+//    UInt16 address;
+//
+//    /// The register value mask
+//    UInt8 mask;
+//
+//    /// The register value
+//    UInt8 value;
+//
+//    /// Create a pair
+//    ChipRegValuePair(UInt16 address, UInt8 mask, UInt8 value) :
+//        address(address), mask(mask), value(value) {}
+//
+//    /// Create a pair with mask set to 0xFF
+//    ChipRegValuePair(UInt16 address, UInt8 value) :
+//        ChipRegValuePair(address, 0xFF, value) {}
+//
+//    /// Create a pair with both mask and value set to 0x00
+//    ChipRegValuePair(UInt16 address) :
+//        ChipRegValuePair(address, 0x00, 0x00) {}
+//
+//    /// Create an empty pair
+//    ChipRegValuePair() :
+//        ChipRegValuePair(0, 0, 0) {}
+//};
+//
+///// Interface of a sequence of pairs of register address and its value
+//struct ChipRegValuePairs
+//{
+//    /// Virtual destructor
+//    virtual ~ChipRegValuePairs() = default;
+//
+//    /// Retrieve the i-th register value pair
+//    virtual struct ChipRegValuePair get(size_t index) const = 0;
+//
+//    /// Retrieve the total number of pairs
+//    virtual IOItemCount size() const = 0;
+//};
+//
+/////
+///// Composed of a simple array of pairs of register address and value
+/////
+///// @note Commonly used to access a small number of registers.
+/////
+//struct SimpleRegValuePairs: ChipRegValuePairs
+//{
+//private:
+//    /// An array of pairs
+//    const ChipRegValuePair* pairs;
+//
+//    /// The number of pair
+//    const IOItemCount count;
+//
+//public:
+//    /// Create a simple sequence of pairs
+//    SimpleRegValuePairs(const ChipRegValuePair* pairs, IOItemCount count) :
+//        pairs(pairs), count(count) {}
+//
+//    /// Create a simple sequence of pairs
+//    template <size_t N>
+//    SimpleRegValuePairs(const ChipRegValuePair (&pairs)[N]) :
+//        pairs(pairs), count(N) {}
+//
+//    /// Retrieve the i-th register value pair
+//    struct ChipRegValuePair get(size_t index) const override
+//    {
+//        return this->pairs[index];
+//    }
+//
+//    /// Retrieve the total number of pairs
+//    IOItemCount size() const override
+//    {
+//        return this->count;
+//    }
+//};
+//
+/////
+///// Composed of the base register address to generate a forward sequence of pairs for read access dynamically
+/////
+///// @note Convenient to read a contiguous sequence of registers.
+/////
+//struct ContiguousRegValuePairsForReadAccess: ChipRegValuePairs
+//{
+//private:
+//    /// The base register address
+//    const UInt16 baseRegister;
+//
+//    /// The number of pairs to generate
+//    const IOItemCount count;
+//
+//public:
+//    ///
+//    /// Create a contiguous sequence of pairs for read access
+//    ///
+//    /// @param baseRegister The base register address
+//    /// @param count The number of registers
+//    ///
+//    ContiguousRegValuePairsForReadAccess(UInt16 baseRegister, IOItemCount count) :
+//        baseRegister(baseRegister), count(count) {}
+//
+//    /// Retrieve the i-th register value pair
+//    struct ChipRegValuePair get(size_t index) const override
+//    {
+//        return ChipRegValuePair(static_cast<UInt16>(this->baseRegister + index), 0, 0);
+//    }
+//
+//    /// Retrieve the total number of pairs
+//    IOItemCount size() const override
+//    {
+//        return this->count;
+//    }
+//};
+//
+/////
+///// Composed of the base register address to generate a forward sequence of pairs for write access dynamically
+/////
+///// @note Convenient to read a contiguous sequence of registers.
+/////
+//struct ContiguousRegValuePairsForWriteAccess: ChipRegValuePairs
+//{
+//private:
+//    /// The base register address
+//    const UInt16 baseRegister;
+//
+//    /// The register value mask
+//    const UInt8 mask;
+//
+//    /// The number of pairs to generate
+//    const IOItemCount count;
+//
+//    /// The register values
+//    const UInt8* values;
+//
+//public:
+//    ///
+//    /// Create a contiguous sequence of pairs for write access
+//    ///
+//    /// @param baseRegister The base register address
+//    /// @param count The number of registers
+//    /// @param values An array of register values
+//    /// @param mask The regiter value mask, 0xFF by default
+//    ///
+//    ContiguousRegValuePairsForWriteAccess(UInt16 baseRegister, IOItemCount count, const UInt8* values, UInt8 mask = 0xFF) :
+//        baseRegister(baseRegister), mask(mask), count(count), values(values) {}
+//
+//    /// Retrieve the i-th register value pair
+//    struct ChipRegValuePair get(size_t index) const override
+//    {
+//        return ChipRegValuePair(static_cast<UInt16>(this->baseRegister + index), this->mask, this->values[index]);
+//    }
+//
+//    /// Retrieve the total number of pairs
+//    IOItemCount size() const override
+//    {
+//        return this->count;
+//    }
+//};
 
-/// Represents a pair of register address and its value
-struct ChipRegValuePair
-{
-    /// The register address
-    UInt16 address;
-    
-    /// The register value mask
-    UInt8 mask;
-    
-    /// The register value
-    UInt8 value;
-    
-    /// Create a pair
-    ChipRegValuePair(UInt16 address, UInt8 mask, UInt8 value) :
-        address(address), mask(mask), value(value) {}
-
-    /// Create a pair with mask set to 0xFF
-    ChipRegValuePair(UInt16 address, UInt8 value) :
-        ChipRegValuePair(address, 0xFF, value) {}
-    
-    /// Create an empty pair
-    ChipRegValuePair() :
-        ChipRegValuePair(0, 0, 0) {}
-};
-
-/// Interface of a sequence of pairs of register address and its value
-struct ChipRegValuePairs
-{
-    /// Virtual destructor
-    virtual ~ChipRegValuePairs() = default;
-    
-    /// Retrieve the i-th register value pair
-    virtual struct ChipRegValuePair get(size_t index) const = 0;
-    
-    /// Retrieve the total number of pairs
-    virtual IOItemCount size() const = 0;
-};
-
-///
-/// Composed of a simple array of pairs of register address and value
-///
-/// @note Commonly used to access a small number of registers.
-///
-struct SimpleRegValuePairs: ChipRegValuePairs
-{
-private:
-    /// An array of pairs
-    const ChipRegValuePair* pairs;
-    
-    /// The number of pair
-    const IOItemCount count;
-    
-public:
-    /// Create a simple sequence of pairs
-    SimpleRegValuePairs(const ChipRegValuePair* pairs, IOItemCount count) :
-        pairs(pairs), count(count) {}
-    
-    /// Create a simple sequence of pairs
-    template <size_t N>
-    SimpleRegValuePairs(const ChipRegValuePair (&pairs)[N]) :
-        pairs(pairs), count(N) {}
-    
-    /// Retrieve the i-th register value pair
-    struct ChipRegValuePair get(size_t index) const override
-    {
-        return this->pairs[index];
-    }
-    
-    /// Retrieve the total number of pairs
-    IOItemCount size() const override
-    {
-        return this->count;
-    }
-};
-
-///
-/// Composed of the base register address to generate a forward sequence of pairs for read access dynamically
-///
-/// @note Convenient to read a contiguous sequence of registers.
-///
-struct ContiguousRegValuePairsForReadAccess: ChipRegValuePairs
-{
-private:
-    /// The base register address
-    const UInt16 baseRegister;
-    
-    /// The number of pairs to generate
-    const IOItemCount count;
-    
-public:
-    ///
-    /// Create a contiguous sequence of pairs for read access
-    ///
-    /// @param baseRegister The base register address
-    /// @param count The number of registers
-    ///
-    ContiguousRegValuePairsForReadAccess(UInt16 baseRegister, IOItemCount count) :
-        baseRegister(baseRegister), count(count) {}
-    
-    /// Retrieve the i-th register value pair
-    struct ChipRegValuePair get(size_t index) const override
-    {
-        return ChipRegValuePair(static_cast<UInt16>(this->baseRegister + index), 0, 0);
-    }
-    
-    /// Retrieve the total number of pairs
-    IOItemCount size() const override
-    {
-        return this->count;
-    }
-};
-
-///
-/// Composed of the base register address to generate a forward sequence of pairs for write access dynamically
-///
-/// @note Convenient to read a contiguous sequence of registers.
-///
-struct ContiguousRegValuePairsForWriteAccess: ChipRegValuePairs
-{
-private:
-    /// The base register address
-    const UInt16 baseRegister;
-    
-    /// The register value mask
-    const UInt8 mask;
-    
-    /// The number of pairs to generate
-    const IOItemCount count;
-    
-    /// The register values
-    const UInt8* values;
-    
-public:
-    ///
-    /// Create a contiguous sequence of pairs for write access
-    ///
-    /// @param baseRegister The base register address
-    /// @param count The number of registers
-    /// @param values An array of register values
-    /// @param mask The regiter value mask, 0xFF by default
-    ///
-    ContiguousRegValuePairsForWriteAccess(UInt16 baseRegister, IOItemCount count, const UInt8* values, UInt8 mask = 0xFF) :
-        baseRegister(baseRegister), mask(mask), count(count), values(values) {}
-    
-    /// Retrieve the i-th register value pair
-    struct ChipRegValuePair get(size_t index) const override
-    {
-        return ChipRegValuePair(static_cast<UInt16>(this->baseRegister + index), this->mask, this->values[index]);
-    }
-    
-    /// Retrieve the total number of pairs
-    IOItemCount size() const override
-    {
-        return this->count;
-    }
-};
-
-/// Represents a pair of physical register and its value
-struct PhysRegValuePair
-{
-    UInt8 address;
-    
-    UInt8 reserved;
-    
-    UInt16 value;
-    
-    PhysRegValuePair(UInt8 address, UInt16 value)
-        : address(address), reserved(0), value(value) {}
-};
-
-/// Represents a pair of physical register and its mask and value
-struct PhysRegMaskValuePair
-{
-    UInt8 reserved[3];
-    
-    UInt8 address;
-    
-    UInt16 mask;
-    
-    UInt16 value;
-  
-    PhysRegMaskValuePair(UInt8 address, UInt16 mask, UInt16 value)
-        : reserved(), address(address), mask(mask), value(value) {}
-};
+// TODO: MOVE THIS TO PCIE CONTROLLER CLASS
+///// Represents a pair of physical register and its value
+//struct PhysRegValuePair
+//{
+//    UInt8 address;
+//
+//    UInt8 reserved;
+//
+//    UInt16 value;
+//
+//    PhysRegValuePair(UInt8 address, UInt16 value)
+//        : address(address), reserved(0), value(value) {}
+//};
+//
+///// Represents a pair of physical register and its mask and value
+//struct PhysRegMaskValuePair
+//{
+//    UInt8 reserved[3];
+//
+//    UInt8 address;
+//
+//    UInt16 mask;
+//
+//    UInt16 value;
+//
+//    PhysRegMaskValuePair(UInt8 address, UInt16 mask, UInt16 value)
+//        : reserved(), address(address), mask(mask), value(value) {}
+//};
 
 //
 // MARK: - 1. MMIO Registers
@@ -454,6 +460,7 @@ namespace RTSX::MMIO
 // MARK: - 2. Chip Registers
 //
 
+// TODO: SAME RELOCATED
 /// Chip registers that controls the power of SSC and OCP
 namespace RTSX::Chip
 {
@@ -476,8 +483,6 @@ namespace RTSX::Chip
         RTSXDeclareChipRegisterValue(kAllPowerUpValue, 0x00);
         RTSXDeclareChipRegisterValue(kAllPowerDownValue, 0x03);
     }
-    
-    
 }
 
 /// Chip registers that control the SSC clock
@@ -533,6 +538,7 @@ namespace RTSX::Chip::SSC
         RTSXDeclareChipRegisterValue(kDepth250K, 0x05);
         
         /// Double the given SSC depth
+        DEPRECATE("Replaced by the base imp.")
         static inline UInt8 doubleDepth(UInt8 depth)
         {
             return depth > 1 ? depth - 1 : depth;
@@ -1097,7 +1103,7 @@ namespace RTSX::Chip::OOBS
 }
 
 /// Chip registers that control the ping pong buffer
-namespace RTSX::Chip::PPBUF
+namespace RTSX::Chip::PPBUF // TODO: COMMON RELOCATED
 {
     RTSXDeclareChipRegister(rBASE1, 0xF800);
     RTSXDeclareChipRegister(rBASE2, 0xFA00);
@@ -1118,7 +1124,7 @@ namespace RTSX::Chip
     }
 }
 
-namespace RTSX::Chip::SD
+namespace RTSX::Chip::SD // TODO: COMMON CAN BE RELOCATED
 {
     RTSXDeclareChipRegister(rVPCLK0CTL, 0xFC2A);
     RTSXDeclareChipRegister(rVPCLK1CTL, 0xFC2B);
@@ -1132,7 +1138,7 @@ namespace RTSX::Chip::SD
     }
     
     /// Clock divider, bus mode and width
-    RTSXDeclareChipRegister(rCFG1, 0xFDA0);
+    RTSXDeclareChipRegister(rCFG1, 0xFDA0); // TODO: COMMON
     namespace CFG1
     {
         RTSXDeclareChipRegisterValue(kClockDivider0, 0x00);
@@ -1154,7 +1160,7 @@ namespace RTSX::Chip::SD
     }
     
     /// SD command control and response
-    RTSXDeclareChipRegister(rCFG2, 0xFDA1);
+    RTSXDeclareChipRegister(rCFG2, 0xFDA1); // TODO: COMMON
     namespace CFG2
     {
         RTSXDeclareChipRegisterValue(kCalcCRC7, 0x00);
@@ -1185,7 +1191,7 @@ namespace RTSX::Chip::SD
         RTSXDeclareChipRegisterValue(kResponseTypeR7, 0x01);
     }
     
-    /// Used by the RTSX USB driver
+    /// Used by the RTSX PCI driver only
     RTSXDeclareChipRegister(rCFG3, 0xFDA2);
     namespace CFG3
     {
@@ -1193,7 +1199,7 @@ namespace RTSX::Chip::SD
         RTSXDeclareChipRegisterValue(kEnableResponse80ClockTimeout, 0x01);
     }
 
-    RTSXDeclareChipRegister(rSTAT1, 0xFDA3);
+    RTSXDeclareChipRegister(rSTAT1, 0xFDA3); // TODO: COMMON
     namespace STAT1
     {
         RTSXDeclareChipRegisterValue(kCRC7Error, 0x80);
@@ -1204,14 +1210,14 @@ namespace RTSX::Chip::SD
         RTSXDeclareChipRegisterValue(kTuningCompareError, 0x01);
     }
     
-    /// Used by the RTSX USB driver
+    /// Used by the RTSX USB driver only
     RTSXDeclareChipRegister(rSTAT2, 0xFDA4);
     namespace STAT2
     {
         RTSXDeclareChipRegisterValue(kResponse80ClockTimeout, 0x01);
     }
     
-    RTSXDeclareChipRegister(rBUSSTAT, 0xFDA5);
+    RTSXDeclareChipRegister(rBUSSTAT, 0xFDA5); // TODO: COMMON
     namespace BUSSTAT
     {
         RTSXDeclareChipRegisterValue(kClockToggleEnable, 0x80);
@@ -1233,19 +1239,19 @@ namespace RTSX::Chip::SD
                                                       kData3Status);
     }
     
-    RTSXDeclareChipRegister(rPADCTL, 0xFDA6);
+    RTSXDeclareChipRegister(rPADCTL, 0xFDA6); // TODO: COMMON
     namespace PADCTL
     {
         RTSXDeclareChipRegisterValue(kUse1d8V, 0x80);
         RTSXDeclareChipRegisterValue(kUse3d3V, 0x7F);
         RTSXDeclareChipRegisterValue(kUseTypeADriving, 0x00);
         RTSXDeclareChipRegisterValue(kUseTypeBDriving, 0x01);
-        RTSXDeclareChipRegisterValue(kUseTypeCDriving, 0x00);
-        RTSXDeclareChipRegisterValue(kUseTypeDDriving, 0x01);
+        RTSXDeclareChipRegisterValue(kUseTypeCDriving, 0x02);
+        RTSXDeclareChipRegisterValue(kUseTypeDDriving, 0x03);
     }
     
     // Sample point control
-    RTSXDeclareChipRegister(rSPCTL, 0xFDA7);
+    RTSXDeclareChipRegister(rSPCTL, 0xFDA7); // TODO: COMMON
     namespace SPCTL
     {
         RTSXDeclareChipRegisterValue(kDDRFixRxData, 0x00);
@@ -1264,7 +1270,7 @@ namespace RTSX::Chip::SD
     }
     
     // Push point control
-    RTSXDeclareChipRegister(rPPCTL, 0xFDA8);
+    RTSXDeclareChipRegister(rPPCTL, 0xFDA8); // TODO: COMMON
     namespace PPCTL
     {
         RTSXDeclareChipRegisterValue(kDDRFixTxCommandData, 0x00);
@@ -1295,7 +1301,7 @@ namespace RTSX::Chip::SD
     RTSXDeclareChipRegister(rBLOCKCNTL, 0xFDB1);
     RTSXDeclareChipRegister(rBLOCKCNTH, 0xFDB2);
     
-    RTSXDeclareChipRegister(rTRANSFER, 0xFDB3);
+    RTSXDeclareChipRegister(rTRANSFER, 0xFDB3); // TODO: COMMON
     namespace TRANSFER
     {
         /// Transfer Control
@@ -1323,7 +1329,7 @@ namespace RTSX::Chip::SD
         
         /// Send an SD command as specified in the `SD_CMD{0-4}` registers to the card and
         /// put the 48-bit response into those registers as well.
-        /// However, the 136-bit response is put into the ping-pond buffer 2 instead.
+        /// However, the 136-bit response is put into the ping-pong buffer 2 instead.
         RTSXDeclareChipRegisterValue(kTMCmdResp, 0x08);
         
         /// Send a write command, get the response from the card,
@@ -1348,13 +1354,13 @@ namespace RTSX::Chip::SD
         RTSXDeclareChipRegisterValue(kTMAutoTuning, 0x0F);
     }
     
-    RTSXDeclareChipRegister(rCMDSTATE, 0xFDB5)
+    RTSXDeclareChipRegister(rCMDSTATE, 0xFDB5); // TODO: COMMON
     namespace CMDSTATE
     {
         RTSXDeclareChipRegisterValue(kIdle, 0x80);
     }
     
-    RTSXDeclareChipRegister(rDATSTATE, 0xFDB6);
+    RTSXDeclareChipRegister(rDATSTATE, 0xFDB6); // TODO: COMMON
     namespace DATSTATE
     {
         RTSXDeclareChipRegisterValue(kIdle, 0x80);

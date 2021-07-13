@@ -17,12 +17,21 @@
 #include <IOKit/IOInterruptEventSource.h>
 #include <IOKit/IOFilterInterruptEventSource.h>
 #include <IOKit/IOTimerEventSource.h>
+#include "RealtekCardReaderController.hpp"
 #include "Utilities.hpp"
 #include "Registers.hpp"
 #include "Debug.hpp"
 #include "AppleSDXC.hpp"
 #include "BitOptions.hpp"
 #include "ClosedRange.hpp"
+
+// TODO: Temp Definitions
+// TODO: REMOVE THIS LATER
+using ChipRegValuePair = RealtekCardReaderController::ChipRegValuePair;
+using ChipRegValuePairs = RealtekCardReaderController::ChipRegValuePairs;
+using SimpleRegValuePairs = RealtekCardReaderController::SimpleRegValuePairs;
+using ContiguousRegValuePairsForReadAccess = RealtekCardReaderController::ContiguousRegValuePairsForReadAccess;
+using ContiguousRegValuePairsForWriteAccess = RealtekCardReaderController::ContiguousRegValuePairsForWriteAccess;
 
 // TODO: RELOCATED THIS
 /// TX/RX clock phase
@@ -37,6 +46,7 @@ struct ClockPhase
         : sdr104(sdr104), sdr50(sdr50), ddr50(ddr50) {}
 };
 
+// TODO: RELOCATE THIS TO BASE CONTROLLER
 /// The card output volage
 enum class OutputVoltage: UInt32
 {
@@ -96,9 +106,38 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     static constexpr UInt32 kWaitStableSSCClock = 130;
     
     //
-    // MARK: - Data Structures
+    // MARK: - Private Data Structures
     //
     
+    /// Represents a pair of physical register and its value
+    struct PhysRegValuePair
+    {
+        UInt8 address;
+        
+        UInt8 reserved;
+        
+        UInt16 value;
+        
+        PhysRegValuePair(UInt8 address, UInt16 value)
+            : address(address), reserved(0), value(value) {}
+    };
+
+    /// Represents a pair of physical register and its mask and value
+    struct PhysRegMaskValuePair
+    {
+        UInt8 reserved[3];
+        
+        UInt8 address;
+        
+        UInt16 mask;
+        
+        UInt16 value;
+      
+        PhysRegMaskValuePair(UInt8 address, UInt16 mask, UInt16 value)
+            : reserved(), address(address), mask(mask), value(value) {}
+    };
+    
+    // TODO: COMM MOVE
     /// Represents a command in the host command buffer
     struct Command
     {
@@ -364,6 +403,7 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     /// The PCIe card reader device (provider)
     IOPCIDevice* device;
     
+    // TODO: DEPRECATED
     /// The SD card slot (client)
     RealtekSDXCSlot* slot;
     
@@ -373,9 +413,11 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     /// Device memory at BARx where x may vary device
     IOMemoryDescriptor* deviceMemoryDescriptor;
     
+    // TODO: DEPRECATED
     /// Protect shared resources and serialize operations
     IOWorkLoop* workLoop;
     
+    // TODO: DEPRECATED
     ///
     /// A command gate to serialize executions with respect to the work loop
     ///
@@ -405,6 +447,7 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     /// The maximum number of DMA transfer failures until the host should reduce the card clock
     static constexpr IOItemCount kMaxDMATransferFailures = 8;
     
+    // TODO: DEPRECATED
     ///
     /// A descriptor that allocates the host command and data buffer
     ///
@@ -438,6 +481,7 @@ class RealtekPCIeCardReaderController: public AppleSDXC
     ///
     IOPhysicalAddress32 hostBufferAddress;
     
+    // TODO: DEPRECATED
     /// The number of commands in the host command buffer
     IOItemCount hostCommandCount;
     
@@ -622,6 +666,7 @@ public:
     ///
     IOReturn writeChipRegisters(const ChipRegValuePairs& pairs);
     
+    // TODO: DEPRECATED
     ///
     /// Dump the chip registers in the given range
     ///
@@ -743,6 +788,7 @@ public:
     // MARK: - Host Buffer Management
     //
     
+    // TODO: DEPRECATED
     ///
     /// Read from the host buffer into the given buffer
     ///
@@ -754,6 +800,7 @@ public:
     ///
     IOReturn readHostBuffer(IOByteCount offset, void* buffer, IOByteCount length);
     
+    // TODO: DEPRECATED
     ///
     /// Write to the host buffer form the given buffer
     ///
@@ -781,6 +828,7 @@ public:
         return this->writeHostBuffer(RealtekPCIeCardReaderController::kHostDatabufferOffset + offset, buffer, length);
     }
     
+    // TODO: DEPRECATED
     ///
     /// Peek a numeric value in the host buffer conveniently
     ///
@@ -800,6 +848,7 @@ public:
         return value;
     }
     
+    // TODO: DEPRECATED
     ///
     /// Dump the host buffer contents
     ///
@@ -833,6 +882,7 @@ public:
     ///
     IOReturn enqueueCommand(const Command& command);
     
+    // TODO: DEPRECATED
     ///
     /// Enqueue a command to read the register at the given address conveniently
     ///
@@ -842,6 +892,7 @@ public:
     ///
     IOReturn enqueueReadRegisterCommand(UInt16 address);
     
+    // TODO: DEPRECATED
     ///
     /// Enqueue a command to write a value to the register at the given address conveniently
     ///
@@ -853,6 +904,7 @@ public:
     ///
     IOReturn enqueueWriteRegisterCommand(UInt16 address, UInt8 mask, UInt8 value);
     
+    // TODO: DEPRECATED
     ///
     /// Enqueue a command to check the value of the register at the given address conveniently
     ///
@@ -882,42 +934,46 @@ public:
     ///
     void endCommandTransferNoWait();
     
+    // TODO: DEPRECATED
     ///
     /// Enqueue a sequence of commands to read registers conveniently
     ///
     /// @param pairs A sequence of pairs of register address and value
     /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-    /// @note This function provides a elegant way to enqueue multiple commands and handle errors.
+    /// @note This function provides an elegant way to enqueue multiple commands and handle errors.
     ///
     IOReturn enqueueReadRegisterCommands(const ChipRegValuePairs& pairs);
     
+    // TODO: DEPRECATED
     ///
     /// Enqueue a sequence of commands to write registers conveniently
     ///
     /// @param pairs A sequence of pairs of register address and value
     /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-    /// @note This function provides a elegant way to enqueue multiple commands and handle errors.
+    /// @note This function provides an elegant way to enqueue multiple commands and handle errors.
     ///
     IOReturn enqueueWriteRegisterCommands(const ChipRegValuePairs& pairs);
     
+    // TODO: DEPRECATED
     ///
     /// Transfer a sequence of commands to read registers conveniently
     ///
     /// @param pairs A sequence of pairs of register address and value
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
-    /// @note This function provides a elegant way to start a command transfer session and handle errors.
+    /// @note This function provides an elegant way to start a command transfer session and handle errors.
     ///       Same as calling `startCommandTransfer`, a sequence of `enqueueReadRegisterCommand` and `endCommandTransfer`.
     ///
     IOReturn transferReadRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout = 100);
     
+    // TODO: DEPRECATED
     ///
     /// Transfer a sequence of commands to write registers conveniently
     ///
     /// @param pairs A sequence of pairs of register address and value
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    /// @note This function provides a elegant way to start a command transfer session and handle errors.
+    /// @note This function provides an elegant way to start a command transfer session and handle errors.
     ///       Same as calling `startCommandTransfer`, a sequence of `enqueueWriteRegisterCommand` and `endCommandTransfer`.
     ///
     IOReturn transferWriteRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout = 100);
@@ -1092,9 +1148,10 @@ public:
     virtual IOReturn setDrivingForOutputVoltage(OutputVoltage outputVoltage, bool intermediate, UInt32 timeout);
     
     //
-    // MARK: - Clock Configurations
+    // MARK: - Card Clock Configurations
     //
     
+    // TODO: COMM
     ///
     /// Adjust the card clock if DMA transfer errors occurred
     ///
@@ -1126,6 +1183,7 @@ public:
     ///
     virtual UInt32 dividerN2SSCClock(UInt32 n);
     
+    // TODO: COMM
     ///
     /// Switch to the given card clock
     ///
@@ -1144,6 +1202,7 @@ public:
     // MARK: - Card Detection and Write Protection
     //
     
+    // TODO: COMM
     ///
     /// Check whether the card has write protection enabled
     ///
@@ -1151,6 +1210,7 @@ public:
     ///
     bool isCardWriteProtected();
     
+    // TODO: COMM
     ///
     /// Check whether a card is present
     ///
@@ -1411,14 +1471,14 @@ public:
     ///
     /// @note Port: This function replaces `rtsx_pci_suspend()` defined in `rtsx_psr.c`.
     ///
-    void prepareToSleep();
+    void prepareToSleep(); // TODO: RELOCATE VIRTUAL
     
     ///
     /// Prepare to wake up from sleep
     ///
     /// @note Port: This function replaces `rtsx_pci_resume()` defined in `rtsx_psr.c`.
     ///
-    void prepareToWakeUp();
+    void prepareToWakeUp(); // TODO: RELOCATE VIRTUAL
     
     ///
     /// Adjust the power state in response to system-wide power events
@@ -1427,7 +1487,7 @@ public:
     /// @param whatDevice A pointer to the power management object which registered to manage power for this device
     /// @return `kIOPMAckImplied` always.
     ///
-    IOReturn setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice) override;
+    IOReturn setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice) override; // TODO: RELOCATE BASE IMP
     
     //
     // MARK: - Hardware Interrupt Management
@@ -1652,7 +1712,7 @@ public:
     ///
     /// @return `true` on success, `false` otherwise.
     ///
-    bool setupPowerManagement();
+    bool setupPowerManagement(); // TODO: RELOCATED TO BASE
     
     ///
     /// [Helper] Get the 8-bit base address register to map the device memory
@@ -1675,7 +1735,7 @@ public:
     ///
     /// @return `true` on success, `false` otherwise.
     ///
-    bool setupWorkLoop();
+    bool setupWorkLoop(); // TODO: RELOCATED TO BASE
     
     ///
     /// [Helper] Probe the index of the message signaled interrupt
@@ -1721,7 +1781,7 @@ public:
     ///
     /// Tear down the power management
     ///
-    void tearDownPowerManagement();
+    void tearDownPowerManagement(); // TODO: RELOCATED TO BASE
     
     ///
     /// Unmap the device memory
@@ -1731,7 +1791,7 @@ public:
     ///
     /// Tear down the workloop
     ///
-    void tearDownWorkLoop();
+    void tearDownWorkLoop(); // TODO: RELOCATED TO BASE
     
     ///
     /// Tear down the interrupt event source
