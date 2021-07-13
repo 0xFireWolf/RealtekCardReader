@@ -222,14 +222,14 @@
 		D51D6FA826622CA000871FA3 /* Base */ = {
 			isa = PBXGroup;
 			children = (
+				D5FF5651267225D800B0143E /* AppleSDXC.cpp */,
+				D5FF5652267225D800B0143E /* AppleSDXC.hpp */,
+				D595F81A269A3467005893B8 /* RealtekCardReaderController.cpp */,
+				D595F81B269A3467005893B8 /* RealtekCardReaderController.hpp */,
 				D5D2EE8625DF1316004B5310 /* RealtekPCIeCardReaderController.cpp */,
 				D5D2EE8725DF1316004B5310 /* RealtekPCIeCardReaderController.hpp */,
 				D595F81626996F16005893B8 /* RealtekUSBCardReaderController.cpp */,
 				D595F81726996F16005893B8 /* RealtekUSBCardReaderController.hpp */,
-				D595F81A269A3467005893B8 /* RealtekCardReaderController.cpp */,
-				D595F81B269A3467005893B8 /* RealtekCardReaderController.hpp */,
-				D5FF5651267225D800B0143E /* AppleSDXC.cpp */,
-				D5FF5652267225D800B0143E /* AppleSDXC.hpp */,
 			);
 			name = Base;
 			sourceTree = "<group>";
@@ -710,7 +710,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MARKETING_VERSION = "$(MODULE_VERSION)";
 				MODULE_NAME = science.firewolf.RealtekPCIeCardReader;
-				MODULE_VERSION = 0.9.4;
+				MODULE_VERSION = 0.9.5;
 				PRODUCT_BUNDLE_IDENTIFIER = science.firewolf.rtsx;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_STATIC_ANALYZER = YES;
@@ -733,7 +733,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MARKETING_VERSION = "$(MODULE_VERSION)";
 				MODULE_NAME = science.firewolf.RealtekPCIeCardReader;
-				MODULE_VERSION = 0.9.4;
+				MODULE_VERSION = 0.9.5;
 				PRODUCT_BUNDLE_IDENTIFIER = science.firewolf.rtsx;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_STATIC_ANALYZER = YES;
