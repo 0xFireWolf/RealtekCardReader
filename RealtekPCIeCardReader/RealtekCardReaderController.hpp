@@ -1144,6 +1144,28 @@ public:
     virtual IOReturn disablePullControlForSDCard() = 0;
     
     //
+    // MARK: - Card Tuning & Phase Management
+    //
+    
+    ///
+    /// Change the Rx phase
+    ///
+    /// @param samplePoint The sample point value
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces the Rx portion of `sd_change_phase()` defined in `rtsx_pci/usb_sdmmc.c`.
+    ///
+    virtual IOReturn changeRxPhase(UInt8 samplePoint) = 0;
+    
+    ///
+    /// Change the Tx phase
+    ///
+    /// @param samplePoint The sample point value
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces the Tx portion of `sd_change_phase()` defined in `rtsx_pci/usb_sdmmc.c`.
+    ///
+    virtual IOReturn changeTxPhase(UInt8 samplePoint) = 0;
+    
+    //
     // MARK: - Ping Pong Buffer
     //
     
