@@ -1121,6 +1121,58 @@ IOReturn RealtekUSBCardReaderController::disablePullControlForSDCard()
 }
 
 //
+// MARK: - Card Tuning & Phase Management
+//
+
+///
+/// Change the Rx phase
+///
+/// @param samplePoint The sample point value
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces the Rx portion of `sd_change_phase()` defined in `rtsx_usb_sdmmc.c`.
+///
+IOReturn RealtekUSBCardReaderController::changeRxPhase(UInt8 samplePoint)
+{
+    using namespace RTSX::UCR::Chip;
+    
+    const ChipRegValuePair pairs[] =
+    {
+        { CLK::rDIV, CLK::DIV::kChangeClock, CLK::DIV::kChangeClock },
+        { SD::rVPRXCTL, SD::VPCTL::kPhaseSelectMask16, samplePoint },
+        { SD::rVPTXCTL, SD::VPCTL::kPhaseNotReset, 0 },
+        { SD::rVPTXCTL, SD::VPCTL::kPhaseNotReset, SD::VPCTL::kPhaseNotReset },
+        { CLK::rDIV, CLK::DIV::kChangeClock, 0 },
+        { SD::rCFG1, SD::CFG1::kAsyncFIFONotRST, 0 }
+    };
+    
+    return this->transferWriteRegisterCommands(SimpleRegValuePairs(pairs), 100, Packet::Flags::kC);
+}
+
+///
+/// Change the Tx phase
+///
+/// @param samplePoint The sample point value
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces the Tx portion of `sd_change_phase()` defined in `rtsx_usb_sdmmc.c`.
+///
+IOReturn RealtekUSBCardReaderController::changeTxPhase(UInt8 samplePoint)
+{
+    using namespace RTSX::UCR::Chip;
+    
+    const ChipRegValuePair pairs[] =
+    {
+        { CLK::rDIV, CLK::DIV::kChangeClock, CLK::DIV::kChangeClock },
+        { SD::rVPTXCTL, SD::VPCTL::kPhaseSelectMask16, samplePoint },
+        { SD::rVPTXCTL, SD::VPCTL::kPhaseNotReset, 0 },
+        { SD::rVPTXCTL, SD::VPCTL::kPhaseNotReset, SD::VPCTL::kPhaseNotReset },
+        { CLK::rDIV, CLK::DIV::kChangeClock, 0 },
+        { SD::rCFG1, SD::CFG1::kAsyncFIFONotRST, 0 }
+    };
+    
+    return this->transferWriteRegisterCommands(SimpleRegValuePairs(pairs), 100, Packet::Flags::kC);
+}
+
+//
 // MARK: - Ping Pong Buffer
 //
 

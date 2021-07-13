@@ -800,6 +800,28 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     IOReturn disablePullControlForSDCard() override;
     
     //
+    // MARK: - Card Tuning & Phase Management
+    //
+    
+    ///
+    /// Change the Rx phase
+    ///
+    /// @param samplePoint The sample point value
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces the Rx portion of `sd_change_phase()` defined in `rtsx_usb_sdmmc.c`.
+    ///
+    IOReturn changeRxPhase(UInt8 samplePoint) override;
+    
+    ///
+    /// Change the Tx phase
+    ///
+    /// @param samplePoint The sample point value
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces the Tx portion of `sd_change_phase()` defined in `rtsx_usb_sdmmc.c`.
+    ///
+    IOReturn changeTxPhase(UInt8 samplePoint) override;
+    
+    //
     // MARK: - Ping Pong Buffer
     //
     
