@@ -1729,53 +1729,55 @@ IOReturn RealtekSDXCSlot::switchSignalVoltage(const IOSDBusConfig& config)
 // MARK: - Tuning
 //
 
-///
-/// Change the Rx phase
-///
-/// @param samplePoint The sample point value
-/// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note Port: This function replaces the Rx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
-///
-IOReturn RealtekSDXCSlot::changeRxPhase(UInt8 samplePoint)
-{
-    using namespace RTSX::Chip;
-    
-    const ChipRegValuePair pairs[] =
-    {
-        { CLK::rCTL, CLK::CTL::kChangeClock, CLK::CTL::kChangeClock },
-        { SD::rVPRXCTL, SD::VPCTL::kPhaseSelectMask, samplePoint },
-        { SD::rVPRXCTL, SD::VPCTL::kPhaseNotReset, 0 },
-        { SD::rVPRXCTL, SD::VPCTL::kPhaseNotReset, SD::VPCTL::kPhaseNotReset },
-        { CLK::rCTL, CLK::CTL::kChangeClock, 0 },
-        { SD::rCFG1, SD::CFG1::kAsyncFIFONotRST, 0 }
-    };
-    
-    return this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
-}
-
-///
-/// Change the Tx phase
-///
-/// @param samplePoint The sample point value
-/// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note Port: This function replaces the Tx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
-///
-IOReturn RealtekSDXCSlot::changeTxPhase(UInt8 samplePoint)
-{
-    using namespace RTSX::Chip;
-    
-    const ChipRegValuePair pairs[] =
-    {
-        { CLK::rCTL, CLK::CTL::kChangeClock, CLK::CTL::kChangeClock },
-        { SD::rVPTXCTL, SD::VPCTL::kPhaseSelectMask, samplePoint },
-        { SD::rVPTXCTL, SD::VPCTL::kPhaseNotReset, 0 },
-        { SD::rVPTXCTL, SD::VPCTL::kPhaseNotReset, SD::VPCTL::kPhaseNotReset },
-        { CLK::rCTL, CLK::CTL::kChangeClock, 0 },
-        { SD::rCFG1, SD::CFG1::kAsyncFIFONotRST, 0 }
-    };
-    
-    return this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
-}
+// TODO: DEPRECATED
+/////
+///// Change the Rx phase
+/////
+///// @param samplePoint The sample point value
+///// @return `kIOReturnSuccess` on success, other values otherwise.
+///// @note Port: This function replaces the Rx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
+/////
+//IOReturn RealtekSDXCSlot::changeRxPhase(UInt8 samplePoint)
+//{
+//    using namespace RTSX::Chip;
+//
+//    const ChipRegValuePair pairs[] =
+//    {
+//        { CLK::rCTL, CLK::CTL::kChangeClock, CLK::CTL::kChangeClock },
+//        { SD::rVPRXCTL, SD::VPCTL::kPhaseSelectMask, samplePoint },
+//        { SD::rVPRXCTL, SD::VPCTL::kPhaseNotReset, 0 },
+//        { SD::rVPRXCTL, SD::VPCTL::kPhaseNotReset, SD::VPCTL::kPhaseNotReset },
+//        { CLK::rCTL, CLK::CTL::kChangeClock, 0 },
+//        { SD::rCFG1, SD::CFG1::kAsyncFIFONotRST, 0 }
+//    };
+//
+//    return this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
+//}
+//
+// TODO: DEPRECATED
+/////
+///// Change the Tx phase
+/////
+///// @param samplePoint The sample point value
+///// @return `kIOReturnSuccess` on success, other values otherwise.
+///// @note Port: This function replaces the Tx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
+/////
+//IOReturn RealtekSDXCSlot::changeTxPhase(UInt8 samplePoint)
+//{
+//    using namespace RTSX::Chip;
+//
+//    const ChipRegValuePair pairs[] =
+//    {
+//        { CLK::rCTL, CLK::CTL::kChangeClock, CLK::CTL::kChangeClock },
+//        { SD::rVPTXCTL, SD::VPCTL::kPhaseSelectMask, samplePoint },
+//        { SD::rVPTXCTL, SD::VPCTL::kPhaseNotReset, 0 },
+//        { SD::rVPTXCTL, SD::VPCTL::kPhaseNotReset, SD::VPCTL::kPhaseNotReset },
+//        { CLK::rCTL, CLK::CTL::kChangeClock, 0 },
+//        { SD::rCFG1, SD::CFG1::kAsyncFIFONotRST, 0 }
+//    };
+//
+//    return this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
+//}
 
 ///
 /// Get the phase length for the given bit index
@@ -1896,7 +1898,7 @@ IOReturn RealtekSDXCSlot::tuningRxCommand(UInt8 samplePoint)
     using namespace RTSX::Chip::SD;
     
     // Change the Rx phase
-    IOReturn retVal = this->changeRxPhase(samplePoint);
+    IOReturn retVal = this->controller->changeRxPhase(samplePoint);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -2028,7 +2030,7 @@ IOReturn RealtekSDXCSlot::tuningRx()
     
     pinfo("Will change the Rx phase to 0x%08x.", finalPhase);
     
-    return this->changeRxPhase(finalPhase);
+    return this->controller->changeRxPhase(finalPhase);
 }
 
 ///
@@ -2059,7 +2061,7 @@ IOReturn RealtekSDXCSlot::executeTuning(const IOSDBusConfig& config)
         {
             pinfo("Will tune Rx and Tx for the UHS SDR104 mode.");
             
-            retVal = this->changeTxPhase(this->controller->getTxClockPhase().sdr104);
+            retVal = this->controller->changeTxPhase(this->controller->getTxClockPhase().sdr104);
             
             if (retVal != kIOReturnSuccess)
             {
@@ -2082,7 +2084,7 @@ IOReturn RealtekSDXCSlot::executeTuning(const IOSDBusConfig& config)
         {
             pinfo("Will tune Rx and Tx for the UHS SDR50 mode.");
             
-            retVal = this->changeTxPhase(this->controller->getTxClockPhase().sdr50);
+            retVal = this->controller->changeTxPhase(this->controller->getTxClockPhase().sdr50);
             
             if (retVal != kIOReturnSuccess)
             {
@@ -2105,7 +2107,7 @@ IOReturn RealtekSDXCSlot::executeTuning(const IOSDBusConfig& config)
         {
             pinfo("Will tune Rx and Tx for the UHS DDR50 mode.");
             
-            retVal = this->changeTxPhase(this->controller->getTxClockPhase().ddr50);
+            retVal = this->controller->changeTxPhase(this->controller->getTxClockPhase().ddr50);
             
             if (retVal != kIOReturnSuccess)
             {
@@ -2114,7 +2116,7 @@ IOReturn RealtekSDXCSlot::executeTuning(const IOSDBusConfig& config)
                 break;
             }
             
-            retVal = this->changeRxPhase(this->controller->getRxClockPhase().ddr50);
+            retVal = this->controller->changeRxPhase(this->controller->getRxClockPhase().ddr50);
             
             if (retVal != kIOReturnSuccess)
             {

@@ -324,23 +324,27 @@ public:
     //
     
 private:
-    ///
-    /// Change the Rx phase
-    ///
-    /// @param samplePoint The sample point value
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces the Rx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
-    ///
-    IOReturn changeRxPhase(UInt8 samplePoint);
-    
-    ///
-    /// Change the Tx phase
-    ///
-    /// @param samplePoint The sample point value
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces the Tx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
-    ///
-    IOReturn changeTxPhase(UInt8 samplePoint);
+//    // TODO: DEPRECATED: TO BE RELOCATED TO CONTROLLER
+//    ///
+//    /// Change the Rx phase
+//    ///
+//    /// @param samplePoint The sample point value
+//    /// @return `kIOReturnSuccess` on success, other values otherwise.
+//    /// @note Port: This function replaces the Rx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
+//    ///
+//    DEPRECATE("Use RealtekCardReaderController::changeRxPhase() instead.")
+//    IOReturn changeRxPhase(UInt8 samplePoint);
+//    
+//    // TODO: DEPRECATED: TO BE RELOCATED TO CONTROLLER
+//    ///
+//    /// Change the Tx phase
+//    ///
+//    /// @param samplePoint The sample point value
+//    /// @return `kIOReturnSuccess` on success, other values otherwise.
+//    /// @note Port: This function replaces the Tx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
+//    ///
+//    DEPRECATE("Use RealtekCardReaderController::changeRxPhase() instead.")
+//    IOReturn changeTxPhase(UInt8 samplePoint);
     
     ///
     /// Get the phase length for the given bit index
