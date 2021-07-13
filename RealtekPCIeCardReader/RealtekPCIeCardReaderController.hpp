@@ -71,7 +71,7 @@ class RealtekPCIeCardReaderController: public RealtekCardReaderController
     using super = RealtekCardReaderController;
     
     //
-    // MARK: - Constants
+    // MARK: - Constants: SSC Clock Properties
     //
 
     /// The minimum SSC clock divider value
@@ -85,6 +85,26 @@ class RealtekPCIeCardReaderController: public RealtekCardReaderController
     
     /// The minimum SSC clock frequency in MHz
     static constexpr UInt32 kMinSSCClockFrequencyMHz = 2;
+    
+    //
+    // MARK: - Constants: Bus Timing Tables
+    //
+    
+    /// A sequence of chip registers to switch the bus speed mode to UHS-I SDR50/SDR104
+    static const ChipRegValuePair kBusTimingTablePairsSDR50[];
+    static const SimpleRegValuePairs kBusTimingTableSDR50;
+    
+    /// A sequence of chip registers to switch the bus speed mode to UHS-I DDR50
+    static const ChipRegValuePair kBusTimingTablePairsDDR50[];
+    static const SimpleRegValuePairs kBusTimingTableDDR50;
+    
+    /// A sequence of chip registers to switch the bus speed mode to High Speed
+    static const ChipRegValuePair kBusTimingTablePairsHighSpeed[];
+    static const SimpleRegValuePairs kBusTimingTableHighSpeed;
+    
+    /// A sequence of chip registers to switch the bus speed mode to Default Speed
+    static const ChipRegValuePair kBusTimingTablePairsDefaultSpeed[];
+    static const SimpleRegValuePairs kBusTimingTableDefaultSpeed;
     
     //
     // MARK: - Private Data Structures

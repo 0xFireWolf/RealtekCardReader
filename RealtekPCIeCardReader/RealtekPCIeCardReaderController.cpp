@@ -17,6 +17,158 @@
 OSDefineMetaClassAndAbstractStructors(RealtekPCIeCardReaderController, RealtekCardReaderController);
 
 //
+// MARK: - Constants: Bus Timing Tables
+//
+
+/// A sequence of chip registers to switch the bus speed mode to UHS-I SDR50/SDR104
+const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsSDR50[] =
+{
+    {
+        RTSX::Chip::SD::rCFG1,
+        RTSX::Chip::SD::CFG1::kModeMask | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST,
+        RTSX::Chip::SD::CFG1::kModeSD30 | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST
+    },
+    {
+        RTSX::Chip::CLK::rCTL,
+        RTSX::Chip::CLK::CTL::kLowFrequency,
+        RTSX::Chip::CLK::CTL::kLowFrequency
+    },
+    {
+        RTSX::Chip::CARD::rCLKSRC,
+        0xFF,
+        RTSX::Chip::CARD::CLKSRC::kCRCVarClock0 | RTSX::Chip::CARD::CLKSRC::kSD30FixClock | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1
+    },
+    {
+        RTSX::Chip::CLK::rCTL,
+        RTSX::Chip::CLK::CTL::kLowFrequency,
+        0
+    },
+};
+
+const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReaderController::kBusTimingTableSDR50 =
+{
+    RealtekPCIeCardReaderController::kBusTimingTablePairsSDR50
+};
+
+/// A sequence of chip registers to switch the bus speed mode to UHS-I DDR50
+const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsDDR50[] =
+{
+    {
+        RTSX::Chip::SD::rCFG1,
+        RTSX::Chip::SD::CFG1::kModeMask  | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST,
+        RTSX::Chip::SD::CFG1::kModeSDDDR | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST
+    },
+    {
+        RTSX::Chip::CLK::rCTL,
+        RTSX::Chip::CLK::CTL::kLowFrequency,
+        RTSX::Chip::CLK::CTL::kLowFrequency
+    },
+    {
+        RTSX::Chip::CARD::rCLKSRC,
+        0xFF,
+        RTSX::Chip::CARD::CLKSRC::kCRCVarClock0 | RTSX::Chip::CARD::CLKSRC::kSD30FixClock | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1
+    },
+    {
+        RTSX::Chip::CLK::rCTL,
+        RTSX::Chip::CLK::CTL::kLowFrequency,
+        0x00
+    },
+    {
+        RTSX::Chip::SD::rPPCTL,
+        RTSX::Chip::SD::PPCTL::kDDRVarTxCommandData,
+        RTSX::Chip::SD::PPCTL::kDDRVarTxCommandData },
+    {
+        RTSX::Chip::SD::rSPCTL,
+        RTSX::Chip::SD::SPCTL::kDDRVarRxData | RTSX::Chip::SD::SPCTL::kDDRVarRxCommand,
+        RTSX::Chip::SD::SPCTL::kDDRVarRxData | RTSX::Chip::SD::SPCTL::kDDRVarRxCommand
+    },
+};
+
+const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReaderController::kBusTimingTableDDR50 =
+{
+    RealtekPCIeCardReaderController::kBusTimingTablePairsDDR50
+};
+
+/// A sequence of chip registers to switch the bus speed mode to High Speed
+const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsHighSpeed[] =
+{
+    {
+        RTSX::Chip::SD::rCFG1,
+        RTSX::Chip::SD::CFG1::kModeMask,
+        RTSX::Chip::SD::CFG1::kModeSD20
+    },
+    {
+        RTSX::Chip::CLK::rCTL,
+        RTSX::Chip::CLK::CTL::kLowFrequency,
+        RTSX::Chip::CLK::CTL::kLowFrequency
+    },
+    {
+        RTSX::Chip::CARD::rCLKSRC,
+        0xFF,
+        RTSX::Chip::CARD::CLKSRC::kCRCFixClock | RTSX::Chip::CARD::CLKSRC::kSD30VarClock0 | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1
+    },
+    {
+        RTSX::Chip::CLK::rCTL,
+        RTSX::Chip::CLK::CTL::kLowFrequency,
+        0x00
+    },
+    {
+        RTSX::Chip::SD::rPPCTL,
+        RTSX::Chip::SD::PPCTL::kSD20TxSelMask,
+        RTSX::Chip::SD::PPCTL::kSD20Tx14Ahead
+    },
+    {
+        RTSX::Chip::SD::rSPCTL,
+        RTSX::Chip::SD::SPCTL::kSD20RxSelMask,
+        RTSX::Chip::SD::SPCTL::kSD20Rx14Delay
+    },
+};
+
+const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReaderController::kBusTimingTableHighSpeed =
+{
+    RealtekPCIeCardReaderController::kBusTimingTablePairsHighSpeed
+};
+
+/// A sequence of chip registers to switch the bus speed mode to Default Speed
+const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsDefaultSpeed[] =
+{
+    {
+        RTSX::Chip::SD::rCFG1,
+        RTSX::Chip::SD::CFG1::kModeMask,
+        RTSX::Chip::SD::CFG1::kModeSD20
+    },
+    {
+        RTSX::Chip::CLK::rCTL,
+        RTSX::Chip::CLK::CTL::kLowFrequency,
+        RTSX::Chip::CLK::CTL::kLowFrequency
+    },
+    {
+        RTSX::Chip::CARD::rCLKSRC,
+        0xFF,
+        RTSX::Chip::CARD::CLKSRC::kCRCFixClock | RTSX::Chip::CARD::CLKSRC::kSD30VarClock0 | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1
+    },
+    {
+        RTSX::Chip::CLK::rCTL,
+        RTSX::Chip::CLK::CTL::kLowFrequency,
+        0x00
+    },
+    {
+        RTSX::Chip::SD::rPPCTL,
+        0xFF, 0
+    },
+    {
+        RTSX::Chip::SD::rSPCTL,
+        RTSX::Chip::SD::SPCTL::kSD20RxSelMask,
+        RTSX::Chip::SD::SPCTL::kSD20RxPosEdge
+    },
+};
+
+const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReaderController::kBusTimingTableDefaultSpeed =
+{
+    RealtekPCIeCardReaderController::kBusTimingTablePairsDefaultSpeed
+};
+
+//
 // MARK: - Access Memory Mapped Registers (Generic, Final)
 //
 
@@ -2823,11 +2975,19 @@ bool RealtekPCIeCardReaderController::init(OSDictionary* dictionary)
     
     using namespace RTSX::Chip;
     
-    this->sscClockLimits.rangeN = { kMinSSCClockN, kMaxSSCClockN };
+    this->sscClockLimits.rangeN = { RealtekPCIeCardReaderController::kMinSSCClockN, RealtekPCIeCardReaderController::kMaxSSCClockN };
     
     this->sscClockLimits.rangeDivider = { CLK::DIV::k1, CLK::DIV::k8 };
     
-    this->sscClockLimits.minFrequencyMHz = kMinSSCClockFrequencyMHz;
+    this->sscClockLimits.minFrequencyMHz = RealtekPCIeCardReaderController::kMinSSCClockFrequencyMHz;
+    
+    this->busTimingTables.sdr50 = &RealtekPCIeCardReaderController::kBusTimingTableSDR50;
+    
+    this->busTimingTables.ddr50 = &RealtekPCIeCardReaderController::kBusTimingTableDDR50;
+    
+    this->busTimingTables.highSpeed = &RealtekPCIeCardReaderController::kBusTimingTableHighSpeed;
+    
+    this->busTimingTables.defaultSpeed = &RealtekPCIeCardReaderController::kBusTimingTableDefaultSpeed;
     
     return true;
 }
