@@ -1741,9 +1741,11 @@ UInt32 RealtekSDXCSlot::getPhaseLength(UInt32 phaseMap, UInt32 sindex)
 {
     UInt32 index;
     
-    for (index = 0; index < RealtekSDXCSlot::kMaxPhase; index += 1)
+    UInt32 numPhases = this->controller->getTuningConfig().numPhases;
+    
+    for (index = 0; index < numPhases; index += 1)
     {
-        if (!BitOptions(phaseMap).containsBit((sindex + index) % RealtekSDXCSlot::kMaxPhase))
+        if (!BitOptions(phaseMap).containsBit((sindex + index) % numPhases))
         {
             break;
         }
@@ -1776,7 +1778,14 @@ UInt8 RealtekSDXCSlot::searchFinalPhase(UInt32 phaseMap)
     
     UInt32 fsindex = 0, flength = 0;
     
-    while (sindex < RealtekSDXCSlot::kMaxPhase)
+    // Fetch the number of phases from the controller
+    UInt32 numPhases = this->controller->getTuningConfig().numPhases;
+    
+    pinfo("Number of phases = %u.", numPhases);
+    
+    passert(numPhases != 0, "Number of phases cannot be zero. Check the controller initialization routine.");
+    
+    while (sindex < numPhases)
     {
         length = this->getPhaseLength(phaseMap, sindex);
         
@@ -1791,7 +1800,7 @@ UInt8 RealtekSDXCSlot::searchFinalPhase(UInt32 phaseMap)
     }
     
     // Calculate the final phase
-    finalPhase = (fsindex + flength / 2) % RealtekSDXCSlot::kMaxPhase;
+    finalPhase = (fsindex + flength / 2) % numPhases;
     
     pinfo("Phase Map = 0x%x; Final Phase = %d; Start Bit Index = %d; Length = %d.",
           phaseMap, finalPhase, fsindex, flength);
@@ -1857,14 +1866,11 @@ IOReturn RealtekSDXCSlot::tuningRxCommand(UInt8 samplePoint)
         return retVal;
     }
     
-    // Set the timeout
-    retVal = this->controller->writeChipRegister(rCFG3, CFG3::kEnableResponse80ClockTimeout, CFG3::kEnableResponse80ClockTimeout);
-    
-    if (retVal != kIOReturnSuccess)
+    // Set the timeout if necessary
+    if (this->controller->getTuningConfig().enable80ClocksTimeout)
     {
-        perr("Failed to enable the timeout for the tuning command response. Error = 0x%x.", retVal);
-        
-        return retVal;
+        psoftassert(this->controller->writeChipRegister(rCFG3, CFG3::kEnableResponse80ClockTimeout, CFG3::kEnableResponse80ClockTimeout) == kIOReturnSuccess,
+                    "Failed to enable the timeout for the tuning command response.");
     }
     
     // Send the tuning command CMD19
@@ -1880,24 +1886,16 @@ IOReturn RealtekSDXCSlot::tuningRxCommand(UInt8 samplePoint)
         
         psoftassert(this->clearError() == kIOReturnSuccess,
                     "Failed to clear command errors.");
-        
+    }
+    
+    // Cancel the timeout if necessary
+    if (this->controller->getTuningConfig().enable80ClocksTimeout)
+    {
         psoftassert(this->controller->writeChipRegister(rCFG3, CFG3::kEnableResponse80ClockTimeout, 0) == kIOReturnSuccess,
                     "Failed to disable the timeout for the tuning command response.");
-        
-        return retVal;
     }
     
-    // Cancel the timeout
-    retVal = this->controller->writeChipRegister(rCFG3, CFG3::kEnableResponse80ClockTimeout, 0);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to disable the timeout for the tuning command response. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    return kIOReturnSuccess;
+    return retVal;
 }
 
 ///
@@ -1910,7 +1908,9 @@ UInt32 RealtekSDXCSlot::tuningRxPhase()
 {
     UInt32 phaseMap = 0;
     
-    for (auto index = 0; index < RealtekSDXCSlot::kMaxPhase; index += 1)
+    UInt32 numPhases = this->controller->getTuningConfig().numPhases;
+    
+    for (auto index = 0; index < numPhases; index += 1)
     {
         if (this->tuningRxCommand(index) == kIOReturnSuccess)
         {
@@ -1949,7 +1949,13 @@ IOReturn RealtekSDXCSlot::tuningRx()
     }
     
     // Calculate the phase map
-    UInt32 phaseMap = 0xFFFFFFFF;
+    // PCI: NumPhases = 32, Phase Map = 0xFFFFFFFF
+    // USB: NumPhases = 16, Phase Map = 0x0000FFFF
+    UInt32 numPhases = this->controller->getTuningConfig().numPhases;
+    
+    UInt32 phaseMap = static_cast<UInt32>((1ULL << numPhases) - 1);
+    
+    pinfo("Rx Phase Map [INIT] = 0x%08x.", phaseMap);
     
     for (auto index = 0; index < arrsize(rawPhaseMaps); index += 1)
     {
@@ -1958,7 +1964,7 @@ IOReturn RealtekSDXCSlot::tuningRx()
         phaseMap &= rawPhaseMaps[index];
     }
     
-    pinfo("Rx Phase Map = 0x%08x.", phaseMap);
+    pinfo("Rx Phase Map [TUNE] = 0x%08x.", phaseMap);
     
     // Verify the phase map
     if (phaseMap == 0)

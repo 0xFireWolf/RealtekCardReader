@@ -40,11 +40,6 @@ class RealtekSDXCSlot: public AppleSDXCSlot
     // MARK: - Constants [Miscellaneous]
     //
     
-    // TODO: DEPRECATED: To be defined by the controller
-    // TODO: (USB controller has a smaller max phase value)
-    /// The maximum phase value
-    static constexpr UInt32 kMaxPhase = 32;
-    
     /// Tune the Rx phase for three times
     static constexpr UInt32 kRxTuningCount = 3;
     
