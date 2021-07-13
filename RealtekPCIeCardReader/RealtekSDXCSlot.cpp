@@ -1099,7 +1099,7 @@ IOReturn RealtekSDXCSlot::processRequest(RealtekSDRequest& request)
         { CARD::rSHAREMODE, CARD::SHAREMODE::kMask, CARD::SHAREMODE::k48SD }
     };
     
-    retVal = this->controller->writeChipRegisters(SimpleRegValuePairs(pairs));
+    retVal = this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
     
     if (retVal != kIOReturnSuccess)
     {
@@ -1776,7 +1776,7 @@ IOReturn RealtekSDXCSlot::changeRxPhase(UInt8 samplePoint)
         { SD::rCFG1, SD::CFG1::kAsyncFIFONotRST, 0 }
     };
     
-    return this->controller->writeChipRegisters(SimpleRegValuePairs(pairs));
+    return this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
 }
 
 ///
@@ -1800,7 +1800,7 @@ IOReturn RealtekSDXCSlot::changeTxPhase(UInt8 samplePoint)
         { SD::rCFG1, SD::CFG1::kAsyncFIFONotRST, 0 }
     };
     
-    return this->controller->writeChipRegisters(SimpleRegValuePairs(pairs));
+    return this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
 }
 
 ///
