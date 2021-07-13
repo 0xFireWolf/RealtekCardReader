@@ -13,6 +13,7 @@
 #include <IOKit/IOCommandGate.h>
 #include "AppleSDXC.hpp"
 #include "ClosedRange.hpp"
+#include "Utilities.hpp"
 #include "Debug.hpp"
 
 /// Forward Declaration (Client of the card reader controller)
@@ -919,6 +920,16 @@ public:
     //
     
 protected:
+    ///
+    /// Get the card clock and the divider for the initial mode
+    ///
+    /// @return A pair of card clock in Hz (first) and the clock divider register value (second).
+    /// @note This function uses a 30 MHz carc clock and a divider of 128 as the default values.
+    ///       RTS5261 controller must override this function to set a higher initial card clock
+    ///       and divider for chips whose revision is higher than C.
+    ///
+    virtual Pair<UInt32, UInt32> getInitialCardClockAndDivider();
+    
     ///
     /// Adjust the card clock if DMA transfer errors occurred
     ///

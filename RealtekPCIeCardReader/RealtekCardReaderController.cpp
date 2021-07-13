@@ -445,6 +445,21 @@ void RealtekCardReaderController::clearError()
 //
 
 ///
+/// Get the card clock and the divider for the initial mode
+///
+/// @return A pair of card clock in Hz (first) and the clock divider register value (second).
+/// @note This function uses a 30 MHz carc clock and a divider of 128 as the default values.
+///       RTS5261 controller must override this function to set a higher initial card clock
+///       and divider for chips whose revision is higher than C.
+///
+Pair<UInt32, UInt32> RealtekCardReaderController::getInitialCardClockAndDivider()
+{
+    using namespace RTSX::COM::Chip;
+    
+    return { MHz2Hz(30), SD::CFG1::kClockDivider128 };
+}
+
+///
 /// Adjust the card clock if DMA transfer errors occurred
 ///
 /// @param cardClock The current card clock in Hz
@@ -509,9 +524,13 @@ IOReturn RealtekCardReaderController::switchCardClock(UInt32 cardClock, SSCDepth
     
     if (initialMode)
     {
-        clockDivider = SD::CFG1::kClockDivider128;
+        Pair<UInt32, UInt32> pair = this->getInitialCardClockAndDivider();
         
-        cardClock = MHz2Hz(30);
+        cardClock = pair.first;
+        
+        clockDivider = pair.second;
+        
+        pinfo("Use the initial card clock %u Hz and clock divider %u.", cardClock, clockDivider);
     }
     
     // Set the clock divider
