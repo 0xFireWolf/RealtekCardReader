@@ -218,6 +218,34 @@ public:
         k3d3V, k1d8V
     };
     
+    /// Defines a sequence of registers and their values to change the bus speed mode
+    struct BusTimingTables
+    {
+        /// Bus timing table for SD UHS-I SDR50 and SDR104 mode
+        SimpleRegValuePairs* sdr50;
+        
+        /// Bus timing table for SD UHS-I DDR50 mode
+        SimpleRegValuePairs* ddr50;
+        
+        /// Bus timing table for SD High Speed mode
+        SimpleRegValuePairs* highSpeed;
+        
+        /// Bus timing table for SD Default Speed mode
+        SimpleRegValuePairs* defaultSpeed;
+        
+        /// Reset all tables to null
+        inline void reset()
+        {
+            this->sdr50 = nullptr;
+            
+            this->ddr50 = nullptr;
+            
+            this->highSpeed = nullptr;
+            
+            this->defaultSpeed = nullptr;
+        }
+    };
+    
     ///
     /// Type of an action that takes a ussr-defined context as its sole argument and enqueues any host commands
     ///
@@ -469,6 +497,9 @@ protected:
     // MARK: - Host States
     //
     
+    /// Bus timing tables
+    BusTimingTables busTimingTables;
+    
     ///
     /// The current SSC clock in MHz
     ///
@@ -498,6 +529,12 @@ public:
     inline bool supportsDDR50()
     {
         return this->uhsCaps.ddr50;
+    }
+    
+    /// Get the bus timing tables
+    inline const BusTimingTables& getBusTimingTables()
+    {
+        return this->busTimingTables;
     }
     
     //
