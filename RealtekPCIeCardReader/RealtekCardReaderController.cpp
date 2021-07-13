@@ -806,6 +806,8 @@ bool RealtekCardReaderController::init(OSDictionary* dictionary)
     
     this->busTimingTables.reset();
     
+    this->tuningConfig.reset();
+    
     return true;
 }
 

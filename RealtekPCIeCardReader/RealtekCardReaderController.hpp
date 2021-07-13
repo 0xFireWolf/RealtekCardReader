@@ -246,6 +246,24 @@ public:
         }
     };
     
+    /// Defines the configuration for tunning
+    struct TuningConfig
+    {
+        /// The number of phases
+        UInt32 numPhases;
+        
+        /// True if the controller should enable 80 clocks timeout
+        UInt32 enable80ClocksTimeout;
+        
+        /// Reset all fields to zeros
+        inline void reset()
+        {
+            this->numPhases = 0;
+            
+            this->enable80ClocksTimeout = false;
+        }
+    };
+    
     ///
     /// Type of an action that takes a ussr-defined context as its sole argument and enqueues any host commands
     ///
@@ -508,6 +526,9 @@ protected:
     /// Bus timing tables
     BusTimingTables busTimingTables;
     
+    /// Tuning configurations
+    TuningConfig tuningConfig;
+    
     //
     // MARK: - Query UHS-I Capabilities
     //
@@ -535,6 +556,12 @@ public:
     inline const BusTimingTables& getBusTimingTables()
     {
         return this->busTimingTables;
+    }
+    
+    /// Get the tuning configurations
+    inline const TuningConfig& getTuningConfig()
+    {
+        return this->tuningConfig;
     }
     
     //
