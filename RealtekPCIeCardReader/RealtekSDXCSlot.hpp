@@ -69,16 +69,7 @@ class RealtekSDXCSlot: public AppleSDXCSlot
     // MARK: - SD Commander
     //
     
-private:
-    ///
-    /// [Shared] Clear the command error
-    ///
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces `sd_clear_error()` defined in `rtsx_pci_sdmmc.c`.
-    ///
-    DEPRECATE("Replaced by RealtekCardReaderController::clearError().")
-    IOReturn clearError();
-    
+private:    
     ///
     /// [Shared] [Helper] Inform the card reader which SD command to be executed
     ///

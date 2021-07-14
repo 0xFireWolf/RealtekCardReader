@@ -19,19 +19,6 @@ OSDefineMetaClassAndAbstractStructors(RealtekSDXCSlot, AppleSDXCSlot);
 //
 
 ///
-/// [Shared] Clear the command error
-///
-/// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note Port: This function replaces `sd_clear_error()` defined in `rtsx_pci_sdmmc.c`.
-///
-IOReturn RealtekSDXCSlot::clearError()
-{
-    using namespace RTSX::Chip::CARD;
-    
-    return this->controller->writeChipRegister(rSTOP, STOP::kStopSD | STOP::kClearSDError, STOP::kStopSD | STOP::kClearSDError);
-}
-
-///
 /// [Shared] [Helper] Inform the card reader which SD command to be executed
 ///
 /// @param command The SD command to be executed
@@ -240,7 +227,7 @@ IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDCommand& command, UInt32 timeout
     {
         perr("Failed to terminate the command transfer session. Error = 0x%x.", retVal);
         
-        psoftassert(this->clearError() == kIOReturnSuccess, "Failed to clear the error.");
+        this->controller->clearError();
         
         return retVal;
     }
@@ -882,7 +869,7 @@ IOReturn RealtekSDXCSlot::runSDCommandWithInboundDMATransfer(RealtekSDCommandWit
     {
         perr("Failed to perform the DMA transfer. Error = 0x%x.", retVal);
         
-        psoftassert(this->clearError() == kIOReturnSuccess, "Failed to clear the error.");
+        this->controller->clearError();
         
         this->controller->dumpChipRegisters({ 0xFDA0, 0xFDB3 });
         
@@ -1039,7 +1026,7 @@ IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDMATransfer(RealtekSDCommandWi
     {
         perr("Failed to perform the DMA transfer. Error = 0x%x.", retVal);
         
-        psoftassert(this->clearError() == kIOReturnSuccess, "Failed to clear the error.");
+        this->controller->clearError();
         
         return retVal;
     }
@@ -1926,8 +1913,7 @@ IOReturn RealtekSDXCSlot::tuningRxCommand(UInt8 samplePoint)
         psoftassert(this->waitForIdleDataLine() == kIOReturnSuccess,
                     "Failed to wait for the data lines to be idle.");
         
-        psoftassert(this->clearError() == kIOReturnSuccess,
-                    "Failed to clear command errors.");
+        this->controller->clearError();
     }
     
     // Cancel the timeout if necessary
