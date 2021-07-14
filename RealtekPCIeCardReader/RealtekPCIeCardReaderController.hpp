@@ -939,6 +939,17 @@ public:
     IOReturn selectCard() override final;
     
     ///
+    /// Select the data source for the SD card
+    ///
+    /// @param ppbuf `True` if the data source should be set to the ping pong buffer;
+    ///              `False` if the data source should be the ring buffer instead
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+    /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+    ///
+    IOReturn selectCardDataSource(bool ppbuf) override final;
+    
+    ///
     /// Configure the card share mode
     ///
     /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.

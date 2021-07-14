@@ -1180,6 +1180,22 @@ IOReturn RealtekPCIeCardReaderController::selectCard()
 }
 
 ///
+/// Select the data source for the SD card
+///
+/// @param ppbuf `True` if the data source should be set to the ping pong buffer;
+///              `False` if the data source should be the ring buffer instead
+/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+/// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+/// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+///
+IOReturn RealtekPCIeCardReaderController::selectCardDataSource(bool ppbuf)
+{
+    using namespace RTSX::Chip;
+    
+    return this->enqueueWriteRegisterCommand(CARD::rDATASRC, CARD::DATASRC::kMask, ppbuf ? CARD::DATASRC::kPingPongBuffer : CARD::DATASRC::kRingBuffer);
+}
+
+///
 /// Configure the card share mode
 ///
 /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.

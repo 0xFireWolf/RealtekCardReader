@@ -963,6 +963,41 @@ public:
     virtual IOReturn selectCard() = 0;
     
     ///
+    /// Select the data source for the SD card
+    ///
+    /// @param ppbuf `True` if the data source should be set to the ping pong buffer;
+    ///              `False` if the data source should be the ring buffer instead
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+    /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+    ///
+    virtual IOReturn selectCardDataSource(bool ppbuf) = 0;
+    
+    ///
+    /// Select the data source to the ping pong buffer for the SD card conveniently
+    ///
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+    /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+    ///
+    inline IOReturn selectCardDataSourceToPingPongBuffer()
+    {
+        return this->selectCardDataSource(true);
+    }
+
+    ///
+    /// Select the data source to the ring buffer for the SD card conveniently
+    ///
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+    /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+    ///
+    inline IOReturn selectCardDataSourceToRingBuffer()
+    {
+        return this->selectCardDataSource(false);
+    }
+    
+    ///
     /// Configure the card share mode
     ///
     /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
