@@ -375,9 +375,6 @@ protected:
     IOReturn tuningRx();
 
 public:
-//    // TODO: DEPRECATED
-//    // TODO: MOVE THE IMP TO RealtekPCISDXCSlot.cpp
-//    // TODO: RealtekSDXCSlot::executeTuning remains to be pure virtual
     ///
     /// Execute the tuning algorithm
     ///
