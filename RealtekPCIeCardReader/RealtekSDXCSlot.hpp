@@ -32,7 +32,7 @@ class RealtekSDXCSlot: public AppleSDXCSlot
     // MARK: - Constructors & Destructors
     //
     
-    OSDeclareDefaultStructors(RealtekSDXCSlot);
+    OSDeclareAbstractStructors(RealtekSDXCSlot);
     
     using super = AppleSDXCSlot;
     
@@ -375,16 +375,17 @@ protected:
     IOReturn tuningRx();
 
 public:
-    // TODO: MOVE THE IMP TO RealtekPCISDXCSlot.cpp
-    // TODO: RealtekSDXCSlot::executeTuning remains to be pure virtual
+//    // TODO: DEPRECATED
+//    // TODO: MOVE THE IMP TO RealtekPCISDXCSlot.cpp
+//    // TODO: RealtekSDXCSlot::executeTuning remains to be pure virtual
     ///
     /// Execute the tuning algorithm
     ///
     /// @param config An I/O config that contains the current I/O settings
     /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces `sdmmc_execute_tuning()` defined in `rtsx_pci_sdmmc.c`.
+    /// @note Port: This function replaces `sdmmc_execute_tuning()` defined in `rtsx_pci/usb_sdmmc.c`.
     ///
-    IOReturn executeTuning(const IOSDBusConfig& config) override;
+    IOReturn executeTuning(const IOSDBusConfig& config) override = 0;
     
     //
     // MARK: - Card Detection and Write Protection
