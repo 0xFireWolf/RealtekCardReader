@@ -608,6 +608,7 @@ public:
     // MARK: - Query Data Transfer Properties
     //
     
+public:
     /// Get the flags passed to each data transfer operation
     inline const DataTransferFlags& getDataTransferFlags()
     {
@@ -839,6 +840,7 @@ public:
     // MARK: - Host Command Management (Convenient)
     //
     
+public:
     ///
     /// Enqueue a command to read the register at the given address conveniently
     ///
@@ -945,6 +947,7 @@ public:
     // MARK: - Host Data Management
     //
     
+public:
     ///
     /// Perform a DMA read operation
     ///
@@ -967,6 +970,7 @@ public:
     // MARK: - Clear Error
     //
     
+protected:
     ///
     /// Clear any transfer error on the card side
     ///
@@ -981,6 +985,7 @@ public:
     ///
     virtual void clearHostError() = 0;
     
+public:
     ///
     /// Clear any transfere error on the both sides
     ///
@@ -993,6 +998,7 @@ public:
     // MARK: - LED Management
     //
     
+public:
     ///
     /// Turn on the LED
     ///
@@ -1025,6 +1031,7 @@ public:
     // MARK: - Card Selection, Share Mode and Transfer Properties
     //
     
+public:
     ///
     /// Select the SD card
     ///
@@ -1095,6 +1102,7 @@ public:
     // MARK: - Card Power Management
     //
     
+public:
     ///
     /// Enable the card clock
     ///
@@ -1257,6 +1265,7 @@ public:
     // MARK: - Card Detection and Write Protection
     //
     
+public:
     ///
     /// Check whether the card has write protection enabled
     ///
@@ -1276,6 +1285,7 @@ public:
     // MARK: - Card Pull Control Management
     //
     
+public:
     ///
     /// Enable pull control for the SD card
     ///
@@ -1294,6 +1304,7 @@ public:
     // MARK: - Card Tuning & Phase Management
     //
     
+public:
     ///
     /// Change the Rx phase
     ///
@@ -1316,6 +1327,7 @@ public:
     // MARK: - Ping Pong Buffer
     //
     
+public:
     ///
     /// Read from the ping pong buffer
     ///
