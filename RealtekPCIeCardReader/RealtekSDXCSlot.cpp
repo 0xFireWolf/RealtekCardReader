@@ -743,6 +743,7 @@ IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDataTransfer(RealtekSDCommandW
 ///
 IOReturn RealtekSDXCSlot::runSDCommandWithInboundDMATransfer(RealtekSDCommandWithBlockDataTransferRequest& request)
 {
+    // TODO: Switch to the COM namespace
     using namespace RTSX::Chip;
     
     // Fetch the data length
@@ -799,22 +800,26 @@ IOReturn RealtekSDXCSlot::runSDCommandWithInboundDMATransfer(RealtekSDCommandWit
     // Set the transfer property
     pinfo("Setting the transfer properties...");
     
+    retVal = this->controller->setupCardDMATransferProperties(dataLength, kIODirectionIn);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the DMA transfer properties. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    retVal = this->controller->selectCardDataSourceToRingBuffer();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to select the card data source to be the ring buffer. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
     const ChipRegValuePair pairs[] =
     {
-        // Generate an interrupt when the DMA transfer is done
-        { rIRQSTAT0, IRQSTAT0::kDMADoneInt, IRQSTAT0::kDMADoneInt },
-        
-        // Set up the data length
-        { DMA::rC3, 0xFF, static_cast<UInt8>(dataLength >> 24) },
-        { DMA::rC2, 0xFF, static_cast<UInt8>(dataLength >> 16) },
-        { DMA::rC1, 0xFF, static_cast<UInt8>(dataLength >>  8) },
-        { DMA::rC0, 0xFF, static_cast<UInt8>(dataLength & 0xFF) },
-        
-        // Set up the direction and the pack size
-        { DMA::rCTL, DMA::CTL::kEnable | DMA::CTL::kDirectionMask | DMA::CTL::kPackSizeMask, DMA::CTL::kEnable | DMA::CTL::kDirectionFromCard | DMA::CTL::kPackSize512 },
-        
-        // Set up the data transfer
-        { CARD::rDATASRC, CARD::DATASRC::kMask, CARD::DATASRC::kRingBuffer },
         { SD::rCFG2, 0xFF, cfg2 },
         { SD::rTRANSFER, 0xFF, SD::TRANSFER::kTransferStart | SD::TRANSFER::kTMAutoRead2 }, 
     };
@@ -843,7 +848,7 @@ IOReturn RealtekSDXCSlot::runSDCommandWithInboundDMATransfer(RealtekSDCommandWit
 //    }
     
     // Send the command
-    retVal = this->controller->endCommandTransfer();
+    retVal = this->controller->endCommandTransfer(100); // TODO: FLAGS = kCDIR
 
     if (retVal != kIOReturnSuccess)
     {
@@ -901,6 +906,7 @@ IOReturn RealtekSDXCSlot::runSDCommandWithInboundDMATransfer(RealtekSDCommandWit
 ///
 IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDMATransfer(RealtekSDCommandWithBlockDataTransferRequest& request)
 {
+    // TODO: Switch to the COM namespace
     using namespace RTSX::Chip;
     
     // Send the SD command
@@ -953,22 +959,26 @@ IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDMATransfer(RealtekSDCommandWi
     // Set the transfer property
     pinfo("Setting the transfer properties...");
     
+    retVal = this->controller->setupCardDMATransferProperties(dataLength, kIODirectionOut);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the DMA transfer properties. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    retVal = this->controller->selectCardDataSourceToRingBuffer();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to select the card data source to be the ring buffer. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
     const ChipRegValuePair pairs[] =
     {
-        // Generate an interrupt when the DMA transfer is done
-        { rIRQSTAT0, IRQSTAT0::kDMADoneInt, IRQSTAT0::kDMADoneInt },
-        
-        // Set up the data length
-        { DMA::rC3, 0xFF, static_cast<UInt8>(dataLength >> 24) },
-        { DMA::rC2, 0xFF, static_cast<UInt8>(dataLength >> 16) },
-        { DMA::rC1, 0xFF, static_cast<UInt8>(dataLength >>  8) },
-        { DMA::rC0, 0xFF, static_cast<UInt8>(dataLength & 0xFF) },
-        
-        // Set up the direction and the pack size
-        { DMA::rCTL, DMA::CTL::kEnable | DMA::CTL::kDirectionMask | DMA::CTL::kPackSizeMask, DMA::CTL::kEnable | DMA::CTL::kDirectionToCard | DMA::CTL::kPackSize512 },
-        
-        // Set up the data transfer
-        { CARD::rDATASRC, CARD::DATASRC::kMask, CARD::DATASRC::kRingBuffer },
         { SD::rCFG2, 0xFF, cfg2 },
         { SD::rTRANSFER, 0xFF, SD::TRANSFER::kTransferStart | SD::TRANSFER::kTMAutoWrite3 },
     };
@@ -997,7 +1007,7 @@ IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDMATransfer(RealtekSDCommandWi
 //    }
     
     // Send the command
-    retVal = this->controller->endCommandTransfer(); // Linux uses NoWait().
+    retVal = this->controller->endCommandTransfer(100); // Linux uses NoWait(). // TODO: FLAGS = kCDIR
 
     if (retVal != kIOReturnSuccess)
     {
