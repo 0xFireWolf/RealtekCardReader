@@ -573,6 +573,28 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     IOReturn endCommandTransferGated(UInt32 timeout, UInt32 flags) override final;
     
     //
+    // MARK: - Host Data Management
+    //
+    
+    ///
+    /// Perform a DMA read operation
+    ///
+    /// @param command A non-null, perpared DMA command
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    ///
+    IOReturn performDMARead(IODMACommand* command, UInt32 timeout) override;
+    
+    ///
+    /// Perform a DMA write operation
+    ///
+    /// @param command A non-null, perpared DMA command
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    ///
+    IOReturn performDMAWrite(IODMACommand* command, UInt32 timeout) override;
+    
+    //
     // MARK: - Clear Error
     //
     
