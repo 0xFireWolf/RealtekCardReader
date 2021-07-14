@@ -1511,9 +1511,9 @@ IOReturn RealtekUSBCardReaderController::resetHardware()
     pinfo("Resetting the card reader...");
     
     // Launch a custom command transfer session
-    auto action = [](const void* context) -> IOReturn
+    auto action = [](void* context) -> IOReturn
     {
-        auto self = reinterpret_cast<RealtekUSBCardReaderController*>(const_cast<void*>(context));
+        auto self = reinterpret_cast<RealtekUSBCardReaderController*>(context);
         
         IOReturn retVal = kIOReturnSuccess;
         
@@ -1576,7 +1576,7 @@ IOReturn RealtekUSBCardReaderController::resetHardware()
         return self->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs2));
     };
     
-    IOReturn retVal = this->withCustomCommandTransfer(action, 100, Packet::Flags::kC, this);
+    IOReturn retVal = this->withCustomCommandTransfer(action, this, 100, Packet::Flags::kC);
     
     if (retVal != kIOReturnSuccess)
     {
