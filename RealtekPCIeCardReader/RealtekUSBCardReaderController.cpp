@@ -1879,6 +1879,16 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
     
     this->tuningConfig.enable80ClocksTimeout = RealtekUSBCardReaderController::kTuningEnable80ClocksTimes;
     
+    this->dataTransferFlags.command = Packet::Flags::kCR;
+    
+    this->dataTransferFlags.commandWithInboundDataTransfer = Packet::Flags::kCR;
+    
+    this->dataTransferFlags.commandWithOutboundDataTransfer = Packet::Flags::kCR;
+    
+    this->dataTransferFlags.commandWithInboundDMATransfer = Packet::Flags::kCDIR;
+    
+    this->dataTransferFlags.commandWithOutboundDMATransfer = Packet::Flags::kCDOR;
+    
     return true;
 }
 

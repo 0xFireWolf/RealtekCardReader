@@ -209,10 +209,10 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
             /// Send out a sequence of commands and expect the response
             kCR = Stage::kRead,
             
-            /// Send out a sequence of commands, initiate an inbound transfer and expect the response
+            /// Send out a sequence of commands, initiate an inbound DMA transfer and expect the response
             kCDIR = Stage::kRead | Stage::kDirectionIn,
             
-            /// Send out a sequence of commands, initiate an outbound transfer and expect the response
+            /// Send out a sequence of commands, initiate an outbound DMA transfer and expect the response
             kCDOR = Stage::kRead | Stage::kDirectionOut,
         };
         
