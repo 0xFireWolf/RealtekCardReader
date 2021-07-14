@@ -403,8 +403,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndReadData(const RealtekSDCommand& comman
         
         // Ask the card to send the data to the ping pong buffer
         // This step is omitted if `command` is a tuning command (i.e., CMD19)
-        // TODO: REMOVE `RealtekCardReaderController::` once the host device uses the new interface
-        retVal = this->controller->RealtekCardReaderController::selectCardDataSourceToPingPongBuffer();
+        retVal = this->controller->selectCardDataSourceToPingPongBuffer();
         
         if (retVal != kIOReturnSuccess)
         {
@@ -1089,19 +1088,6 @@ IOReturn RealtekSDXCSlot::processRequest(RealtekSDRequest& request)
     
     retVal = this->controller->withCustomCommandTransfer(action, this);
     
-    // TODO: ------------------------------------------------------------------------------
-    // TODO: BEGIN DEPRECATED
-//    using namespace RTSX::Chip;
-//
-//    const ChipRegValuePair pairs[] =
-//    {
-//        { CARD::rSEL, CARD::SEL::kMask, CARD::SEL::kSD },
-//        { CARD::rSHAREMODE, CARD::SHAREMODE::kMask, CARD::SHAREMODE::k48SD }
-//    };
-//
-//    retVal = this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
-    // TODO: ------------------------------------------------------------------------------
-    
     if (retVal != kIOReturnSuccess)
     {
         perr("Failed to select the SD card. Error = 0x%x.", retVal);
@@ -1202,10 +1188,6 @@ IOReturn RealtekSDXCSlot::powerOn()
 {
     pinfo("Powering on the card slot...");
     
-    // TODO: REMOVE THIS
-    using namespace RTSX::Chip::CARD;
-    
-    // TODO: Launch a custom transfer session
     // Select the SD card and enable the clock
     pinfo("Selecting and enabling the SD card...");
     
@@ -1223,18 +1205,6 @@ IOReturn RealtekSDXCSlot::powerOn()
     };
     
     IOReturn retVal = this->controller->withCustomCommandTransfer(action1, this);
-    
-    // TODO: ------------------------------------------------------------------------------------------------
-    // TODO: BEGIN DEPRECATED
-//    const ChipRegValuePair pairs[] =
-//    {
-//        { rSEL, SEL::kMask, SEL::kSD },                         // TODO: REPLACED BY selectCard()
-//        { rSHAREMODE, SHAREMODE::kMask, SHAREMODE::k48SD },     // TODO: REPLACED BY configureCardShareMode()
-//        { rCLK, CLK::kEnableSD, CLK::kEnableSD }                // TODO: REPLACED BY enableCardClock()
-//    };
-//
-//    IOReturn retVal = this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
-    // TODO: ------------------------------------------------------------------------------------------------
     
     if (retVal != kIOReturnSuccess)
     {
@@ -1285,11 +1255,6 @@ IOReturn RealtekSDXCSlot::powerOn()
     
     retVal = this->controller->withCustomCommandTransfer(action2, this);
     
-    // TODO: REPCATED: REMOVE THIS
-    // TODO: Launch a custom transfer session
-    // TODO: REPLACED BY withCustomTransferSession and disableCardOutput()
-    // retVal = this->controller->writeChipRegister(rOUTPUT, OUTPUT::kSDMask, OUTPUT::kEnableSDValue);
-    
     if (retVal != kIOReturnSuccess)
     {
         perr("Failed to enable the card output. Error = 0x%x.", retVal);
@@ -1313,9 +1278,6 @@ IOReturn RealtekSDXCSlot::powerOff()
 {
     pinfo("Powering off the card slot...");
     
-    // TODO: REMOVE THIS
-    using namespace RTSX::Chip::CARD;
-    
     // Disable the card clock and the output
     pinfo("Disabling the card clock and output...");
     
@@ -1331,17 +1293,6 @@ IOReturn RealtekSDXCSlot::powerOff()
     };
     
     IOReturn retVal = this->controller->withCustomCommandTransfer(action, this);
-    
-    // TODO: DEPRECATED: REMOVE THIS
-    // TODO: Launch a custom transfer session
-    // TODO: Replaced by disableCardClock, disableCardOutput
-//    const ChipRegValuePair pairs[] =
-//    {
-//        { rCLK, CLK::kEnableSD, CLK::kDisable },
-//        { rOUTPUT, OUTPUT::kSDMask, OUTPUT::kDisableSDValue }
-//    };
-//
-//    IOReturn retVal = this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
     
     if (retVal != kIOReturnSuccess)
     {
