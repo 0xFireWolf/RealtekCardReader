@@ -2276,7 +2276,7 @@ bool RealtekSDXCSlot::start(IOService* provider)
     }
     
     // Get the card reader controller
-    this->controller = OSDynamicCast(RealtekPCIeCardReaderController, provider);
+    this->controller = OSDynamicCast(RealtekCardReaderController, provider);
     
     if (this->controller == nullptr)
     {

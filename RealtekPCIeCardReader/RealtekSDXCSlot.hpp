@@ -8,7 +8,8 @@
 #ifndef RealtekSDXCSlot_hpp
 #define RealtekSDXCSlot_hpp
 
-#include "RealtekPCIeCardReaderController.hpp"
+//#include "RealtekPCIeCardReaderController.hpp"
+#include "RealtekCardReaderController.hpp"
 #include "IOSDHostDevice.hpp"
 #include "AppleSDXCSlot.hpp"
 #include "Utilities.hpp"
@@ -48,7 +49,7 @@ class RealtekSDXCSlot: public AppleSDXCSlot
     //
     
     /// The card reader (provider)
-    RealtekPCIeCardReaderController* controller;
+    RealtekCardReaderController* controller;
     
     /// Card clock in Hz
     UInt32 cardClock;

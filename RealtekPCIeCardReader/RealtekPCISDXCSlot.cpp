@@ -6,6 +6,7 @@
 //
 
 #include "RealtekPCISDXCSlot.hpp"
+#include "RealtekPCIeCardReaderController.hpp"
 
 //
 // MARK: - Meta Class Definitions
@@ -22,8 +23,13 @@ OSDefineMetaClassAndStructors(RealtekPCISDXCSlot, RealtekSDXCSlot);
 ///
 IOReturn RealtekPCISDXCSlot::executeTuning(const IOSDBusConfig& config)
 {
+    // Guard: Fetch the concrete controller
+    auto controller = OSDynamicCast(RealtekPCIeCardReaderController, this->controller);
+    
+    passert(controller != nullptr, "The controller should not be null.");
+    
     // Guard: Check whether the card is still present
-    if (!this->controller->isCardPresent())
+    if (!controller->isCardPresent())
     {
         perr("The card is not present. Will abort the request.");
         
@@ -31,7 +37,7 @@ IOReturn RealtekPCISDXCSlot::executeTuning(const IOSDBusConfig& config)
     }
     
     // Notify the card reader to enter the worker state
-    this->controller->enterWorkerState();
+    controller->enterWorkerState();
     
     IOReturn retVal = kIOReturnSuccess;
     
@@ -41,7 +47,7 @@ IOReturn RealtekPCISDXCSlot::executeTuning(const IOSDBusConfig& config)
         {
             pinfo("Will tune Rx and Tx for the UHS SDR104 mode.");
             
-            retVal = this->controller->changeTxPhase(this->controller->getTxClockPhase().sdr104);
+            retVal = controller->changeTxPhase(controller->getTxClockPhase().sdr104);
             
             if (retVal != kIOReturnSuccess)
             {
@@ -64,7 +70,7 @@ IOReturn RealtekPCISDXCSlot::executeTuning(const IOSDBusConfig& config)
         {
             pinfo("Will tune Rx and Tx for the UHS SDR50 mode.");
             
-            retVal = this->controller->changeTxPhase(this->controller->getTxClockPhase().sdr50);
+            retVal = controller->changeTxPhase(controller->getTxClockPhase().sdr50);
             
             if (retVal != kIOReturnSuccess)
             {
@@ -87,7 +93,7 @@ IOReturn RealtekPCISDXCSlot::executeTuning(const IOSDBusConfig& config)
         {
             pinfo("Will tune Rx and Tx for the UHS DDR50 mode.");
             
-            retVal = this->controller->changeTxPhase(this->controller->getTxClockPhase().ddr50);
+            retVal = controller->changeTxPhase(controller->getTxClockPhase().ddr50);
             
             if (retVal != kIOReturnSuccess)
             {
@@ -96,7 +102,7 @@ IOReturn RealtekPCISDXCSlot::executeTuning(const IOSDBusConfig& config)
                 break;
             }
             
-            retVal = this->controller->changeRxPhase(this->controller->getRxClockPhase().ddr50);
+            retVal = controller->changeRxPhase(controller->getRxClockPhase().ddr50);
             
             if (retVal != kIOReturnSuccess)
             {
