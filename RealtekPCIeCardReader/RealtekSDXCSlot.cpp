@@ -5,6 +5,7 @@
 //  Created by FireWolf on 5/27/21.
 //
 
+#include "RealtekCommonRegisters.hpp"
 #include "RealtekSDXCSlot.hpp"
 #include "IOSDHostDriver.hpp"
 
@@ -29,8 +30,7 @@ OSDefineMetaClassAndAbstractStructors(RealtekSDXCSlot, AppleSDXCSlot);
 ///
 IOReturn RealtekSDXCSlot::setSDCommandOpcodeAndArgument(const RealtekSDCommand& command)
 {
-    // TODO: Switch to the COM namespace
-    using namespace RTSX::Chip::SD;
+    using namespace RTSX::COM::Chip::SD;
     
     UInt32 argument = command.getArgument();
     
@@ -61,8 +61,7 @@ IOReturn RealtekSDXCSlot::setSDCommandOpcodeAndArgument(const RealtekSDCommand& 
 ///
 IOReturn RealtekSDXCSlot::setSDCommandDataLength(UInt16 nblocks, UInt16 blockSize)
 {
-    // TODO: Switch to the COM namespace
-    using namespace RTSX::Chip::SD;
+    using namespace RTSX::COM::Chip::SD;
     
     pinfo("Setting the data length: NumBlocks = %d; Block Size = %d Bytes.", nblocks, blockSize);
     
@@ -90,7 +89,7 @@ IOReturn RealtekSDXCSlot::setSDCommandDataLength(UInt16 nblocks, UInt16 blockSiz
 ///
 IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDCommand& command, UInt32 timeout)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::COM::Chip;
     
     // Fetch the response type and set up the timeout value
     UInt8 responseType = command.getResponseType();
@@ -297,8 +296,7 @@ IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDCommand& command, UInt32 timeout
 ///
 IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDSimpleCommandRequest& request)
 {
-    // TODO: Switch to the COM namespace
-    using namespace RTSX::Chip;
+    using namespace RTSX::COM::Chip;
     
     // The host must toggle the clock if the command is CMD11
     if (request.command.getOpcode() != RealtekSDCommand::Opcode::kVoltageSwitch)
@@ -338,8 +336,7 @@ IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDSimpleCommandRequest& request)
 ///
 IOReturn RealtekSDXCSlot::runSDCommandAndReadData(const RealtekSDCommand& command, UInt8* buffer, IOByteCount length, UInt32 timeout)
 {
-    // TODO: Switch to the COM namespace
-    using namespace RTSX::Chip;
+    using namespace RTSX::COM::Chip;
     
     pinfo("SDCMD = %d; Arg = 0x%08X; Data Buffer = 0x%08x%08x; Data Length = %llu bytes; Timeout = %d ms.",
           command.getOpcode(), command.getArgument(), KPTR(buffer), length, timeout);
@@ -508,7 +505,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndReadData(const RealtekSDCommand& comman
 ///
 IOReturn RealtekSDXCSlot::runSDCommandAndWriteData(RealtekSDCommand& command, const UInt8* buffer, IOByteCount length, UInt32 timeout)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::COM::Chip;
     
     pinfo("SDCMD = %d; Arg = 0x%08X; Data Buffer = 0x%08x%08x; Data Length = %llu bytes; Timeout = %d ms.",
           command.getOpcode(), command.getArgument(), KPTR(buffer), length, timeout);
@@ -729,8 +726,7 @@ IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDataTransfer(RealtekSDCommandW
 ///
 IOReturn RealtekSDXCSlot::runSDCommandWithInboundDMATransfer(RealtekSDCommandWithBlockDataTransferRequest& request)
 {
-    // TODO: Switch to the COM namespace
-    using namespace RTSX::Chip;
+    using namespace RTSX::COM::Chip;
     
     // Fetch the data length
     UInt32 dataLength = request.data.getDataLength();
@@ -892,8 +888,7 @@ IOReturn RealtekSDXCSlot::runSDCommandWithInboundDMATransfer(RealtekSDCommandWit
 ///
 IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDMATransfer(RealtekSDCommandWithBlockDataTransferRequest& request)
 {
-    // TODO: Switch to the COM namespace
-    using namespace RTSX::Chip;
+    using namespace RTSX::COM::Chip;
     
     // Send the SD command
     IOReturn retVal = this->runSDCommand(request.command);
@@ -1060,8 +1055,7 @@ IOReturn RealtekSDXCSlot::processRequest(RealtekSDRequest& request)
     // Guard: Switch the clock
     pinfo("Switching the clock...");
     
-    // TODO: Remove `RealtekCardReaderController::` once the host device uses the new interface
-    IOReturn retVal = this->controller->RealtekCardReaderController::switchCardClock(this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
+    IOReturn retVal = this->controller->switchCardClock(this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -1139,8 +1133,7 @@ bool RealtekSDXCSlot::isRunningInUltraHighSpeedMode()
 ///
 IOReturn RealtekSDXCSlot::setBusWidth(IOSDBusConfig::BusWidth width)
 {
-    // TODO: Switch to the COM namespace
-    using namespace RTSX::Chip::SD;
+    using namespace RTSX::COM::Chip::SD;
     
     UInt8 regValue = 0;
     
@@ -1518,8 +1511,7 @@ IOReturn RealtekSDXCSlot::setBusConfig(const IOSDBusConfig& config)
     pinfo("Switching the clock to %d Hz with SSC depth = %d; Initial Mode = %d; Use Double Clock = %d; Use VPCLK = %d...",
           this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
     
-    // TODO: Remove `RealtekCardReaderController::` once the host device uses the new interface
-    retVal = this->controller->RealtekCardReaderController::switchCardClock(this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
+    retVal = this->controller->switchCardClock(this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -1542,7 +1534,7 @@ IOReturn RealtekSDXCSlot::setBusConfig(const IOSDBusConfig& config)
 ///
 IOReturn RealtekSDXCSlot::waitVoltageStable1()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::COM::Chip;
     
     // After the host driver sends a CMD11 and receives the response,
     // wait for 1 ms so that the card can drive both CMD and DATA lines to low
@@ -1596,7 +1588,7 @@ IOReturn RealtekSDXCSlot::waitVoltageStable1()
 ///
 IOReturn RealtekSDXCSlot::waitVoltageStable2()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::COM::Chip;
     
     // Wait until the regulator becomes stable
     IOSleep(50);
@@ -1645,8 +1637,14 @@ IOReturn RealtekSDXCSlot::waitVoltageStable2()
     psoftassert(this->controller->writeChipRegister(SD::rBUSSTAT, SD::BUSSTAT::kClockToggleEnable | SD::BUSSTAT::kClockForceStop, 0) == kIOReturnSuccess,
                 "Failed to stop and disable the SD clock.");
     
-    psoftassert(this->controller->writeChipRegister(CARD::rCLK, 0xFF, CARD::CLK::kDisable) == kIOReturnSuccess,
-                "Failed to disable the card clock.");
+    auto action = [](void* context) -> IOReturn
+    {
+        auto self = reinterpret_cast<RealtekSDXCSlot*>(context);
+        
+        return self->controller->disableCardClock();
+    };
+    
+    psoftassert(this->controller->withCustomCommandTransfer(action, this) == kIOReturnSuccess, "Failed to disable the card clock.");
     
     return kIOReturnInvalid;
 }
@@ -1707,7 +1705,7 @@ IOReturn RealtekSDXCSlot::switchSignalVoltage(const IOSDBusConfig& config)
     // Notify the card reader to enter the worker state
     this->controller->enterWorkerState();
     
-    using namespace RTSX::Chip::SD;
+    using namespace RTSX::COM::Chip::SD;
     
     IOReturn retVal;
     
@@ -1854,7 +1852,7 @@ UInt8 RealtekSDXCSlot::searchFinalPhase(UInt32 phaseMap)
 ///
 IOReturn RealtekSDXCSlot::waitForIdleDataLine()
 {
-    using namespace RTSX::Chip::SD;
+    using namespace RTSX::COM::Chip::SD;
     
     UInt8 status;
     
@@ -1894,7 +1892,7 @@ IOReturn RealtekSDXCSlot::waitForIdleDataLine()
 ///
 IOReturn RealtekSDXCSlot::tuningRxCommand(UInt8 samplePoint)
 {
-    using namespace RTSX::Chip::SD;
+    using namespace RTSX::COM::Chip::SD;
     
     // Change the Rx phase
     IOReturn retVal = this->controller->changeRxPhase(samplePoint);
@@ -2094,7 +2092,7 @@ IOReturn RealtekSDXCSlot::isCardCommandLineBusy(bool& result)
     // Notify the card reader to enter the worker state
     this->controller->enterWorkerState();
     
-    using namespace RTSX::Chip::SD;
+    using namespace RTSX::COM::Chip::SD;
     
     UInt8 status;
     
@@ -2131,7 +2129,7 @@ IOReturn RealtekSDXCSlot::isCardDataLineBusy(bool& result)
     // Notify the card reader to enter the worker state
     this->controller->enterWorkerState();
     
-    using namespace RTSX::Chip::SD;
+    using namespace RTSX::COM::Chip::SD;
     
     UInt8 status;
     
@@ -2163,8 +2161,7 @@ IOReturn RealtekSDXCSlot::isCardDataLineBusy(bool& result)
 ///
 IOReturn RealtekSDXCSlot::enableInitialModeIfNecessary()
 {
-    // TODO: Switch to COM namespace
-    using namespace RTSX::Chip::SD;
+    using namespace RTSX::COM::Chip::SD;
     
     return this->initialMode ? this->controller->writeChipRegister(rCFG1, CFG1::kClockDividerMask, CFG1::kClockDivider128) : kIOReturnSuccess;
 }
@@ -2177,8 +2174,7 @@ IOReturn RealtekSDXCSlot::enableInitialModeIfNecessary()
 ///
 IOReturn RealtekSDXCSlot::disableInitialModeIfNecessary()
 {
-    // TODO: Switch to COM namespace
-    using namespace RTSX::Chip::SD;
+    using namespace RTSX::COM::Chip::SD;
     
     return this->initialMode ? this->controller->writeChipRegister(rCFG1, CFG1::kClockDividerMask, CFG1::kClockDivider0) : kIOReturnSuccess;
 }
