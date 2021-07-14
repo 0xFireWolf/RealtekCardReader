@@ -12,7 +12,7 @@
 // MARK: - Meta Class Definitions
 //
 
-OSDefineMetaClassAndAbstractStructors(RealtekRTS5227SeriesController, RealtekPCIeCardReaderController);
+OSDefineMetaClassAndAbstractStructors(RealtekRTS5227SeriesController, RealtekPCICardReaderController);
 
 //
 // MARK: - Driving Tables for RTS5227 and RTS522A

@@ -8,12 +8,12 @@
 #ifndef RealtekRTS8411SeriesController_hpp
 #define RealtekRTS8411SeriesController_hpp
 
-#include "RealtekPCIeCardReaderController.hpp"
+#include "RealtekPCICardReaderController.hpp"
 
 ///
 /// Represents the abstract RTS8411 series card reader controller
 ///
-class RealtekRTS8411SeriesController: public RealtekPCIeCardReaderController
+class RealtekRTS8411SeriesController: public RealtekPCICardReaderController
 {
     //
     // MARK: - Constructors & Destructors
@@ -21,7 +21,7 @@ class RealtekRTS8411SeriesController: public RealtekPCIeCardReaderController
     
     OSDeclareAbstractStructors(RealtekRTS8411SeriesController);
     
-    using super = RealtekPCIeCardReaderController;
+    using super = RealtekPCICardReaderController;
     
     //
     // MARK: - LED Management

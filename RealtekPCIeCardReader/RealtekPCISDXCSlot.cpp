@@ -6,7 +6,7 @@
 //
 
 #include "RealtekPCISDXCSlot.hpp"
-#include "RealtekPCIeCardReaderController.hpp"
+#include "RealtekPCICardReaderController.hpp"
 
 //
 // MARK: - Meta Class Definitions
@@ -24,7 +24,7 @@ OSDefineMetaClassAndStructors(RealtekPCISDXCSlot, RealtekSDXCSlot);
 IOReturn RealtekPCISDXCSlot::executeTuning(const IOSDBusConfig& config)
 {
     // Guard: Fetch the concrete controller
-    auto controller = OSDynamicCast(RealtekPCIeCardReaderController, this->controller);
+    auto controller = OSDynamicCast(RealtekPCICardReaderController, this->controller);
     
     passert(controller != nullptr, "The controller should not be null.");
     

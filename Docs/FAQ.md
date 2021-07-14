@@ -64,14 +64,14 @@ You can now find the log on your `Desktop` folder.
 Open your log and verify that your log starts with "Starting the Realtek PCIe card reader controller...".
 You should be able to see something similar to the following lines.
 ```
-[    1.132045]: RTSX: virtual bool RealtekPCIeCardReaderController::start(IOService *) DInfo: ===================================================
-[    1.132051]: RTSX: virtual bool RealtekPCIeCardReaderController::start(IOService *) DInfo: Starting the Realtek PCIe card reader controller...
-[    1.132053]: RTSX: virtual bool RealtekPCIeCardReaderController::start(IOService *) DInfo: ===================================================
-[    1.132079]: RTSX: bool RealtekPCIeCardReaderController::mapDeviceMemory() DInfo: Prepare to map the device memory (BAR = 0x10)...
-[    1.132085]: RTSX: bool RealtekPCIeCardReaderController::mapDeviceMemory() DInfo: The device memory has been mapped successfully.
-[    1.132087]: RTSX: bool RealtekPCIeCardReaderController::setupWorkLoop() DInfo: Creating the workloop and the command gate...
-[    1.132105]: RTSX: bool RealtekPCIeCardReaderController::setupWorkLoop() DInfo: The workloop and the command gate have been created.
-[    1.132147]: RTSX: int RealtekPCIeCardReaderController::probeMSIIndex() DInfo: Found the MSI index = 1.
+[    1.132045]: RTSX: virtual bool RealtekPCICardReaderController::start(IOService *) DInfo: ===================================================
+[    1.132051]: RTSX: virtual bool RealtekPCICardReaderController::start(IOService *) DInfo: Starting the Realtek PCIe card reader controller...
+[    1.132053]: RTSX: virtual bool RealtekPCICardReaderController::start(IOService *) DInfo: ===================================================
+[    1.132079]: RTSX: bool RealtekPCICardReaderController::mapDeviceMemory() DInfo: Prepare to map the device memory (BAR = 0x10)...
+[    1.132085]: RTSX: bool RealtekPCICardReaderController::mapDeviceMemory() DInfo: The device memory has been mapped successfully.
+[    1.132087]: RTSX: bool RealtekPCICardReaderController::setupWorkLoop() DInfo: Creating the workloop and the command gate...
+[    1.132105]: RTSX: bool RealtekPCICardReaderController::setupWorkLoop() DInfo: The workloop and the command gate have been created.
+[    1.132147]: RTSX: int RealtekPCICardReaderController::probeMSIIndex() DInfo: Found the MSI index = 1.
 ```
 If the log file is empty or is incomplete, please install the [DebugEnhancer](https://github.com/acidanthera/DebugEnhancer) and try again.
 

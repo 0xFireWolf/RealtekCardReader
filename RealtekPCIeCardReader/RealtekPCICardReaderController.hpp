@@ -1,12 +1,12 @@
 //
-//  RealtekPCIeCardReaderController.hpp
+//  RealtekPCICardReaderController.hpp
 //  RealtekPCIeCardReader
 //
 //  Created by FireWolf on 2/18/21.
 //
 
-#ifndef RealtekPCIeCardReaderController_hpp
-#define RealtekPCIeCardReaderController_hpp
+#ifndef RealtekPCICardReaderController_hpp
+#define RealtekPCICardReaderController_hpp
 
 #include <IOKit/pci/IOPCIDevice.h>
 #include <IOKit/IOWorkLoop.h>
@@ -60,13 +60,13 @@ class RealtekSDXCSlot;
 ///
 /// @note This is the base class of all device-specific controllers.
 ///
-class RealtekPCIeCardReaderController: public RealtekCardReaderController
+class RealtekPCICardReaderController: public RealtekCardReaderController
 {
     //
     // MARK: - Constructors & Destructors
     //
     
-    OSDeclareAbstractStructors(RealtekPCIeCardReaderController);
+    OSDeclareAbstractStructors(RealtekPCICardReaderController);
     
     using super = RealtekCardReaderController;
     
@@ -741,7 +741,7 @@ protected:
     ///
     inline IOReturn writeHostDataBuffer(IOByteCount offset, const void* buffer, IOByteCount length)
     {
-        return this->writeHostBuffer(RealtekPCIeCardReaderController::kHostDatabufferOffset + offset, buffer, length);
+        return this->writeHostBuffer(RealtekPCICardReaderController::kHostDatabufferOffset + offset, buffer, length);
     }
     
     //
@@ -1635,7 +1635,7 @@ private:
     ///
     /// @return The BAR value 0x10 for all controllers other than RTS525A.
     /// @note RTS525A controller must override this function and return 0x14 instead.
-    /// @note This helper function is invoked by `RealtekPCIeCardReaderController::mapDeviceMemory()`.
+    /// @note This helper function is invoked by `RealtekPCICardReaderController::mapDeviceMemory()`.
     ///
     virtual UInt8 getDeviceMemoryMapBaseAddressRegister() { return kIOPCIConfigBaseAddress0; }
     
@@ -1650,7 +1650,7 @@ private:
     /// [Helper] Probe the index of the message signaled interrupt
     ///
     /// @return The index on success, `0` otherwise.
-    /// @note This helper function is invoked by `RealtekPCIeCardReaderController::setupInterrupts()`.
+    /// @note This helper function is invoked by `RealtekPCICardReaderController::setupInterrupts()`.
     ///
     int probeMSIIndex();
     
@@ -1737,4 +1737,4 @@ public:
     void stop(IOService* provider) override final;
 };
 
-#endif /* RealtekPCIeCardReaderController_hpp */
+#endif /* RealtekPCICardReaderController_hpp */

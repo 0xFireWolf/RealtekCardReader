@@ -8,12 +8,12 @@
 #ifndef RealtekRTS5229Controller_hpp
 #define RealtekRTS5229Controller_hpp
 
-#include "RealtekPCIeCardReaderController.hpp"
+#include "RealtekPCICardReaderController.hpp"
 
 ///
 /// Represents the RTS5229 card reader controller
 ///
-class RealtekRTS5229Controller: public RealtekPCIeCardReaderController
+class RealtekRTS5229Controller: public RealtekPCICardReaderController
 {
     //
     // MARK: - Constructors & Destructors
@@ -21,7 +21,7 @@ class RealtekRTS5229Controller: public RealtekPCIeCardReaderController
     
     OSDeclareDefaultStructors(RealtekRTS5229Controller);
     
-    using super = RealtekPCIeCardReaderController;
+    using super = RealtekPCICardReaderController;
     
     //
     // MARK: - SD Pull Control Tables

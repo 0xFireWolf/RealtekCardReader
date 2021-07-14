@@ -1,11 +1,11 @@
 //
-//  RealtekPCIeCardReaderController.cpp
+//  RealtekPCICardReaderController.cpp
 //  RealtekPCIeCardReader
 //
 //  Created by FireWolf on 2/18/21.
 //
 
-#include "RealtekPCIeCardReaderController.hpp"
+#include "RealtekPCICardReaderController.hpp"
 #include "RealtekPCISDXCSlot.hpp"
 #include "BitOptions.hpp"
 #include "IOPCIeDevice.hpp"
@@ -14,14 +14,14 @@
 // MARK: - Meta Class Definitions
 //
 
-OSDefineMetaClassAndAbstractStructors(RealtekPCIeCardReaderController, RealtekCardReaderController);
+OSDefineMetaClassAndAbstractStructors(RealtekPCICardReaderController, RealtekCardReaderController);
 
 //
 // MARK: - Constants: Bus Timing Tables
 //
 
 /// A sequence of chip registers to switch the bus speed mode to UHS-I SDR50/SDR104
-const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsSDR50[] =
+const RealtekPCICardReaderController::ChipRegValuePair RealtekPCICardReaderController::kBusTimingTablePairsSDR50[] =
 {
     {
         RTSX::PCR::Chip::SD::rCFG1,
@@ -45,13 +45,13 @@ const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderCon
     },
 };
 
-const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReaderController::kBusTimingTableSDR50 =
+const RealtekPCICardReaderController::SimpleRegValuePairs RealtekPCICardReaderController::kBusTimingTableSDR50 =
 {
-    RealtekPCIeCardReaderController::kBusTimingTablePairsSDR50
+    RealtekPCICardReaderController::kBusTimingTablePairsSDR50
 };
 
 /// A sequence of chip registers to switch the bus speed mode to UHS-I DDR50
-const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsDDR50[] =
+const RealtekPCICardReaderController::ChipRegValuePair RealtekPCICardReaderController::kBusTimingTablePairsDDR50[] =
 {
     {
         RTSX::PCR::Chip::SD::rCFG1,
@@ -84,13 +84,13 @@ const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderCon
     },
 };
 
-const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReaderController::kBusTimingTableDDR50 =
+const RealtekPCICardReaderController::SimpleRegValuePairs RealtekPCICardReaderController::kBusTimingTableDDR50 =
 {
-    RealtekPCIeCardReaderController::kBusTimingTablePairsDDR50
+    RealtekPCICardReaderController::kBusTimingTablePairsDDR50
 };
 
 /// A sequence of chip registers to switch the bus speed mode to High Speed
-const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsHighSpeed[] =
+const RealtekPCICardReaderController::ChipRegValuePair RealtekPCICardReaderController::kBusTimingTablePairsHighSpeed[] =
 {
     {
         RTSX::PCR::Chip::SD::rCFG1,
@@ -124,13 +124,13 @@ const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderCon
     },
 };
 
-const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReaderController::kBusTimingTableHighSpeed =
+const RealtekPCICardReaderController::SimpleRegValuePairs RealtekPCICardReaderController::kBusTimingTableHighSpeed =
 {
-    RealtekPCIeCardReaderController::kBusTimingTablePairsHighSpeed
+    RealtekPCICardReaderController::kBusTimingTablePairsHighSpeed
 };
 
 /// A sequence of chip registers to switch the bus speed mode to Default Speed
-const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsDefaultSpeed[] =
+const RealtekPCICardReaderController::ChipRegValuePair RealtekPCICardReaderController::kBusTimingTablePairsDefaultSpeed[] =
 {
     {
         RTSX::PCR::Chip::SD::rCFG1,
@@ -163,9 +163,9 @@ const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderCon
     },
 };
 
-const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReaderController::kBusTimingTableDefaultSpeed =
+const RealtekPCICardReaderController::SimpleRegValuePairs RealtekPCICardReaderController::kBusTimingTableDefaultSpeed =
 {
-    RealtekPCIeCardReaderController::kBusTimingTablePairsDefaultSpeed
+    RealtekPCICardReaderController::kBusTimingTablePairsDefaultSpeed
 };
 
 //
@@ -179,7 +179,7 @@ const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReader
 /// @return The register value.
 /// @note Port: This function replaces the macro `rtsx_pci_readb()` defined in `rtsx_pci.h`.
 ///
-UInt8 RealtekPCIeCardReaderController::readRegister8(UInt32 address)
+UInt8 RealtekPCICardReaderController::readRegister8(UInt32 address)
 {
     return this->readRegister<UInt8>(address);
 }
@@ -191,7 +191,7 @@ UInt8 RealtekPCIeCardReaderController::readRegister8(UInt32 address)
 /// @return The register value.
 /// @note Port: This function replaces the macro `rtsx_pci_readw()` defined in `rtsx_pci.h`.
 ///
-UInt16 RealtekPCIeCardReaderController::readRegister16(UInt32 address)
+UInt16 RealtekPCICardReaderController::readRegister16(UInt32 address)
 {
     return this->readRegister<UInt16>(address);
 }
@@ -203,7 +203,7 @@ UInt16 RealtekPCIeCardReaderController::readRegister16(UInt32 address)
 /// @return The register value.
 /// @note Port: This function replaces the macro `rtsx_pci_readl()` defined in `rtsx_pci.h`.
 ///
-UInt32 RealtekPCIeCardReaderController::readRegister32(UInt32 address)
+UInt32 RealtekPCICardReaderController::readRegister32(UInt32 address)
 {
     return this->readRegister<UInt32>(address);
 }
@@ -215,7 +215,7 @@ UInt32 RealtekPCIeCardReaderController::readRegister32(UInt32 address)
 /// @param value The register value
 /// @note Port: This function replaces the macro `rtsx_pci_writeb()` defined in `rtsx_pci.h`.
 ///
-void RealtekPCIeCardReaderController::writeRegister8(UInt32 address, UInt8 value)
+void RealtekPCICardReaderController::writeRegister8(UInt32 address, UInt8 value)
 {
     this->writeRegister(address, value);
 }
@@ -227,7 +227,7 @@ void RealtekPCIeCardReaderController::writeRegister8(UInt32 address, UInt8 value
 /// @param value The register value
 /// @note Port: This function replaces the macro `rtsx_pci_writew()` defined in `rtsx_pci.h`.
 ///
-void RealtekPCIeCardReaderController::writeRegister16(UInt32 address, UInt16 value)
+void RealtekPCICardReaderController::writeRegister16(UInt32 address, UInt16 value)
 {
     this->writeRegister(address, value);
 }
@@ -239,7 +239,7 @@ void RealtekPCIeCardReaderController::writeRegister16(UInt32 address, UInt16 val
 /// @param value The register value
 /// @note Port: This function replaces the macro `rtsx_pci_writel()` defined in `rtsx_pci.h`.
 ///
-void RealtekPCIeCardReaderController::writeRegister32(UInt32 address, UInt32 value)
+void RealtekPCICardReaderController::writeRegister32(UInt32 address, UInt32 value)
 {
     this->writeRegister(address, value);
 }
@@ -256,7 +256,7 @@ void RealtekPCIeCardReaderController::writeRegister32(UInt32 address, UInt32 val
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out.
 /// @note Port: This function replaces `rtsx_pci_read_register()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::readChipRegister(UInt16 address, UInt8& value)
+IOReturn RealtekPCICardReaderController::readChipRegister(UInt16 address, UInt8& value)
 {
     // The driver will program MMIO registers to access chip registers
     using namespace RTSX::MMIO;
@@ -297,7 +297,7 @@ IOReturn RealtekPCIeCardReaderController::readChipRegister(UInt16 address, UInt8
 ///         `kIOReturnError` if the new register value is not `value`.
 /// @note Port: This function replaces `rtsx_pci_write_register()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::writeChipRegister(UInt16 address, UInt8 mask, UInt8 value)
+IOReturn RealtekPCICardReaderController::writeChipRegister(UInt16 address, UInt8 mask, UInt8 value)
 {
     // The driver will program MMIO registers to access chip registers
     using namespace RTSX::MMIO;
@@ -346,7 +346,7 @@ IOReturn RealtekPCIeCardReaderController::writeChipRegister(UInt16 address, UInt
 ///         `kIOReturnTimeout` if timed out;
 ///         `kIOReturnError` if the new register value is not `value`.
 ///
-IOReturn RealtekPCIeCardReaderController::writeChipRegisters(const ChipRegValuePairs& pairs)
+IOReturn RealtekPCICardReaderController::writeChipRegisters(const ChipRegValuePairs& pairs)
 {
     IOReturn retVal = kIOReturnSuccess;
     
@@ -386,7 +386,7 @@ IOReturn RealtekPCIeCardReaderController::writeChipRegisters(const ChipRegValueP
 /// @note Port: This function replaces `rtsx_pci_read_phy_register()` defined in `rtsx_psr.c`.
 /// @note Subclasses may override this function to provide a device-specific implementation.
 ///
-IOReturn RealtekPCIeCardReaderController::readPhysRegister(UInt8 address, UInt16& value)
+IOReturn RealtekPCICardReaderController::readPhysRegister(UInt8 address, UInt16& value)
 {
     // The driver will program chip registers to access PHY registers
     using namespace RTSX::PCR::Chip;
@@ -481,7 +481,7 @@ IOReturn RealtekPCIeCardReaderController::readPhysRegister(UInt8 address, UInt16
 /// @note Port: This function replaces `rtsx_pci_write_phy_register()` defined in `rtsx_psr.c`.
 /// @note Subclasses may override this function to provide a device-specific implementation.
 ///
-IOReturn RealtekPCIeCardReaderController::writePhysRegister(UInt8 address, UInt16 value)
+IOReturn RealtekPCICardReaderController::writePhysRegister(UInt8 address, UInt16 value)
 {
     // The driver will program chip registers to access PHY registers
     using namespace RTSX::PCR::Chip;
@@ -554,7 +554,7 @@ IOReturn RealtekPCIeCardReaderController::writePhysRegister(UInt8 address, UInt1
 /// @param pairs An array of registers and their values
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
 ///
-IOReturn RealtekPCIeCardReaderController::writePhysRegisters(const PhysRegValuePair* pairs, size_t count)
+IOReturn RealtekPCICardReaderController::writePhysRegisters(const PhysRegValuePair* pairs, size_t count)
 {
     pinfo("Writing %lu PHY registers...", count);
     
@@ -580,7 +580,7 @@ IOReturn RealtekPCIeCardReaderController::writePhysRegisters(const PhysRegValueP
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
 /// @note Port: This function replaces `rtsx_pci_update_phy()` defined in `rtsx_pci.h`.
 ///
-IOReturn RealtekPCIeCardReaderController::modifyPhysRegister(UInt8 address, PhysRegValueModifier modifier, const void* context)
+IOReturn RealtekPCICardReaderController::modifyPhysRegister(UInt8 address, PhysRegValueModifier modifier, const void* context)
 {
     UInt16 regVal;
     
@@ -615,7 +615,7 @@ IOReturn RealtekPCIeCardReaderController::modifyPhysRegister(UInt8 address, Phys
 /// @param index The zero-based bit index
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
 ///
-IOReturn RealtekPCIeCardReaderController::setPhysRegisterBitAtIndex(UInt8 address, UInt32 index)
+IOReturn RealtekPCICardReaderController::setPhysRegisterBitAtIndex(UInt8 address, UInt32 index)
 {
     // Guard: The given bit index must be valid
     if (index >= sizeof(UInt16) * 8)
@@ -641,7 +641,7 @@ IOReturn RealtekPCIeCardReaderController::setPhysRegisterBitAtIndex(UInt8 addres
 /// @param index The zero-based bit index
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
 ///
-IOReturn RealtekPCIeCardReaderController::clearPhysRegisterBitAtIndex(UInt8 address, UInt32 index)
+IOReturn RealtekPCICardReaderController::clearPhysRegisterBitAtIndex(UInt8 address, UInt32 index)
 {
     // Guard: The given bit index must be valid
     if (index >= sizeof(UInt16) * 8)
@@ -669,7 +669,7 @@ IOReturn RealtekPCIeCardReaderController::clearPhysRegisterBitAtIndex(UInt8 addr
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
 /// @note Port: This function replaces `rtsx_pci_update_phy()` defined in `rtsx_pci.h`.
 ///
-IOReturn RealtekPCIeCardReaderController::appendPhysRegister(UInt8 address, UInt16 mask, UInt16 append)
+IOReturn RealtekPCICardReaderController::appendPhysRegister(UInt8 address, UInt16 mask, UInt16 append)
 {
     Pair<UInt16, UInt16> pair = { mask, append };
     
@@ -690,7 +690,7 @@ IOReturn RealtekPCIeCardReaderController::appendPhysRegister(UInt8 address, UInt
 /// @param count The number of elements in the array
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
 ///
-IOReturn RealtekPCIeCardReaderController::appendPhysRegisters(const PhysRegMaskValuePair* pairs, size_t count)
+IOReturn RealtekPCICardReaderController::appendPhysRegisters(const PhysRegMaskValuePair* pairs, size_t count)
 {
     IOReturn retVal = kIOReturnSuccess;
     
@@ -720,7 +720,7 @@ IOReturn RealtekPCIeCardReaderController::appendPhysRegisters(const PhysRegMaskV
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note This function runs in a gated context.
 ///
-IOReturn RealtekPCIeCardReaderController::readHostBufferGated(IOByteCount offset, void* buffer, IOByteCount length)
+IOReturn RealtekPCICardReaderController::readHostBufferGated(IOByteCount offset, void* buffer, IOByteCount length)
 {
     // The non-gated version guarantees that the offset and the length are valid
     passert(this->hostBufferDMACommand->readBytes(offset, buffer, length) == length,
@@ -738,7 +738,7 @@ IOReturn RealtekPCIeCardReaderController::readHostBufferGated(IOByteCount offset
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note This function runs in a gated context.
 ///
-IOReturn RealtekPCIeCardReaderController::writeHostBufferGated(IOByteCount offset, const void* buffer, IOByteCount length)
+IOReturn RealtekPCICardReaderController::writeHostBufferGated(IOByteCount offset, const void* buffer, IOByteCount length)
 {
     // The non-gated version guarantees that the offset and the length are valid
     passert(this->hostBufferDMACommand->writeBytes(offset, buffer, length) == length,
@@ -759,7 +759,7 @@ IOReturn RealtekPCIeCardReaderController::writeHostBufferGated(IOByteCount offse
 /// @note Port: This function replaces `rtsx_pci_add_cmd()` defined in `rtsx_psr.c`.
 /// @note This function runs in a gated context.
 ///
-IOReturn RealtekPCIeCardReaderController::enqueueCommandGated(const Command& command)
+IOReturn RealtekPCICardReaderController::enqueueCommandGated(const Command& command)
 {
     // Guard: Ensure that the queue is not full
     if (this->hostCommandCounter.total >= RTSX::MMIO::HCBAR::kMaxNumCmds)
@@ -794,7 +794,7 @@ IOReturn RealtekPCIeCardReaderController::enqueueCommandGated(const Command& com
 /// @note This function sends all commands in the queue to the device.
 /// @note This function runs in a gated context.
 ///
-IOReturn RealtekPCIeCardReaderController::endCommandTransferGated(UInt32 timeout, UInt32 flags)
+IOReturn RealtekPCICardReaderController::endCommandTransferGated(UInt32 timeout, UInt32 flags)
 {
     // Tell the device the location of the command buffer and to start executing commands
     using namespace RTSX::MMIO;
@@ -825,13 +825,13 @@ IOReturn RealtekPCIeCardReaderController::endCommandTransferGated(UInt32 timeout
 /// @note Port: This function replaces `rtsx_pci_send_cmd_no_wait()` defined in `rtsx_psr.c`.
 /// @note This function sends all commands in the queue to the device.
 ///
-void RealtekPCIeCardReaderController::endCommandTransferNoWait()
+void RealtekPCICardReaderController::endCommandTransferNoWait()
 {
     // The transfer routine will run in a gated context
     auto action = [](OSObject* controller, void* timeout, void*, void*, void*) -> IOReturn
     {
         // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
+        auto instance = OSDynamicCast(RealtekPCICardReaderController, controller);
         
         passert(instance != nullptr, "The controller instance is invalid.");
         
@@ -862,7 +862,7 @@ void RealtekPCIeCardReaderController::endCommandTransferNoWait()
 /// @note Port: This helper function is refactored from `rtsx_pci_add_sg_tbl()` defined in `rtsx_psr.c`.
 ///             RTS5261 and RTS5208 controllers must override this function but should not include the `option` part in the returned value.
 ///
-UInt64 RealtekPCIeCardReaderController::transformIOVMSegment(IODMACommand::Segment32 segment)
+UInt64 RealtekPCICardReaderController::transformIOVMSegment(IODMACommand::Segment32 segment)
 {
     return static_cast<UInt64>(segment.fIOVMAddr) << 32 | static_cast<UInt64>(segment.fLength) << 12;
 }
@@ -875,7 +875,7 @@ UInt64 RealtekPCIeCardReaderController::transformIOVMSegment(IODMACommand::Segme
 /// @note Port: This helper function replaces `rtsx_pci_add_sg_tbl()` defined in `rtsx_psr.c`.
 /// @warning The caller must ensure that the given instance of `IODMACommand` is prepared.
 ///
-IOReturn RealtekPCIeCardReaderController::enqueueDMACommand(IODMACommand* command)
+IOReturn RealtekPCICardReaderController::enqueueDMACommand(IODMACommand* command)
 {
     using namespace RTSX::MMIO;
     
@@ -943,7 +943,7 @@ IOReturn RealtekPCIeCardReaderController::enqueueDMACommand(IODMACommand* comman
 ///       The caller should avoid calling this function directly.
 /// @warning The caller must ensure that the given instance of `IODMACommand` is prepared.
 ///
-IOReturn RealtekPCIeCardReaderController::performDMATransfer(IODMACommand* command, UInt32 timeout, UInt32 control)
+IOReturn RealtekPCICardReaderController::performDMATransfer(IODMACommand* command, UInt32 timeout, UInt32 control)
 {
     // Generate the scather/gather list from the given command
     // Write all entries in the list to the host data buffer
@@ -966,7 +966,7 @@ IOReturn RealtekPCIeCardReaderController::performDMATransfer(IODMACommand* comma
     auto action = [](OSObject* controller, void* timeout, void* control, void*, void*) -> IOReturn
     {
         // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekPCIeCardReaderController, controller);
+        auto instance = OSDynamicCast(RealtekPCICardReaderController, controller);
         
         passert(instance != nullptr, "The controller instance is invalid.");
         
@@ -975,7 +975,7 @@ IOReturn RealtekPCIeCardReaderController::performDMATransfer(IODMACommand* comma
         
         instance->hostBufferTransferStatus = kIOReturnNotReady;
         
-        instance->writeRegister32(rHDBAR, instance->hostBufferAddress + RealtekPCIeCardReaderController::kHostDatabufferOffset);
+        instance->writeRegister32(rHDBAR, instance->hostBufferAddress + RealtekPCICardReaderController::kHostDatabufferOffset);
         
         instance->writeRegister32(rHDBCTLR, *reinterpret_cast<UInt32*>(control));
         
@@ -1025,7 +1025,7 @@ IOReturn RealtekPCIeCardReaderController::performDMATransfer(IODMACommand* comma
 /// @param timeout Specify the amount of time in milliseconds
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
 ///
-IOReturn RealtekPCIeCardReaderController::performDMARead(IODMACommand* command, UInt32 timeout)
+IOReturn RealtekPCICardReaderController::performDMARead(IODMACommand* command, UInt32 timeout)
 {
     using namespace RTSX::MMIO;
     
@@ -1041,7 +1041,7 @@ IOReturn RealtekPCIeCardReaderController::performDMARead(IODMACommand* command, 
 /// @param timeout Specify the amount of time in milliseconds
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
 ///
-IOReturn RealtekPCIeCardReaderController::performDMAWrite(IODMACommand* command, UInt32 timeout)
+IOReturn RealtekPCICardReaderController::performDMAWrite(IODMACommand* command, UInt32 timeout)
 {
     using namespace RTSX::MMIO;
     
@@ -1059,7 +1059,7 @@ IOReturn RealtekPCIeCardReaderController::performDMAWrite(IODMACommand* command,
 ///
 /// @note Port: This function replaces the code block that stops the card and clears the card errorin `sd_clear_error()` defined in `rtsx_pci_sdmmc.c`.
 ///
-void RealtekPCIeCardReaderController::clearCardError()
+void RealtekPCICardReaderController::clearCardError()
 {
     using namespace RTSX::PCR::Chip::CARD;
     
@@ -1074,7 +1074,7 @@ void RealtekPCIeCardReaderController::clearCardError()
 /// @note Port: This function replaces `rtsx_pci_stop_cmd()` defined in `rtsx_psr.c`.
 ///             RTS5228, RTS5260 and RTS5261 controllers must override this function.
 ///
-void RealtekPCIeCardReaderController::clearHostError()
+void RealtekPCICardReaderController::clearHostError()
 {
     using namespace RTSX::MMIO;
     
@@ -1109,7 +1109,7 @@ void RealtekPCIeCardReaderController::clearHostError()
 ///             The base controller class implements this function by changing the value of `GPIO_CTL`.
 ///             RTS5209, 5260, 5286, 5287 and 5289 controllers must override this function.
 ///
-IOReturn RealtekPCIeCardReaderController::turnOnLED()
+IOReturn RealtekPCICardReaderController::turnOnLED()
 {
     using namespace RTSX::PCR::Chip::GPIO;
     
@@ -1124,7 +1124,7 @@ IOReturn RealtekPCIeCardReaderController::turnOnLED()
 ///             The base controller class implements this function by changing the value of `GPIO_CTL`.
 ///             RTS5209, 5286, 5287 and 5289 controllers must override this function.
 ///
-IOReturn RealtekPCIeCardReaderController::turnOffLED()
+IOReturn RealtekPCICardReaderController::turnOffLED()
 {
     using namespace RTSX::PCR::Chip::GPIO;
     
@@ -1139,7 +1139,7 @@ IOReturn RealtekPCIeCardReaderController::turnOffLED()
 ///             The base controller class implements this function by changing the value of `OLT_LED_CTL`.
 ///             RTS5209, 5286, 5287 and 5289 controllers must override this function.
 ///
-IOReturn RealtekPCIeCardReaderController::enableLEDBlinking()
+IOReturn RealtekPCICardReaderController::enableLEDBlinking()
 {
     using namespace RTSX::PCR::Chip::OLT_LED;
     
@@ -1154,7 +1154,7 @@ IOReturn RealtekPCIeCardReaderController::enableLEDBlinking()
 ///             The base controller class implements this function by changing the value of `OLT_LED_CTL`.
 ///             RTS5209, 5286, 5287 and 5289 controllers must override this function.
 ///
-IOReturn RealtekPCIeCardReaderController::disableLEDBlinking()
+IOReturn RealtekPCICardReaderController::disableLEDBlinking()
 {
     using namespace RTSX::PCR::Chip::OLT_LED;
     
@@ -1172,7 +1172,7 @@ IOReturn RealtekPCIeCardReaderController::disableLEDBlinking()
 /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
 /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
 ///
-IOReturn RealtekPCIeCardReaderController::selectCard()
+IOReturn RealtekPCICardReaderController::selectCard()
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1188,7 +1188,7 @@ IOReturn RealtekPCIeCardReaderController::selectCard()
 /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
 /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
 ///
-IOReturn RealtekPCIeCardReaderController::selectCardDataSource(bool ppbuf)
+IOReturn RealtekPCICardReaderController::selectCardDataSource(bool ppbuf)
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1202,7 +1202,7 @@ IOReturn RealtekPCIeCardReaderController::selectCardDataSource(bool ppbuf)
 /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
 /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
 ///
-IOReturn RealtekPCIeCardReaderController::configureCardShareMode()
+IOReturn RealtekPCICardReaderController::configureCardShareMode()
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1220,7 +1220,7 @@ IOReturn RealtekPCIeCardReaderController::configureCardShareMode()
 /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
 /// @note The given direction is guaranteed to be either `kIODirectionIn` or `kIODirectionOut`.
 ///
-IOReturn RealtekPCIeCardReaderController::setupCardDMATransferProperties(UInt32 length, IODirection direction)
+IOReturn RealtekPCICardReaderController::setupCardDMATransferProperties(UInt32 length, IODirection direction)
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1259,7 +1259,7 @@ IOReturn RealtekPCIeCardReaderController::setupCardDMATransferProperties(UInt32 
 /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
 /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
 ///
-IOReturn RealtekPCIeCardReaderController::enableCardClock()
+IOReturn RealtekPCICardReaderController::enableCardClock()
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1273,7 +1273,7 @@ IOReturn RealtekPCIeCardReaderController::enableCardClock()
 /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
 /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
 ///
-IOReturn RealtekPCIeCardReaderController::disableCardClock()
+IOReturn RealtekPCICardReaderController::disableCardClock()
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1287,7 +1287,7 @@ IOReturn RealtekPCIeCardReaderController::disableCardClock()
 /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
 /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
 ///
-IOReturn RealtekPCIeCardReaderController::enableCardOutput()
+IOReturn RealtekPCICardReaderController::enableCardOutput()
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1301,7 +1301,7 @@ IOReturn RealtekPCIeCardReaderController::enableCardOutput()
 /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
 /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
 ///
-IOReturn RealtekPCIeCardReaderController::disableCardOutput()
+IOReturn RealtekPCICardReaderController::disableCardOutput()
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1318,7 +1318,7 @@ IOReturn RealtekPCIeCardReaderController::disableCardOutput()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `*_fill_driving()` defined in each concrete controller file.
 ///
-IOReturn RealtekPCIeCardReaderController::setDrivingForOutputVoltage(OutputVoltage outputVoltage, bool intermediate, UInt32 timeout)
+IOReturn RealtekPCICardReaderController::setDrivingForOutputVoltage(OutputVoltage outputVoltage, bool intermediate, UInt32 timeout)
 {
     // Retrieve the driving table and the selector
     const DrivingTable* table;
@@ -1379,7 +1379,7 @@ IOReturn RealtekPCIeCardReaderController::setDrivingForOutputVoltage(OutputVolta
 /// @note Port: This function replaces the code block that calculates the MCU count in `rtsx_pci_switch_clock()` defined in `rtsx_psr.c`.
 /// @note Concrete controllers must ensure that the returned MCU count is less than or equal to 15.
 ///
-UInt32 RealtekPCIeCardReaderController::sscClock2MCUCount(UInt32 clock)
+UInt32 RealtekPCICardReaderController::sscClock2MCUCount(UInt32 clock)
 {
     return min(125 / clock + 3, 15);
 }
@@ -1391,7 +1391,7 @@ UInt32 RealtekPCIeCardReaderController::sscClock2MCUCount(UInt32 clock)
 /// @return The register value.
 /// @note Port: RTS5261 and RTS5228 controllers must override this function.
 ///
-UInt8 RealtekPCIeCardReaderController::sscDepth2RegValue(SSCDepth depth)
+UInt8 RealtekPCICardReaderController::sscDepth2RegValue(SSCDepth depth)
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1437,7 +1437,7 @@ UInt8 RealtekPCIeCardReaderController::sscDepth2RegValue(SSCDepth depth)
 /// @return The revised SSC depth register value.
 /// @note Port: RTS5261 and RTS5228 controllers must override this function.
 ///
-UInt8 RealtekPCIeCardReaderController::reviseSSCDepthRegValue(UInt8 depth, UInt8 divider)
+UInt8 RealtekPCICardReaderController::reviseSSCDepthRegValue(UInt8 depth, UInt8 divider)
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1467,7 +1467,7 @@ UInt8 RealtekPCIeCardReaderController::reviseSSCDepthRegValue(UInt8 depth, UInt8
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note This function does the actual clock switching and is controller-dependent.
 ///
-IOReturn RealtekPCIeCardReaderController::switchCardClock(UInt8 depth, UInt8 n, UInt8 divider, UInt8 mcus, bool vpclock)
+IOReturn RealtekPCICardReaderController::switchCardClock(UInt8 depth, UInt8 n, UInt8 divider, UInt8 mcus, bool vpclock)
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1508,7 +1508,7 @@ IOReturn RealtekPCIeCardReaderController::switchCardClock(UInt8 depth, UInt8 n, 
     }
     
     // Wait until the SSC clock becomes stable
-    IODelay(RealtekPCIeCardReaderController::kWaitStableSSCClock);
+    IODelay(RealtekPCICardReaderController::kWaitStableSSCClock);
     
     return this->writeChipRegister(CLK::rCTL, CLK::CTL::kLowFrequency, 0);
 }
@@ -1522,7 +1522,7 @@ IOReturn RealtekPCIeCardReaderController::switchCardClock(UInt8 depth, UInt8 n, 
 ///
 /// @return `true` if the card is write protected, `false` otherwise.
 ///
-bool RealtekPCIeCardReaderController::isCardWriteProtected()
+bool RealtekPCICardReaderController::isCardWriteProtected()
 {
     using namespace RTSX::MMIO;
     
@@ -1536,7 +1536,7 @@ bool RealtekPCIeCardReaderController::isCardWriteProtected()
 /// @note Port: This function replaces `rtsx_pci_card_exist()` and `cd_deglitch()` defined in `rtsx_psr.c`.
 /// @warning: This function supports SD cards only.
 ///
-bool RealtekPCIeCardReaderController::isCardPresent()
+bool RealtekPCICardReaderController::isCardPresent()
 {
     using namespace RTSX::MMIO;
     
@@ -1553,7 +1553,7 @@ bool RealtekPCIeCardReaderController::isCardPresent()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_pci_init_ocp()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::initOvercurrentProtection()
+IOReturn RealtekPCICardReaderController::initOvercurrentProtection()
 {
     pinfo("Initializing the overcurrent protection...");
     
@@ -1591,7 +1591,7 @@ IOReturn RealtekPCIeCardReaderController::initOvercurrentProtection()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_pci_enable_ocp()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::enableOvercurrentProtection()
+IOReturn RealtekPCICardReaderController::enableOvercurrentProtection()
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1613,7 +1613,7 @@ IOReturn RealtekPCIeCardReaderController::enableOvercurrentProtection()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_pci_disable_ocp()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::disableOvercurrentProtection()
+IOReturn RealtekPCICardReaderController::disableOvercurrentProtection()
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1636,7 +1636,7 @@ IOReturn RealtekPCIeCardReaderController::disableOvercurrentProtection()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_pci_get_ocpstat()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::getOvercurrentProtectionStatus(UInt8& status)
+IOReturn RealtekPCICardReaderController::getOvercurrentProtectionStatus(UInt8& status)
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1651,7 +1651,7 @@ IOReturn RealtekPCIeCardReaderController::getOvercurrentProtectionStatus(UInt8& 
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_pci_clear_ocpstat()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::clearOvercurrentProtectionStatus()
+IOReturn RealtekPCICardReaderController::clearOvercurrentProtectionStatus()
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1690,7 +1690,7 @@ IOReturn RealtekPCIeCardReaderController::clearOvercurrentProtectionStatus()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_pci_card_pull_ctl_enable()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::enablePullControlForSDCard()
+IOReturn RealtekPCICardReaderController::enablePullControlForSDCard()
 {
     return this->transferWriteRegisterCommands(*this->parameters.sdEnablePullControlTable);
 }
@@ -1701,7 +1701,7 @@ IOReturn RealtekPCIeCardReaderController::enablePullControlForSDCard()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_pci_card_pull_ctl_disable()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::disablePullControlForSDCard()
+IOReturn RealtekPCICardReaderController::disablePullControlForSDCard()
 {
     return this->transferWriteRegisterCommands(*this->parameters.sdDisablePullControlTable);
 }
@@ -1717,7 +1717,7 @@ IOReturn RealtekPCIeCardReaderController::disablePullControlForSDCard()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces the Rx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::changeRxPhase(UInt8 samplePoint)
+IOReturn RealtekPCICardReaderController::changeRxPhase(UInt8 samplePoint)
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1741,7 +1741,7 @@ IOReturn RealtekPCIeCardReaderController::changeRxPhase(UInt8 samplePoint)
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces the Tx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::changeTxPhase(UInt8 samplePoint)
+IOReturn RealtekPCICardReaderController::changeTxPhase(UInt8 samplePoint)
 {
     using namespace RTSX::PCR::Chip;
     
@@ -1768,7 +1768,7 @@ IOReturn RealtekPCIeCardReaderController::changeTxPhase(UInt8 samplePoint)
 /// @return `true` if the controller is not RTS525A nor RTS5260.
 /// @note RTS525A and RTS5260 controllers should override this function and return `false`.
 ///
-bool RealtekPCIeCardReaderController::oobsPollingRequiresPhyRCR0Access()
+bool RealtekPCICardReaderController::oobsPollingRequiresPhyRCR0Access()
 {
     return true;
 }
@@ -1780,7 +1780,7 @@ bool RealtekPCIeCardReaderController::oobsPollingRequiresPhyRCR0Access()
 /// @note By default, this function returns `false`.
 /// @note e.g., RTS524A and RTS525A should override this function and return `true`.
 ///
-bool RealtekPCIeCardReaderController::supportsOOBSPolling()
+bool RealtekPCICardReaderController::supportsOOBSPolling()
 {
     return false;
 }
@@ -1790,7 +1790,7 @@ bool RealtekPCIeCardReaderController::supportsOOBSPolling()
 ///
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 ///
-IOReturn RealtekPCIeCardReaderController::enableOOBSPolling()
+IOReturn RealtekPCICardReaderController::enableOOBSPolling()
 {
     // Check whether RCR0 needs to be modified to enable OOBS polling
     if (this->oobsPollingRequiresPhyRCR0Access())
@@ -1826,7 +1826,7 @@ IOReturn RealtekPCIeCardReaderController::enableOOBSPolling()
 ///
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 ///
-IOReturn RealtekPCIeCardReaderController::disableOOBSPolling()
+IOReturn RealtekPCICardReaderController::disableOOBSPolling()
 {
     if (this->oobsPollingRequiresPhyRCR0Access())
     {
@@ -1866,7 +1866,7 @@ IOReturn RealtekPCIeCardReaderController::disableOOBSPolling()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_pci_read_ppbuf()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::readPingPongBuffer(UInt8* destination, IOByteCount length)
+IOReturn RealtekPCICardReaderController::readPingPongBuffer(UInt8* destination, IOByteCount length)
 {
     pinfo("Request to read %llu bytes from the ping pong buffer.", length);
     
@@ -1930,7 +1930,7 @@ IOReturn RealtekPCIeCardReaderController::readPingPongBuffer(UInt8* destination,
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_pci_write_ppbuf()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::writePingPongBuffer(const UInt8* source, IOByteCount length)
+IOReturn RealtekPCICardReaderController::writePingPongBuffer(const UInt8* source, IOByteCount length)
 {
     pinfo("Request to write %llu bytes from the ping pong buffer.", length);
     
@@ -1985,7 +1985,7 @@ IOReturn RealtekPCIeCardReaderController::writePingPongBuffer(const UInt8* sourc
 ///
 /// @return The clock phase.
 ///
-ClockPhase RealtekPCIeCardReaderController::getRxClockPhase()
+ClockPhase RealtekPCICardReaderController::getRxClockPhase()
 {
     return this->parameters.initialRxClockPhase;
 }
@@ -1995,7 +1995,7 @@ ClockPhase RealtekPCIeCardReaderController::getRxClockPhase()
 ///
 /// @return The clock phase.
 ///
-ClockPhase RealtekPCIeCardReaderController::getTxClockPhase()
+ClockPhase RealtekPCICardReaderController::getTxClockPhase()
 {
     return this->parameters.initialTxClockPhase;
 }
@@ -2011,7 +2011,7 @@ ClockPhase RealtekPCIeCardReaderController::getTxClockPhase()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_comm_set_aspm()` and `ops->set_aspm()` defined in `rtsx_pcr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::setASPM(bool enable)
+IOReturn RealtekPCICardReaderController::setASPM(bool enable)
 {
     using namespace RTSX::PCR::Chip;
     
@@ -2052,7 +2052,7 @@ IOReturn RealtekPCIeCardReaderController::setASPM(bool enable)
 /// @note Port: This function replaces `rtsx_set_l1off_sub_cfg_d0()` and `set_l1off_cfg_sub_d0()` defined in `rtsx_pcr.c`.
 /// @note The base controller provides a default implementation that simply returns `kIOReturnSuccess`.
 ///
-IOReturn RealtekPCIeCardReaderController::setL1OffSubConfigD0(bool active)
+IOReturn RealtekPCICardReaderController::setL1OffSubConfigD0(bool active)
 {
     return kIOReturnSuccess;
 }
@@ -2064,7 +2064,7 @@ IOReturn RealtekPCIeCardReaderController::setL1OffSubConfigD0(bool active)
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_comm_set_ltr_latency()` and `rtsx_set_ltr_latency()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::setLTRLatency(UInt32 latency)
+IOReturn RealtekPCICardReaderController::setLTRLatency(UInt32 latency)
 {
     using namespace RTSX::PCR::Chip;
     
@@ -2090,7 +2090,7 @@ IOReturn RealtekPCIeCardReaderController::setLTRLatency(UInt32 latency)
 ///
 /// @note Port: This function replaces `rtsx_pci_start_run()`, `rtsx_pm_full_on()` and `rtsx_comm_pm_full_on()` defined in `rtsx_psr.c`.
 ///
-void RealtekPCIeCardReaderController::enterWorkerState()
+void RealtekPCICardReaderController::enterWorkerState()
 {
     if (!this->isIdle)
     {
@@ -2129,7 +2129,7 @@ void RealtekPCIeCardReaderController::enterWorkerState()
 ///
 /// @note Port: This function replaces `rtsx_pci_suspend()` defined in `rtsx_psr.c`.
 ///
-void RealtekPCIeCardReaderController::prepareToSleep()
+void RealtekPCICardReaderController::prepareToSleep()
 {
     pinfo("Prepare to sleep...");
     
@@ -2162,7 +2162,7 @@ void RealtekPCIeCardReaderController::prepareToSleep()
 ///
 /// @note Port: This function replaces `rtsx_pci_resume()` defined in `rtsx_psr.c`.
 ///
-void RealtekPCIeCardReaderController::prepareToWakeUp()
+void RealtekPCICardReaderController::prepareToWakeUp()
 {
     pinfo("Prepare to wake up...");
     
@@ -2189,7 +2189,7 @@ void RealtekPCIeCardReaderController::prepareToWakeUp()
 /// @return `true` if the interrupt is of interest, `false` otherwise.
 /// @note The filter runs in the primary interrupt context.
 ///
-bool RealtekPCIeCardReaderController::interruptEventSourceFilter(IOFilterInterruptEventSource* source)
+bool RealtekPCICardReaderController::interruptEventSourceFilter(IOFilterInterruptEventSource* source)
 {
     // Retrieve and examine pending interrupts
     using namespace RTSX::MMIO;
@@ -2210,7 +2210,7 @@ bool RealtekPCIeCardReaderController::interruptEventSourceFilter(IOFilterInterru
 ///       It checks hardware registers to identify the reason and invoke helper handlers.
 /// @note The interrupt event source filter guarantees that there is a pending interrupt when the handler is invoked.
 ///
-void RealtekPCIeCardReaderController::interruptHandlerGated(IOInterruptEventSource* sender, int count)
+void RealtekPCICardReaderController::interruptHandlerGated(IOInterruptEventSource* sender, int count)
 {
     // Retrieve pending interrupts
     using namespace RTSX::MMIO;
@@ -2279,7 +2279,7 @@ void RealtekPCIeCardReaderController::interruptHandlerGated(IOInterruptEventSour
 /// @param sender The timer event source
 /// @note The timeout handler runs in a gated context.
 ///
-void RealtekPCIeCardReaderController::bufferTransferTimeoutHandlerGated(IOTimerEventSource* sender)
+void RealtekPCICardReaderController::bufferTransferTimeoutHandlerGated(IOTimerEventSource* sender)
 {
     // The transfer has timed out
     pinfo("The current transfer session has timed out.");
@@ -2301,7 +2301,7 @@ void RealtekPCIeCardReaderController::bufferTransferTimeoutHandlerGated(IOTimerE
 /// @param succeeded `true` if the transfer has succeeded. `false` otherwise.
 /// @note This interrupt service routine runs in a gated context.
 ///
-void RealtekPCIeCardReaderController::onTransferDoneGated(bool succeeded)
+void RealtekPCICardReaderController::onTransferDoneGated(bool succeeded)
 {
     // All accesses to the status variable is performed in a gated context
     // Guard: Check whether the transfer has already timed out
@@ -2331,7 +2331,7 @@ void RealtekPCIeCardReaderController::onTransferDoneGated(bool succeeded)
 ///
 /// @note This interrupt service routine runs in a gated context.
 ///
-void RealtekPCIeCardReaderController::onSDCardOvercurrentOccurredGated()
+void RealtekPCICardReaderController::onSDCardOvercurrentOccurredGated()
 {
     // Guard: Retrieve the current OCP status
     using namespace RTSX::PCR::Chip;
@@ -2372,7 +2372,7 @@ void RealtekPCIeCardReaderController::onSDCardOvercurrentOccurredGated()
 /// @note This interrupt service routine runs in a gated context.
 /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
 ///
-void RealtekPCIeCardReaderController::onSDCardInsertedGated()
+void RealtekPCICardReaderController::onSDCardInsertedGated()
 {
     // Notify the host device
     pinfo("A SD card is inserted.");
@@ -2386,7 +2386,7 @@ void RealtekPCIeCardReaderController::onSDCardInsertedGated()
 /// @note This interrupt service routine runs in a gated context.
 /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
 ///
-void RealtekPCIeCardReaderController::onSDCardRemovedGated()
+void RealtekPCICardReaderController::onSDCardRemovedGated()
 {
     // Notify the host device
     pinfo("The SD card has been removed.");
@@ -2404,7 +2404,7 @@ void RealtekPCIeCardReaderController::onSDCardRemovedGated()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `*_get_ic_version()` defined in each controller file.
 ///
-IOReturn RealtekPCIeCardReaderController::getRevision(Revision& revision)
+IOReturn RealtekPCICardReaderController::getRevision(Revision& revision)
 {
     pinfo("Fetching the chip revision...");
     
@@ -2434,7 +2434,7 @@ IOReturn RealtekPCIeCardReaderController::getRevision(Revision& revision)
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `optimize_phy()` defined in the the `pcr->ops`.
 ///
-IOReturn RealtekPCIeCardReaderController::optimizePhys()
+IOReturn RealtekPCICardReaderController::optimizePhys()
 {
     return kIOReturnSuccess;
 }
@@ -2445,7 +2445,7 @@ IOReturn RealtekPCIeCardReaderController::optimizePhys()
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `rtsx_pci_init_hw()` defined in `rtsx_psr.c`.
 ///
-IOReturn RealtekPCIeCardReaderController::initHardwareCommon()
+IOReturn RealtekPCICardReaderController::initHardwareCommon()
 {
     pinfo("Initializing the card reader...");
     
@@ -2627,7 +2627,7 @@ IOReturn RealtekPCIeCardReaderController::initHardwareCommon()
 ///
 /// @return `true` on success, `false` otherwise.
 ///
-bool RealtekPCIeCardReaderController::mapDeviceMemory()
+bool RealtekPCICardReaderController::mapDeviceMemory()
 {
     UInt8 bar = this->getDeviceMemoryMapBaseAddressRegister();
     
@@ -2666,7 +2666,7 @@ bool RealtekPCIeCardReaderController::mapDeviceMemory()
 ///
 /// @return The index on success, `0` otherwise.
 ///
-int RealtekPCIeCardReaderController::probeMSIIndex()
+int RealtekPCICardReaderController::probeMSIIndex()
 {
     int index = 0;
     
@@ -2694,7 +2694,7 @@ int RealtekPCIeCardReaderController::probeMSIIndex()
 ///
 /// @return `true` on success, `false` otherwise.
 ///
-bool RealtekPCIeCardReaderController::setupInterrupts()
+bool RealtekPCICardReaderController::setupInterrupts()
 {
     // Guard: Probe the MSI interrupt index
     int index = this->probeMSIIndex();
@@ -2702,9 +2702,9 @@ bool RealtekPCIeCardReaderController::setupInterrupts()
     pinfo("The MSI index = %d. Will set up the interrupt event source.", index);
     
     // Guard: Setup the interrupt event source
-    auto filter = OSMemberFunctionCast(IOFilterInterruptEventSource::Filter, this, &RealtekPCIeCardReaderController::interruptEventSourceFilter);
+    auto filter = OSMemberFunctionCast(IOFilterInterruptEventSource::Filter, this, &RealtekPCICardReaderController::interruptEventSourceFilter);
     
-    auto handler = OSMemberFunctionCast(IOFilterInterruptEventSource::Action, this, &RealtekPCIeCardReaderController::interruptHandlerGated);
+    auto handler = OSMemberFunctionCast(IOFilterInterruptEventSource::Action, this, &RealtekPCICardReaderController::interruptHandlerGated);
     
     this->interruptEventSource = IOFilterInterruptEventSource::filterInterruptEventSource(this, handler, filter, this->device, index);
     
@@ -2729,7 +2729,7 @@ bool RealtekPCIeCardReaderController::setupInterrupts()
 ///
 /// @return `true` on success, `false` otherwise.
 ///
-bool RealtekPCIeCardReaderController::setupHostBuffer()
+bool RealtekPCICardReaderController::setupHostBuffer()
 {
     // Used to generate the scatter/gather list for the DMA transaction
     pinfo("Creating the host command and data buffer...");
@@ -2787,7 +2787,7 @@ bool RealtekPCIeCardReaderController::setupHostBuffer()
     }
     
     // Guard: 7. Setup the timer for the DMA transaction
-    this->hostBufferTimer = IOTimerEventSource::timerEventSource(this, OSMemberFunctionCast(IOTimerEventSource::Action, this, &RealtekPCIeCardReaderController::bufferTransferTimeoutHandlerGated));
+    this->hostBufferTimer = IOTimerEventSource::timerEventSource(this, OSMemberFunctionCast(IOTimerEventSource::Action, this, &RealtekPCICardReaderController::bufferTransferTimeoutHandlerGated));
     
     if (this->hostBufferTimer == nullptr)
     {
@@ -2846,7 +2846,7 @@ error1:
 /// @return `true` on success, `false` otherwise.
 /// @note Port: This function replaces `rtsx_pci_init_chip()` defined in `rtsx_pci.c`.
 ///
-bool RealtekPCIeCardReaderController::setupCardReader()
+bool RealtekPCICardReaderController::setupCardReader()
 {
     // Initialize the device-specific parameters
     pinfo("Initializing the device-specific parameters...");
@@ -2890,7 +2890,7 @@ bool RealtekPCIeCardReaderController::setupCardReader()
 ///
 /// @return `true` on success, `false` otherwise.
 ///
-bool RealtekPCIeCardReaderController::createCardSlot()
+bool RealtekPCICardReaderController::createCardSlot()
 {
     pinfo("Creating the card slot...");
     
@@ -2946,7 +2946,7 @@ bool RealtekPCIeCardReaderController::createCardSlot()
 ///
 /// Tear down the interrupt event source
 ///
-void RealtekPCIeCardReaderController::tearDownInterrupts()
+void RealtekPCICardReaderController::tearDownInterrupts()
 {
     if (this->interruptEventSource != nullptr)
     {
@@ -2963,7 +2963,7 @@ void RealtekPCIeCardReaderController::tearDownInterrupts()
 ///
 /// Tear down the host command and buffer management module
 ///
-void RealtekPCIeCardReaderController::tearDownHostBuffer()
+void RealtekPCICardReaderController::tearDownHostBuffer()
 {
     // R7: Cancel the timer for the DMA transaction
     // R8: Deregister the timer event source
@@ -3007,7 +3007,7 @@ void RealtekPCIeCardReaderController::tearDownHostBuffer()
 ///
 /// Unmap the device memory
 ///
-void RealtekPCIeCardReaderController::unmapDeviceMemory()
+void RealtekPCICardReaderController::unmapDeviceMemory()
 {
     this->deviceMemoryDescriptor->complete();
     
@@ -3019,7 +3019,7 @@ void RealtekPCIeCardReaderController::unmapDeviceMemory()
 ///
 /// Destroy the card slot
 ///
-void RealtekPCIeCardReaderController::destroyCardSlot()
+void RealtekPCICardReaderController::destroyCardSlot()
 {
     pinfo("Stopping the card slot...");
     
@@ -3043,7 +3043,7 @@ void RealtekPCIeCardReaderController::destroyCardSlot()
 /// @return `true` on success, `false` otherwise.
 /// @note RTS5228 and RTS5261 controllers must override this function to adjust the minimum SSC clock frequency.
 ///
-bool RealtekPCIeCardReaderController::init(OSDictionary* dictionary)
+bool RealtekPCICardReaderController::init(OSDictionary* dictionary)
 {
     if (!super::init(dictionary))
     {
@@ -3082,23 +3082,23 @@ bool RealtekPCIeCardReaderController::init(OSDictionary* dictionary)
     
     using namespace RTSX::PCR::Chip;
     
-    this->sscClockLimits.rangeN = { RealtekPCIeCardReaderController::kMinSSCClockN, RealtekPCIeCardReaderController::kMaxSSCClockN };
+    this->sscClockLimits.rangeN = { RealtekPCICardReaderController::kMinSSCClockN, RealtekPCICardReaderController::kMaxSSCClockN };
     
     this->sscClockLimits.rangeDivider = { CLK::DIV::k1, CLK::DIV::k8 };
     
-    this->sscClockLimits.minFrequencyMHz = RealtekPCIeCardReaderController::kMinSSCClockFrequencyMHz;
+    this->sscClockLimits.minFrequencyMHz = RealtekPCICardReaderController::kMinSSCClockFrequencyMHz;
     
-    this->busTimingTables.sdr50 = &RealtekPCIeCardReaderController::kBusTimingTableSDR50;
+    this->busTimingTables.sdr50 = &RealtekPCICardReaderController::kBusTimingTableSDR50;
     
-    this->busTimingTables.ddr50 = &RealtekPCIeCardReaderController::kBusTimingTableDDR50;
+    this->busTimingTables.ddr50 = &RealtekPCICardReaderController::kBusTimingTableDDR50;
     
-    this->busTimingTables.highSpeed = &RealtekPCIeCardReaderController::kBusTimingTableHighSpeed;
+    this->busTimingTables.highSpeed = &RealtekPCICardReaderController::kBusTimingTableHighSpeed;
     
-    this->busTimingTables.defaultSpeed = &RealtekPCIeCardReaderController::kBusTimingTableDefaultSpeed;
+    this->busTimingTables.defaultSpeed = &RealtekPCICardReaderController::kBusTimingTableDefaultSpeed;
     
-    this->tuningConfig.numPhases = RealtekPCIeCardReaderController::kTuningNumPhases;
+    this->tuningConfig.numPhases = RealtekPCICardReaderController::kTuningNumPhases;
     
-    this->tuningConfig.enable80ClocksTimeout = RealtekPCIeCardReaderController::kTuningEnable80ClocksTimes;
+    this->tuningConfig.enable80ClocksTimeout = RealtekPCICardReaderController::kTuningEnable80ClocksTimes;
     
     return true;
 }
@@ -3109,7 +3109,7 @@ bool RealtekPCIeCardReaderController::init(OSDictionary* dictionary)
 /// @param provider An instance of PCI device that represents the card reader
 /// @return `true` on success, `false` otherwise.
 ///
-bool RealtekPCIeCardReaderController::start(IOService* provider)
+bool RealtekPCICardReaderController::start(IOService* provider)
 {
     pinfo("===================================================");
     pinfo("Starting the Realtek PCIe card reader controller...");
@@ -3245,7 +3245,7 @@ error1:
 ///
 /// @param provider An instance of PCI device that represents the card reader
 ///
-void RealtekPCIeCardReaderController::stop(IOService* provider)
+void RealtekPCICardReaderController::stop(IOService* provider)
 {
     this->destroyCardSlot();
     

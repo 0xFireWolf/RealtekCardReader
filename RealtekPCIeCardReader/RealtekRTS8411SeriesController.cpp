@@ -11,7 +11,7 @@
 // MARK: - Meta Class Definitions
 //
 
-OSDefineMetaClassAndAbstractStructors(RealtekRTS8411SeriesController, RealtekPCIeCardReaderController);
+OSDefineMetaClassAndAbstractStructors(RealtekRTS8411SeriesController, RealtekPCICardReaderController);
 
 //
 // MARK: - LED Management

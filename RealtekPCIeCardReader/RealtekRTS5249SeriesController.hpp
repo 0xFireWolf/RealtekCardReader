@@ -8,12 +8,12 @@
 #ifndef RealtekRTS5249SeriesController_hpp
 #define RealtekRTS5249SeriesController_hpp
 
-#include "RealtekPCIeCardReaderController.hpp"
+#include "RealtekPCICardReaderController.hpp"
 
 ///
 /// Represents the abstract RTS5249 series card reader controller
 ///
-class RealtekRTS5249SeriesController: public RealtekPCIeCardReaderController
+class RealtekRTS5249SeriesController: public RealtekPCICardReaderController
 {
     //
     // MARK: - Constructors & Destructors
@@ -21,7 +21,7 @@ class RealtekRTS5249SeriesController: public RealtekPCIeCardReaderController
     
     OSDeclareAbstractStructors(RealtekRTS5249SeriesController);
     
-    using super = RealtekPCIeCardReaderController;
+    using super = RealtekPCICardReaderController;
     
     //
     // MARK: - Driving Tables for RTS5249, 524A, 525A

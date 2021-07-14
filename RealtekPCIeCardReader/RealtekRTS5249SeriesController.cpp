@@ -13,7 +13,7 @@
 // MARK: - Meta Class Definitions
 //
 
-OSDefineMetaClassAndAbstractStructors(RealtekRTS5249SeriesController, RealtekPCIeCardReaderController);
+OSDefineMetaClassAndAbstractStructors(RealtekRTS5249SeriesController, RealtekPCICardReaderController);
 
 //
 // MARK: - Driving Tables for RTS5249, 524A, 525A

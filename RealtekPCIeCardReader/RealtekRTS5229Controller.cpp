@@ -11,7 +11,7 @@
 // MARK: - Meta Class Definitions
 //
 
-OSDefineMetaClassAndStructors(RealtekRTS5229Controller, RealtekPCIeCardReaderController);
+OSDefineMetaClassAndStructors(RealtekRTS5229Controller, RealtekPCICardReaderController);
 
 //
 // MARK: - SD Pull Control Tables
