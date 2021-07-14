@@ -234,7 +234,7 @@ IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDCommand& command, UInt32 timeout
     }
     
     // Finish the command transfer session and wait for the response
-    retVal = this->controller->endCommandTransfer(timeout); // TODO: FLAGS = kCR
+    retVal = this->controller->endCommandTransfer(timeout, this->controller->getDataTransferFlags().command);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -451,7 +451,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndReadData(const RealtekSDCommand& comman
     }
     
     // Finish the command transfer session and wait for the response
-    retVal = this->controller->endCommandTransfer(timeout); // TODO: FLAGS: kCR
+    retVal = this->controller->endCommandTransfer(timeout, this->controller->getDataTransferFlags().commandWithInboundDataTransfer);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -615,7 +615,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndWriteData(RealtekSDCommand& command, co
     }
     
     // Finish the command transfer session and wait for the response
-    retVal = this->controller->endCommandTransfer(timeout); // TODO: FLAGS = kCR
+    retVal = this->controller->endCommandTransfer(timeout, this->controller->getDataTransferFlags().commandWithOutboundDataTransfer);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -848,7 +848,7 @@ IOReturn RealtekSDXCSlot::runSDCommandWithInboundDMATransfer(RealtekSDCommandWit
 //    }
     
     // Send the command
-    retVal = this->controller->endCommandTransfer(100); // TODO: FLAGS = kCDIR
+    retVal = this->controller->endCommandTransfer(100, this->controller->getDataTransferFlags().commandWithInboundDMATransfer);
 
     if (retVal != kIOReturnSuccess)
     {
@@ -1007,7 +1007,7 @@ IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDMATransfer(RealtekSDCommandWi
 //    }
     
     // Send the command
-    retVal = this->controller->endCommandTransfer(100); // Linux uses NoWait(). // TODO: FLAGS = kCDIR
+    retVal = this->controller->endCommandTransfer(100, this->controller->getDataTransferFlags().commandWithOutboundDMATransfer); // Linux uses NoWait().
 
     if (retVal != kIOReturnSuccess)
     {
