@@ -318,7 +318,7 @@ public:
     // MARK: - Tuning
     //
     
-private:    
+private:
     ///
     /// Get the phase length for the given bit index
     ///
@@ -344,6 +344,7 @@ private:
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, other values otherwise.
     /// @note Port: This function replaces `sd_wait_data_idle()` defined in `rtsx_pci_sdmmc.c`.
     ///
+    DEPRECATE("Need further investigation. Will be replaced by Controller::waitForIdleDataLine().")
     IOReturn waitForIdleDataLine();
     
     ///
@@ -364,6 +365,7 @@ private:
     ///
     UInt32 tuningRxPhase();
     
+protected:
     ///
     /// Tune the Rx transfer
     ///
@@ -373,6 +375,8 @@ private:
     IOReturn tuningRx();
 
 public:
+    // TODO: MOVE THE IMP TO RealtekPCISDXCSlot.cpp
+    // TODO: RealtekSDXCSlot::executeTuning remains to be pure virtual
     ///
     /// Execute the tuning algorithm
     ///
@@ -410,6 +414,7 @@ public:
     /// @param result Set `true` if the card CMD line is high, `false` otherwise.
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     ///
+    DEPRECATE("Need further investigation. Will be replaced by Controller::isCardCommandLineBusy().")
     IOReturn isCardCommandLineBusy(bool& result) override;
     
     ///
@@ -418,6 +423,7 @@ public:
     /// @param result Set `true` if the card DAT lines are high, `false` otherwise.
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     ///
+    DEPRECATE("Need further investigation. Will be replaced by Controller::isCardDataLineBusy().")
     IOReturn isCardDataLineBusy(bool& result) override;
     
     //

@@ -1824,6 +1824,8 @@ IOReturn RealtekSDXCSlot::waitForIdleDataLine()
     
     for (auto attempt = 0; attempt < 100; attempt += 1)
     {
+        // TODO: Use `Controller::isDataLineIdle()` or move the entire func to controller
+        // TODO: e.g, Controller::WaitForIdleDataLine()
         retVal = this->controller->readChipRegister(rDATSTATE, status);
         
         if (retVal != kIOReturnSuccess)
@@ -1881,6 +1883,7 @@ IOReturn RealtekSDXCSlot::tuningRxCommand(UInt8 samplePoint)
         perr("Failed to send the CMD19 and get the response. Error = 0x%x.", retVal);
         
         // Wait until the data lines become idle
+        // TODO: USB: DIFF IMP
         psoftassert(this->waitForIdleDataLine() == kIOReturnSuccess,
                     "Failed to wait for the data lines to be idle.");
         
