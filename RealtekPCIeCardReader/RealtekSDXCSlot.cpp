@@ -142,6 +142,17 @@ IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDCommand& command, UInt32 timeout
     
     pinfo("The command opcode and the argument are set.");
     
+    // Set the data source for the card
+    // Use the ping pong buffer for SD commands that do not transfer data
+    retVal = this->controller->selectCardDataSourceToPingPongBuffer();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to select the card data source to be the ping pong buffer. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
     // Set the transfer properties
     pinfo("Setting the transfer properties...");
     
@@ -149,10 +160,6 @@ IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDCommand& command, UInt32 timeout
     {
         // Set the response type
         { SD::rCFG2, 0xFF, responseType },
-        
-        // Set the data source for the card
-        // Use the ping pong buffer for SD commands that do not transfer data
-        { CARD::rDATASRC, CARD::DATASRC::kMask, CARD::DATASRC::kPingPongBuffer },
         
         // Transfer an SD command and receive the response
         { SD::rTRANSFER, 0xFF, SD::TRANSFER::kTMCmdResp | SD::TRANSFER::kTransferStart },
@@ -227,7 +234,7 @@ IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDCommand& command, UInt32 timeout
     }
     
     // Finish the command transfer session and wait for the response
-    retVal = this->controller->endCommandTransfer(timeout);
+    retVal = this->controller->endCommandTransfer(timeout); // TODO: FLAGS = kCR
     
     if (retVal != kIOReturnSuccess)
     {
@@ -303,6 +310,7 @@ IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDCommand& command, UInt32 timeout
 ///
 IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDSimpleCommandRequest& request)
 {
+    // TODO: Switch to the COM namespace
     using namespace RTSX::Chip;
     
     // The host must toggle the clock if the command is CMD11
@@ -443,7 +451,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndReadData(const RealtekSDCommand& comman
     }
     
     // Finish the command transfer session and wait for the response
-    retVal = this->controller->endCommandTransfer(timeout);
+    retVal = this->controller->endCommandTransfer(timeout); // TODO: FLAGS: kCR
     
     if (retVal != kIOReturnSuccess)
     {
@@ -607,7 +615,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndWriteData(RealtekSDCommand& command, co
     }
     
     // Finish the command transfer session and wait for the response
-    retVal = this->controller->endCommandTransfer(timeout);
+    retVal = this->controller->endCommandTransfer(timeout); // TODO: FLAGS = kCR
     
     if (retVal != kIOReturnSuccess)
     {
