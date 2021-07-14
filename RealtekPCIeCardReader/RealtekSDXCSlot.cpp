@@ -42,6 +42,7 @@ IOReturn RealtekSDXCSlot::clearError()
 ///
 IOReturn RealtekSDXCSlot::setSDCommandOpcodeAndArgument(const RealtekSDCommand& command)
 {
+    // TODO: Switch to the COM namespace
     using namespace RTSX::Chip::SD;
     
     UInt32 argument = command.getArgument();
@@ -73,6 +74,7 @@ IOReturn RealtekSDXCSlot::setSDCommandOpcodeAndArgument(const RealtekSDCommand& 
 ///
 IOReturn RealtekSDXCSlot::setSDCommandDataLength(UInt16 nblocks, UInt16 blockSize)
 {
+    // TODO: Switch to the COM namespace
     using namespace RTSX::Chip::SD;
     
     pinfo("Setting the data length: NumBlocks = %d; Block Size = %d Bytes.", nblocks, blockSize);
@@ -341,6 +343,7 @@ IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDSimpleCommandRequest& request)
 ///
 IOReturn RealtekSDXCSlot::runSDCommandAndReadData(const RealtekSDCommand& command, UInt8* buffer, IOByteCount length, UInt32 timeout)
 {
+    // TODO: Switch to the COM namespace
     using namespace RTSX::Chip;
     
     pinfo("SDCMD = %d; Arg = 0x%08X; Data Buffer = 0x%08x%08x; Data Length = %llu bytes; Timeout = %d ms.",
@@ -389,28 +392,34 @@ IOReturn RealtekSDXCSlot::runSDCommandAndReadData(const RealtekSDCommand& comman
     
     ChipRegValuePair pairs[] =
     {
-        // Ask the card to send the data to the ping pong buffer
-        // This step is omitted if `command` is a tuning command (i.e., CMD19)
-        { CARD::rDATASRC, CARD::DATASRC::kMask, CARD::DATASRC::kPingPongBuffer },
-        
         { SD::rCFG2, 0xFF, SD::CFG2::kCalcCRC7 | SD::CFG2::kCheckCRC7 | SD::CFG2::kCheckCRC16 | SD::CFG2::kNoWaitBusyEnd | SD::CFG2::kResponseLength6 },
         
         { SD::rTRANSFER, 0xFF, SD::TRANSFER::kTransferStart }
     };
     
-    // Transfer the commands
+    // Adjust the transfer mode
     if (command.getOpcode() == RealtekSDCommand::Opcode::kSendTuningBlock)
     {
-        pairs[2].value |= SD::TRANSFER::kTMAutoTuning;
-        
-        retVal = this->controller->enqueueWriteRegisterCommands(SimpleRegValuePairs(&pairs[1], 2));
+        pairs[1].value |= SD::TRANSFER::kTMAutoTuning;
     }
     else
     {
-        pairs[2].value |= SD::TRANSFER::kTMNormalRead;
+        pairs[1].value |= SD::TRANSFER::kTMNormalRead;
         
-        retVal = this->controller->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs));
+        // Ask the card to send the data to the ping pong buffer
+        // This step is omitted if `command` is a tuning command (i.e., CMD19)
+        // TODO: REMOVE `RealtekCardReaderController::` once the host device uses the new interface
+        retVal = this->controller->RealtekCardReaderController::selectCardDataSourceToPingPongBuffer();
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to select the card data source to be the ping pong buffer. Error = 0x%x.", retVal);
+            
+            return retVal;
+        }
     }
+    
+    retVal = this->controller->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs));
     
     if (retVal != kIOReturnSuccess)
     {
@@ -463,6 +472,17 @@ IOReturn RealtekSDXCSlot::runSDCommandAndReadData(const RealtekSDCommand& comman
         return kIOReturnSuccess;
     }
     
+    // Warning: The USB driver separates the loading process into two parts:
+    //          the 2-byte aligned part and the unaligned part.
+    //          We keep the implementation that is designed for the PCIe-based card reader driver,
+    //          because the host driver guarantees that the number of bytes to read is always 2-byte aligned.
+    //          For example, it sends a CMD2 to retrieve the card identification data which is 16 bytes long.
+    //          Ideally, the host device (i.e. RealtekSDXCSlot) should not assume that the caller always passes a length that is 2-byte aligned,
+    //          but I don't have a USB-based card driver so I cannot verify whether the card driver accepts a 2-byte aligned length only.
+    //          Besides, Linux's rtsx_usb_read_ppbuf() further separates the read into two parts, the 4-byte aligned part and the unaligned part,
+    //          so why do we need to do aligned read at here?
+    //          P.S. Our implementation of `rtsx_usb_read_ppbuf()` ignores the 4-byte alignment,
+    //               because the host driver always passes a length that can be divided by 4 :).
     pinfo("Loading the command response from the ping pong buffer...");
     
     retVal = this->controller->readPingPongBuffer(buffer, length);
@@ -578,6 +598,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndWriteData(RealtekSDCommand& command, co
     // Note that the Linux driver issues a CHECK REGISTER operation but ignores its return value.
     // We will check the register value manually.
     retVal = this->controller->enqueueCheckRegisterCommand(SD::rTRANSFER, SD::TRANSFER::kTransferEnd, SD::TRANSFER::kTransferEnd);
+    
     if (retVal != kIOReturnSuccess)
     {
         perr("Failed to enqueue a read operation to load the transfer status. Error = 0x%x.", retVal);
@@ -2126,6 +2147,7 @@ IOReturn RealtekSDXCSlot::isCardDataLineBusy(bool& result)
 ///
 IOReturn RealtekSDXCSlot::enableInitialModeIfNecessary()
 {
+    // TODO: Switch to COM namespace
     using namespace RTSX::Chip::SD;
     
     return this->initialMode ? this->controller->writeChipRegister(rCFG1, CFG1::kClockDividerMask, CFG1::kClockDivider128) : kIOReturnSuccess;
@@ -2139,6 +2161,7 @@ IOReturn RealtekSDXCSlot::enableInitialModeIfNecessary()
 ///
 IOReturn RealtekSDXCSlot::disableInitialModeIfNecessary()
 {
+    // TODO: Switch to COM namespace
     using namespace RTSX::Chip::SD;
     
     return this->initialMode ? this->controller->writeChipRegister(rCFG1, CFG1::kClockDividerMask, CFG1::kClockDivider0) : kIOReturnSuccess;
