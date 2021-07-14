@@ -6,8 +6,6 @@
 //
 
 #include "RealtekRTS5227SeriesController.hpp"
-#include "Registers.hpp"
-#include "Debug.hpp"
 #include "IOPCIeDevice.hpp"
 
 //

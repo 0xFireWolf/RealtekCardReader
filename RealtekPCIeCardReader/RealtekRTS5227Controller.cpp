@@ -6,7 +6,6 @@
 //
 
 #include "RealtekRTS5227Controller.hpp"
-#include "Registers.hpp"
 #include "Debug.hpp"
 
 //

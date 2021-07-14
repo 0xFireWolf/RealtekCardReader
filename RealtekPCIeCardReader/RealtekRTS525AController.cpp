@@ -6,7 +6,6 @@
 //
 
 #include "RealtekRTS525AController.hpp"
-#include "Registers.hpp"
 
 //
 // MARK: - Meta Class Definitions

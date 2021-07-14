@@ -18,8 +18,8 @@
 #include <IOKit/IOFilterInterruptEventSource.h>
 #include <IOKit/IOTimerEventSource.h>
 #include "RealtekCardReaderController.hpp"
+#include "RealtekPCIRegisters.hpp"
 #include "Utilities.hpp"
-#include "Registers.hpp"
 #include "Debug.hpp"
 #include "AppleSDXC.hpp"
 #include "BitOptions.hpp"
