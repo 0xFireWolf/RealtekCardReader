@@ -1162,7 +1162,7 @@ IOReturn RealtekPCIeCardReaderController::disableLEDBlinking()
 }
 
 //
-// MARK: - Card Selection & Share Mode
+// MARK: - Card Selection, Share Mode and Transfer Properties
 //
 
 ///
@@ -1207,6 +1207,45 @@ IOReturn RealtekPCIeCardReaderController::configureCardShareMode()
     using namespace RTSX::Chip;
     
     return this->enqueueWriteRegisterCommand(CARD::rSHAREMODE, CARD::SHAREMODE::kMask, CARD::SHAREMODE::k48SD);
+}
+
+///
+/// Setup the properties for a DMA transfer session
+///
+/// @param length The number of bytes to be transferred
+/// @param direction `kIODirectionIn` if it is an inbound DMA transfer;
+///                  `kIODirectionOut` if it is an outbound DMA transfer
+/// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+/// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+/// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+/// @note The given direction is guaranteed to be either `kIODirectionIn` or `kIODirectionOut`.
+///
+IOReturn RealtekPCIeCardReaderController::setupCardDMATransferProperties(UInt32 length, IODirection direction)
+{
+    using namespace RTSX::Chip;
+    
+    UInt8 regVal = direction == kIODirectionIn ? DMA::CTL::kDirectionFromCard : DMA::CTL::kDirectionToCard;
+    
+    const ChipRegValuePair pairs[] =
+    {
+        // Generate an interrupt when the DMA transfer is done
+        { rIRQSTAT0, IRQSTAT0::kDMADoneInt, IRQSTAT0::kDMADoneInt },
+        
+        // Set up the data length
+        { DMA::rC3, 0xFF, static_cast<UInt8>(length >> 24) },
+        { DMA::rC2, 0xFF, static_cast<UInt8>(length >> 16) },
+        { DMA::rC1, 0xFF, static_cast<UInt8>(length >>  8) },
+        { DMA::rC0, 0xFF, static_cast<UInt8>(length & 0xFF) },
+        
+        // Set up the direction and the pack size
+        {
+            DMA::rCTL,
+            DMA::CTL::kEnable | DMA::CTL::kDirectionMask | DMA::CTL::kPackSizeMask,
+            static_cast<UInt8>(DMA::CTL::kEnable | regVal | DMA::CTL::kPackSize512)
+        },
+    };
+    
+    return this->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs));
 }
 
 //

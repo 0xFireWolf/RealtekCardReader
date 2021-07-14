@@ -630,7 +630,7 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     IOReturn disableLEDBlinking() override;
     
     //
-    // MARK: - Card Selection & Share Mode
+    // MARK: - Card Selection, Share Mode and Transfer Properties
     //
     
     ///
@@ -661,6 +661,19 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
     ///
     IOReturn configureCardShareMode() override;
+    
+    ///
+    /// Setup the properties for a DMA transfer session
+    ///
+    /// @param length The number of bytes to be transferred
+    /// @param direction `kIODirectionIn` if it is an inbound DMA transfer;
+    ///                  `kIODirectionOut` if it is an outbound DMA transfer
+    /// @return `kIOReturnSuccess` on success, `kIOReturnBusy` if the command buffer is full, `kIOReturnError` otherwise.
+    /// @note This function invokes `enqueueWriteRegisterCommand()` thus must be invoked between `beginCommandTransfer()` and `endCommandTransfer()`.
+    /// @note The caller may use `withCustomCommandTransfer()` to combine this operation with other ones.
+    /// @note The given direction is guaranteed to be either `kIODirectionIn` or `kIODirectionOut`.
+    ///
+    IOReturn setupCardDMATransferProperties(UInt32 length, IODirection direction) override;
     
     //
     // MARK: - Card Power Management
