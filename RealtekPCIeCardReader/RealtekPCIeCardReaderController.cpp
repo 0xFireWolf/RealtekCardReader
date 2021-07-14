@@ -6,7 +6,7 @@
 //
 
 #include "RealtekPCIeCardReaderController.hpp"
-#include "RealtekSDXCSlot.hpp"
+#include "RealtekPCISDXCSlot.hpp"
 #include "BitOptions.hpp"
 #include "IOPCIeDevice.hpp"
 
@@ -2839,7 +2839,7 @@ bool RealtekPCIeCardReaderController::createCardSlot()
 {
     pinfo("Creating the card slot...");
     
-    RealtekSDXCSlot* slot = OSTypeAlloc(RealtekSDXCSlot);
+    RealtekSDXCSlot* slot = OSTypeAlloc(RealtekPCISDXCSlot);
     
     if (slot == nullptr)
     {
