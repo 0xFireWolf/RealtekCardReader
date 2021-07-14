@@ -1285,6 +1285,16 @@ public:
     virtual IOReturn writePingPongBuffer(const UInt8* source, IOByteCount length) = 0;
     
     //
+    // MARK: - Active State Power Management
+    //
+    
+public:
+    ///
+    /// Notify the card reader to enter into the worker state
+    ///
+    virtual void enterWorkerState() {};
+    
+    //
     // MARK: - Power Management
     //
     

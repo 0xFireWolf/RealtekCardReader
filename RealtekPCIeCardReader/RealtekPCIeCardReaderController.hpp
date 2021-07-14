@@ -1375,13 +1375,12 @@ protected:
     IOReturn setLTRLatency(UInt32 latency);
     
 public:
-    // TODO: THIS FUNC NEEDS TO BE VIRTUAL PUBLIC
     ///
     /// Notify the card reader to enter into the worker state
     ///
     /// @note Port: This function replaces `rtsx_pci_start_run()`, `rtsx_pm_full_on()` and `rtsx_comm_pm_full_on()` defined in `rtsx_psr.c`.
     ///
-    void enterWorkerState();
+    void enterWorkerState() override final;
     
     //
     // MARK: - Power Management
