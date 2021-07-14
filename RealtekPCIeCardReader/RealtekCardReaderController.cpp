@@ -808,6 +808,8 @@ bool RealtekCardReaderController::init(OSDictionary* dictionary)
     
     this->tuningConfig.reset();
     
+    this->dataTransferFlags.reset();
+    
     return true;
 }
 

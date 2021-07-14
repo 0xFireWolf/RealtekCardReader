@@ -255,12 +255,49 @@ public:
         /// True if the controller should enable 80 clocks timeout
         UInt32 enable80ClocksTimeout;
         
-        /// Reset all fields to zeros
+        /// Reset all fields to zero
         inline void reset()
         {
             this->numPhases = 0;
             
             this->enable80ClocksTimeout = false;
+        }
+    };
+    
+    ///
+    /// Defines the value of flags passed to each data transfer operation
+    ///
+    /// @note USB-based controllers require these flags while PCIe-based ones ignore these values.
+    ///
+    struct DataTransferFlags
+    {
+        /// Flags used to issue a SD command and wait for the response
+        UInt32 command;
+        
+        /// Flags used to issue a SD command that involves an inbound data transfer
+        UInt32 commandWithInboundDataTransfer;
+        
+        /// Flags used to issue a SD command that involves an outbound data transfer
+        UInt32 commandWithOutboundDataTransfer;
+        
+        /// Flags used to issue a SD command that involves an inbound DMA transfer
+        UInt32 commandWithInboundDMATransfer;
+        
+        /// Flags used to issue a SD command that involves an inbound DMA transfer
+        UInt32 commandWithOutboundDMATransfer;
+        
+        /// Reset all flags to zero
+        inline void reset()
+        {
+            this->command = 0;
+            
+            this->commandWithInboundDataTransfer = 0;
+            
+            this->commandWithOutboundDataTransfer = 0;
+            
+            this->commandWithInboundDMATransfer = 0;
+            
+            this->commandWithOutboundDMATransfer = 0;
         }
     };
     
@@ -529,6 +566,9 @@ protected:
     /// Tuning configurations
     TuningConfig tuningConfig;
     
+    /// Flags passed to each data transfer operation
+    DataTransferFlags dataTransferFlags;
+    
     //
     // MARK: - Query UHS-I Capabilities
     //
@@ -562,6 +602,16 @@ public:
     inline const TuningConfig& getTuningConfig()
     {
         return this->tuningConfig;
+    }
+    
+    //
+    // MARK: - Query Data Transfer Properties
+    //
+    
+    /// Get the flags passed to each data transfer operation
+    inline const DataTransferFlags& getDataTransferFlags()
+    {
+        return this->dataTransferFlags;
     }
     
     //
