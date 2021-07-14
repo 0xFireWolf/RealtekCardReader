@@ -1076,15 +1076,31 @@ IOReturn RealtekSDXCSlot::processRequest(RealtekSDRequest& request)
     // Guard: Select the card
     pinfo("Selecting the SD card...");
     
-    using namespace RTSX::Chip;
-    
-    const ChipRegValuePair pairs[] =
+    auto action = [](void* context) -> IOReturn
     {
-        { CARD::rSEL, CARD::SEL::kMask, CARD::SEL::kSD },
-        { CARD::rSHAREMODE, CARD::SHAREMODE::kMask, CARD::SHAREMODE::k48SD }
+        auto self = reinterpret_cast<RealtekSDXCSlot*>(context);
+        
+        passert(self->controller->selectCard() == kIOReturnSuccess, "Failed to select the card.");
+        
+        passert(self->controller->configureCardShareMode() == kIOReturnSuccess, "Failed to configure the card share mode.");
+        
+        return kIOReturnSuccess;
     };
     
-    retVal = this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
+    retVal = this->controller->withCustomCommandTransfer(action, this);
+    
+    // TODO: ------------------------------------------------------------------------------
+    // TODO: BEGIN DEPRECATED
+//    using namespace RTSX::Chip;
+//
+//    const ChipRegValuePair pairs[] =
+//    {
+//        { CARD::rSEL, CARD::SEL::kMask, CARD::SEL::kSD },
+//        { CARD::rSHAREMODE, CARD::SHAREMODE::kMask, CARD::SHAREMODE::k48SD }
+//    };
+//
+//    retVal = this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
+    // TODO: ------------------------------------------------------------------------------
     
     if (retVal != kIOReturnSuccess)
     {
@@ -1137,6 +1153,7 @@ bool RealtekSDXCSlot::isRunningInUltraHighSpeedMode()
 ///
 IOReturn RealtekSDXCSlot::setBusWidth(IOSDBusConfig::BusWidth width)
 {
+    // TODO: Switch to the COM namespace
     using namespace RTSX::Chip::SD;
     
     UInt8 regValue = 0;
@@ -1185,20 +1202,39 @@ IOReturn RealtekSDXCSlot::powerOn()
 {
     pinfo("Powering on the card slot...");
     
+    // TODO: REMOVE THIS
     using namespace RTSX::Chip::CARD;
     
     // TODO: Launch a custom transfer session
     // Select the SD card and enable the clock
     pinfo("Selecting and enabling the SD card...");
     
-    const ChipRegValuePair pairs[] =
+    auto action1 = [](void* context) -> IOReturn
     {
-        { rSEL, SEL::kMask, SEL::kSD },                         // TODO: REPLACED BY selectCard()
-        { rSHAREMODE, SHAREMODE::kMask, SHAREMODE::k48SD },     // TODO: REPLACED BY configureCardShareMode()
-        { rCLK, CLK::kEnableSD, CLK::kEnableSD }                // TODO: REPLACED BY enableCardClock()
+        auto self = reinterpret_cast<RealtekSDXCSlot*>(context);
+        
+        passert(self->controller->selectCard() == kIOReturnSuccess, "Failed to select the SD card.");
+        
+        passert(self->controller->configureCardShareMode() == kIOReturnSuccess, "Failed to configure the card share mode.");
+        
+        passert(self->controller->enableCardClock() == kIOReturnSuccess, "Failed to enable the card clock.");
+        
+        return kIOReturnSuccess;
     };
     
-    IOReturn retVal = this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
+    IOReturn retVal = this->controller->withCustomCommandTransfer(action1, this);
+    
+    // TODO: ------------------------------------------------------------------------------------------------
+    // TODO: BEGIN DEPRECATED
+//    const ChipRegValuePair pairs[] =
+//    {
+//        { rSEL, SEL::kMask, SEL::kSD },                         // TODO: REPLACED BY selectCard()
+//        { rSHAREMODE, SHAREMODE::kMask, SHAREMODE::k48SD },     // TODO: REPLACED BY configureCardShareMode()
+//        { rCLK, CLK::kEnableSD, CLK::kEnableSD }                // TODO: REPLACED BY enableCardClock()
+//    };
+//
+//    IOReturn retVal = this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
+    // TODO: ------------------------------------------------------------------------------------------------
     
     if (retVal != kIOReturnSuccess)
     {
@@ -1240,9 +1276,19 @@ IOReturn RealtekSDXCSlot::powerOn()
     // Enable the card output
     pinfo("Enabling the card output...");
     
+    auto action2 = [](void* context) -> IOReturn
+    {
+        auto self = reinterpret_cast<RealtekSDXCSlot*>(context);
+        
+        return self->controller->enableCardOutput();
+    };
+    
+    retVal = this->controller->withCustomCommandTransfer(action2, this);
+    
+    // TODO: REPCATED: REMOVE THIS
     // TODO: Launch a custom transfer session
     // TODO: REPLACED BY withCustomTransferSession and disableCardOutput()
-    retVal = this->controller->writeChipRegister(rOUTPUT, OUTPUT::kSDMask, OUTPUT::kEnableSDValue);
+    // retVal = this->controller->writeChipRegister(rOUTPUT, OUTPUT::kSDMask, OUTPUT::kEnableSDValue);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -1267,20 +1313,35 @@ IOReturn RealtekSDXCSlot::powerOff()
 {
     pinfo("Powering off the card slot...");
     
+    // TODO: REMOVE THIS
     using namespace RTSX::Chip::CARD;
     
     // Disable the card clock and the output
     pinfo("Disabling the card clock and output...");
     
-    // TODO: Launch a custom transfer session
-    // TODO: Replaced by disableCardClock, disableCardOutput
-    const ChipRegValuePair pairs[] =
+    auto action = [](void* context) -> IOReturn
     {
-        { rCLK, CLK::kEnableSD, CLK::kDisable },
-        { rOUTPUT, OUTPUT::kSDMask, OUTPUT::kDisableSDValue }
+        auto self = reinterpret_cast<RealtekSDXCSlot*>(context);
+        
+        passert(self->controller->disableCardClock() == kIOReturnSuccess, "Failed to disable the card clock.");
+        
+        passert(self->controller->disableCardOutput() == kIOReturnSuccess, "Failed to disable the card output.");
+        
+        return kIOReturnSuccess;
     };
     
-    IOReturn retVal = this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
+    IOReturn retVal = this->controller->withCustomCommandTransfer(action, this);
+    
+    // TODO: DEPRECATED: REMOVE THIS
+    // TODO: Launch a custom transfer session
+    // TODO: Replaced by disableCardClock, disableCardOutput
+//    const ChipRegValuePair pairs[] =
+//    {
+//        { rCLK, CLK::kEnableSD, CLK::kDisable },
+//        { rOUTPUT, OUTPUT::kSDMask, OUTPUT::kDisableSDValue }
+//    };
+//
+//    IOReturn retVal = this->controller->transferWriteRegisterCommands(SimpleRegValuePairs(pairs));
     
     if (retVal != kIOReturnSuccess)
     {
