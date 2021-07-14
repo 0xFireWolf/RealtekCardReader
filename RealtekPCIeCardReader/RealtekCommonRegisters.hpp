@@ -75,7 +75,6 @@ namespace RTSX::NAMESPACE::Chip::SD
     RTSXDeclareChipRegister(rVPRXCTL, rVPCLK1CTL);
     namespace VPCTL
     {
-        DEPRECATE("Use kPhaseSelectMask32 instead.")
         RTSXDeclareChipRegisterValue(kPhaseSelectMask, 0x1F);
         RTSXDeclareChipRegisterValue(kPhaseSelectMask32, 0x1F);
         RTSXDeclareChipRegisterValue(kPhaseSelectMask16, 0x0F);

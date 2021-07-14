@@ -8,9 +8,7 @@
 #ifndef RealtekSDCommand_hpp
 #define RealtekSDCommand_hpp
 
-#include <libkern/OSTypes.h>
-#include <IOKit/IOTypes.h>
-#include "Registers.hpp"
+#include "RealtekCommonRegisters.hpp"
 #include "BitOptions.hpp"
 #include "Debug.hpp"
 
@@ -132,7 +130,7 @@ public:
     ///
     inline IOByteCount getResponseLength() const
     {
-        using namespace RTSX::Chip::SD::CFG2;
+        using namespace RTSX::COM::Chip::SD::CFG2;
         
         BitOptions type = this->responseType;
         
@@ -162,7 +160,7 @@ public:
     ///
     inline bool verifyStartAndTransmissionBitsInResponse() const
     {
-        using namespace RTSX::Chip::SD::CFG2;
+        using namespace RTSX::COM::Chip::SD::CFG2;
         
         // Guard: Check whether the response contains the ST bits
         if (this->responseType == kResponseTypeR0)
@@ -184,7 +182,7 @@ public:
     ///
     inline bool verifyCRC7InResponse() const
     {
-        using namespace RTSX::Chip::SD;
+        using namespace RTSX::COM::Chip::SD;
         
         BitOptions<UInt8> type = this->responseType;
         
@@ -246,17 +244,17 @@ public:
 
     static inline RealtekSDCommand CMD0()
     {
-        return RealtekSDCommand(kGoIdleState, 0, 0, RTSX::Chip::SD::CFG2::kResponseTypeR0);
+        return RealtekSDCommand(kGoIdleState, 0, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR0);
     }
     
     static inline RealtekSDCommand CMD2()
     {
-        return RealtekSDCommand(kAllSendCID, 0, 0, RTSX::Chip::SD::CFG2::kResponseTypeR2);
+        return RealtekSDCommand(kAllSendCID, 0, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR2);
     }
     
     static inline RealtekSDCommand CMD3()
     {
-        return RealtekSDCommand(kSendRelativeAddress, 0, 0, RTSX::Chip::SD::CFG2::kResponseTypeR6);
+        return RealtekSDCommand(kSendRelativeAddress, 0, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR6);
     }
     
     static inline RealtekSDCommand CMD6(UInt32 mode, UInt32 group, UInt32 value)
@@ -267,97 +265,97 @@ public:
         
         argument |= value << (group * 4);
         
-        return RealtekSDCommand(kSwitchFunction, argument, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kSwitchFunction, argument, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand CMD7(UInt32 rca)
     {
-        return RealtekSDCommand(kSelectCard, rca << 16, 0, rca == 0 ? RTSX::Chip::SD::CFG2::kResponseTypeR0 : RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kSelectCard, rca << 16, 0, rca == 0 ? RTSX::COM::Chip::SD::CFG2::kResponseTypeR0 : RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand CMD8(UInt8 vhs, UInt8 checkPattern)
     {
-        return { kSendIfCond, static_cast<UInt32>(vhs << 8 | checkPattern), 0, RTSX::Chip::SD::CFG2::kResponseTypeR7 };
+        return { kSendIfCond, static_cast<UInt32>(vhs << 8 | checkPattern), 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR7 };
     }
     
     static inline RealtekSDCommand CMD9(UInt32 rca)
     {
-        return RealtekSDCommand(kSendCSD, rca << 16, 0, RTSX::Chip::SD::CFG2::kResponseTypeR2);
+        return RealtekSDCommand(kSendCSD, rca << 16, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR2);
     }
     
     static inline RealtekSDCommand CMD11()
     {
-        return RealtekSDCommand(kVoltageSwitch, 0, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kVoltageSwitch, 0, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand CMD12()
     {
-        return RealtekSDCommand(kStopTransmission, 0, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kStopTransmission, 0, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand CMD12b()
     {
-        return RealtekSDCommand(kStopTransmission, 0, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1b);
+        return RealtekSDCommand(kStopTransmission, 0, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1b);
     }
     
     static inline RealtekSDCommand CMD13(UInt32 rca)
     {
-        return RealtekSDCommand(kSendStatus, rca << 16, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kSendStatus, rca << 16, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand CMD17(UInt32 offset)
     {
-        return RealtekSDCommand(kReadSingleBlock, offset, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kReadSingleBlock, offset, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand CMD18(UInt32 offset)
     {
-        return RealtekSDCommand(kReadMultipleBlocks, offset, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kReadMultipleBlocks, offset, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand CMD19()
     {
-        return RealtekSDCommand(kSendTuningBlock, 0, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kSendTuningBlock, 0, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand CMD24(UInt32 offset)
     {
-        return RealtekSDCommand(kWriteSingleBlock, offset, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kWriteSingleBlock, offset, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand CMD25(UInt32 offset)
     {
-        return RealtekSDCommand(kWriteMultipleBlocks, offset, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kWriteMultipleBlocks, offset, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand CMD55(UInt32 rca)
     {
-        return RealtekSDCommand(kAppCommand, rca << 16, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kAppCommand, rca << 16, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand ACMD6(UInt32 busWidth)
     {
-        return RealtekSDCommand(kSetBusWidth, busWidth, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kSetBusWidth, busWidth, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand ACMD13()
     {
-        return RealtekSDCommand(kSDStatus, 0, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kSDStatus, 0, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand ACMD23(UInt32 nblocks)
     {
-        return RealtekSDCommand(kSetEraseCount, nblocks, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kSetEraseCount, nblocks, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
     
     static inline RealtekSDCommand ACMD41(UInt32 ocr)
     {
-        return RealtekSDCommand(kSendOpCond, ocr, 0, RTSX::Chip::SD::CFG2::kResponseTypeR3);
+        return RealtekSDCommand(kSendOpCond, ocr, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR3);
     }
     
     static inline RealtekSDCommand ACMD51()
     {
-        return RealtekSDCommand(kSendSCR, 0, 0, RTSX::Chip::SD::CFG2::kResponseTypeR1);
+        return RealtekSDCommand(kSendSCR, 0, 0, RTSX::COM::Chip::SD::CFG2::kResponseTypeR1);
     }
 };
 
