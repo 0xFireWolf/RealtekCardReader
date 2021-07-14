@@ -11,7 +11,11 @@
 #include "IOSDBusConfig.hpp"
 #include "ClosedRange.hpp"
 #include "BitOptions.hpp"
-#include "RealtekSDRequest.hpp" // FIXME: SHOULD BE GENERIC
+
+// FIXME: Should be generic
+/// Forward declaration
+struct RealtekSDCommand;
+struct RealtekSDRequest;
 
 /// Forward declaration (Client of the SD host device)
 class IOSDHostDriver;

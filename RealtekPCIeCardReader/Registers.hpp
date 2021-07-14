@@ -8,8 +8,8 @@
 #ifndef Registers_hpp
 #define Registers_hpp
 
-#include <libkern/OSTypes.h>
-#include "Utilities.hpp"
+#define RTSX_REG_NAMESPACE_PCR
+#include "RealtekCommonRegisters.hpp"
 
 //
 // Overview
@@ -31,17 +31,11 @@
 #define RTSXDeclareMMIORegister(name, address) \
     static constexpr UInt32 name = address;
 
-#define RTSXDeclareChipRegister(name, address) \
-    static constexpr UInt16 name = address;
-
 #define RTSXDeclarePhysRegister(name, address) \
     static constexpr UInt8 name = address;
 
 #define RTSXDeclareMMIORegisterValue32(name, value) \
     static constexpr UInt32 name = value;
-
-#define RTSXDeclareChipRegisterValue(name, value) \
-    static constexpr UInt8 name = value;
 
 #define RTSXDeclarePhysRegisterValue(name, value) \
     static constexpr UInt16 name = value;
@@ -268,33 +262,8 @@ namespace RTSX::MMIO
 // MARK: - 2. Chip Registers
 //
 
-// TODO: SAME RELOCATED
-/// Chip registers that controls the power of SSC and OCP
-namespace RTSX::Chip
-{
-    RTSXDeclareChipRegister(rFPDCTL, 0xFC00);
-    
-    namespace FPDCTL
-    {
-        /// Bit 0 is set to power down SSC
-        RTSXDeclareChipRegisterValue(kSSCPowerMask, 0x01);
-        RTSXDeclareChipRegisterValue(kSSCPowerUpValue, 0x00);
-        RTSXDeclareChipRegisterValue(kSSCPowerDownValue, 0x01);
-        
-        /// Bit 1 is set to power down overcurrent protection
-        RTSXDeclareChipRegisterValue(kOCPPowerMask, 0x02);
-        RTSXDeclareChipRegisterValue(kOCPPowerUpValue, 0x00);
-        RTSXDeclareChipRegisterValue(kOCPPowerDownValue, 0x02);
-        
-        /// Bit 0 and 1 are set to power down SSC and OCP
-        RTSXDeclareChipRegisterValue(kAllPowerMask, 0x03);
-        RTSXDeclareChipRegisterValue(kAllPowerUpValue, 0x00);
-        RTSXDeclareChipRegisterValue(kAllPowerDownValue, 0x03);
-    }
-}
-
 /// Chip registers that control the SSC clock
-namespace RTSX::Chip::CLK
+namespace RTSX::PCR::Chip::CLK
 {
     RTSXDeclareChipRegister(rCTL, 0xFC02);
     namespace CTL
@@ -316,7 +285,7 @@ namespace RTSX::Chip::CLK
 }
 
 /// Chip registers that control the SSC
-namespace RTSX::Chip::SSC
+namespace RTSX::PCR::Chip::SSC
 {
     RTSXDeclareChipRegister(rDIVN0, 0xFC0F);
     RTSXDeclareChipRegister(rDIVN1, 0xFC10);
@@ -344,23 +313,16 @@ namespace RTSX::Chip::SSC
         RTSXDeclareChipRegisterValue(kDepth1M, 0x03);
         RTSXDeclareChipRegisterValue(kDepth500K, 0x04);
         RTSXDeclareChipRegisterValue(kDepth250K, 0x05);
-        
-        /// Double the given SSC depth
-        DEPRECATE("Replaced by the base imp.")
-        static inline UInt8 doubleDepth(UInt8 depth)
-        {
-            return depth > 1 ? depth - 1 : depth;
-        }
     }
 }
 
-namespace RTSX::Chip
+namespace RTSX::PCR::Chip
 {
     RTSXDeclareChipRegister(rRCCTL, 0xFC14);
 }
     
 /// Chip registers that control the LED behavior
-namespace RTSX::Chip::OLT_LED
+namespace RTSX::PCR::Chip::OLT_LED
 {
     /// Address of the register that controls the LED
     RTSXDeclareChipRegister(rCTL, 0xFC1E);
@@ -376,7 +338,7 @@ namespace RTSX::Chip::OLT_LED
 }
 
 /// Chip registers that manages GPIO pins
-namespace RTSX::Chip::GPIO
+namespace RTSX::PCR::Chip::GPIO
 {
     /// Address of the register that manages GPIO pins
     RTSXDeclareChipRegister(rCTL, 0xFC1F);
@@ -392,7 +354,7 @@ namespace RTSX::Chip::GPIO
 }
 
 /// Chip registers that manages the card
-namespace RTSX::Chip::CARD
+namespace RTSX::PCR::Chip::CARD
 {
     RTSXDeclareChipRegister(rCLKSRC, 0xFC2E);
     namespace CLKSRC
@@ -597,7 +559,7 @@ namespace RTSX::Chip::CARD
 }
 
 /// Chip registers that manages the overcurrent protection
-namespace RTSX::Chip::OCP
+namespace RTSX::PCR::Chip::OCP
 {
     /// Address of the register that controls the overcurrent protection
     RTSXDeclareChipRegister(rCTL, 0xFD6A);
@@ -748,7 +710,7 @@ namespace RTSX::Chip::OCP
     }
 }
 
-namespace RTSX::Chip
+namespace RTSX::PCR::Chip
 {
     RTSXDeclareChipRegister(rIRQEN0, 0xFE20);
     namespace IRQEN0
@@ -770,7 +732,7 @@ namespace RTSX::Chip
 }
 
 /// Chip registers that manages DMA
-namespace RTSX::Chip::DMA
+namespace RTSX::PCR::Chip::DMA
 {
     /// DMA data length registers
     RTSXDeclareChipRegister(rC0, 0xFE28);
@@ -803,7 +765,7 @@ namespace RTSX::Chip::DMA
     }
 }
 
-namespace RTSX::Chip::RBUF
+namespace RTSX::PCR::Chip::RBUF
 {
     RTSXDeclareChipRegister(rCTL, 0xFE34);
     
@@ -817,7 +779,7 @@ namespace RTSX::Chip::RBUF
 }
 
 /// Chip registers that can be programmed to access PHY registers
-namespace RTSX::Chip::PHY
+namespace RTSX::PCR::Chip::PHY
 {
     /// Address of the register used to set the data direction of accessing PHY registers
     RTSXDeclareChipRegister(rRWCTL, 0xFE3C);
@@ -860,7 +822,7 @@ namespace RTSX::Chip::PHY
     RTSXDeclareChipRegister(rADDR, 0xFE3F);
 }
 
-namespace RTSX::Chip::MSG
+namespace RTSX::PCR::Chip::MSG
 {
     namespace RX
     {
@@ -880,7 +842,7 @@ namespace RTSX::Chip::MSG
     }
 }
 
-namespace RTSX::Chip::LTR
+namespace RTSX::PCR::Chip::LTR
 {
     RTSXDeclareChipRegister(rCTL, 0xFE4A);
     namespace CTL
@@ -896,7 +858,7 @@ namespace RTSX::Chip::LTR
 }
 
 /// Chip registers that control OOBS polling
-namespace RTSX::Chip::OOBS
+namespace RTSX::PCR::Chip::OOBS
 {
     RTSXDeclareChipRegister(rOFFTIMER, 0xFEA6);
     RTSXDeclareChipRegister(rONTIMER, 0xFEA7);
@@ -910,14 +872,7 @@ namespace RTSX::Chip::OOBS
     }
 }
 
-/// Chip registers that control the ping pong buffer
-namespace RTSX::Chip::PPBUF // TODO: COMMON RELOCATED
-{
-    RTSXDeclareChipRegister(rBASE1, 0xF800);
-    RTSXDeclareChipRegister(rBASE2, 0xFA00);
-}
-
-namespace RTSX::Chip
+namespace RTSX::PCR::Chip
 {
     RTSXDeclareChipRegister(rPWRGATECTRL, 0xFE75);
     namespace PWRGATECTRL
@@ -932,250 +887,7 @@ namespace RTSX::Chip
     }
 }
 
-namespace RTSX::Chip::SD // TODO: COMMON CAN BE RELOCATED
-{
-    RTSXDeclareChipRegister(rVPCLK0CTL, 0xFC2A);
-    RTSXDeclareChipRegister(rVPCLK1CTL, 0xFC2B);
-    RTSXDeclareChipRegister(rVPTXCTL, rVPCLK0CTL);
-    RTSXDeclareChipRegister(rVPRXCTL, rVPCLK1CTL);
-    namespace VPCTL
-    {
-        RTSXDeclareChipRegisterValue(kPhaseSelectMask, 0x1F);
-        RTSXDeclareChipRegisterValue(kPhaseChange, 0x80);
-        RTSXDeclareChipRegisterValue(kPhaseNotReset, 0x40);
-    }
-    
-    /// Clock divider, bus mode and width
-    RTSXDeclareChipRegister(rCFG1, 0xFDA0); // TODO: COMMON
-    namespace CFG1
-    {
-        RTSXDeclareChipRegisterValue(kClockDivider0, 0x00);
-        RTSXDeclareChipRegisterValue(kClockDivider128, 0x80);
-        RTSXDeclareChipRegisterValue(kClockDivider256, 0xC0);
-        RTSXDeclareChipRegisterValue(kClockDividerMask, 0xC0);
-        
-        RTSXDeclareChipRegisterValue(kBusWidth1Bit, 0x00);
-        RTSXDeclareChipRegisterValue(kBusWidth4Bit, 0x01);
-        RTSXDeclareChipRegisterValue(kBusWidth8Bit, 0x02);
-        RTSXDeclareChipRegisterValue(kBusWidthMask, 0x03);
-        
-        RTSXDeclareChipRegisterValue(kModeSD20, 0x00);
-        RTSXDeclareChipRegisterValue(kModeSDDDR, 0x04);
-        RTSXDeclareChipRegisterValue(kModeSD30, 0x08);
-        RTSXDeclareChipRegisterValue(kModeMask, 0x0C);
-        
-        RTSXDeclareChipRegisterValue(kAsyncFIFONotRST, 0x10);
-    }
-    
-    /// SD command control and response
-    RTSXDeclareChipRegister(rCFG2, 0xFDA1); // TODO: COMMON
-    namespace CFG2
-    {
-        RTSXDeclareChipRegisterValue(kCalcCRC7, 0x00);
-        RTSXDeclareChipRegisterValue(kNoCalcCRC7, 0x80);
-        
-        RTSXDeclareChipRegisterValue(kCheckCRC16, 0x00);
-        RTSXDeclareChipRegisterValue(kNoCheckCRC16, 0x40);
-        RTSXDeclareChipRegisterValue(kNoCheckWaitCRCTo, 0x20);
-        
-        RTSXDeclareChipRegisterValue(kWaitBusyEnd, 0x08);
-        RTSXDeclareChipRegisterValue(kNoWaitBusyEnd, 0x00);
-        
-        RTSXDeclareChipRegisterValue(kCheckCRC7, 0x00);
-        RTSXDeclareChipRegisterValue(kNoCheckCRC7, 0x04);
-        
-        RTSXDeclareChipRegisterValue(kResponseLength0, 0x00);   // No response
-        RTSXDeclareChipRegisterValue(kResponseLength6, 0x01);   // 48-bit response
-        RTSXDeclareChipRegisterValue(kResponseLength17, 0x02);  // 136-bit response
-        
-        RTSXDeclareChipRegisterValue(kResponseTypeR0, 0x04);
-        RTSXDeclareChipRegisterValue(kResponseTypeR1, 0x01);
-        RTSXDeclareChipRegisterValue(kResponseTypeR1b, 0x09);
-        RTSXDeclareChipRegisterValue(kResponseTypeR2, 0x02);
-        RTSXDeclareChipRegisterValue(kResponseTypeR3, 0x05);
-        RTSXDeclareChipRegisterValue(kResponseTypeR4, 0x05);
-        RTSXDeclareChipRegisterValue(kResponseTypeR5, 0x01);
-        RTSXDeclareChipRegisterValue(kResponseTypeR6, 0x01);
-        RTSXDeclareChipRegisterValue(kResponseTypeR7, 0x01);
-    }
-    
-    /// Used by the RTSX PCI driver only
-    RTSXDeclareChipRegister(rCFG3, 0xFDA2);
-    namespace CFG3
-    {
-        RTSXDeclareChipRegisterValue(kEnableSD30ClockEnd, 0x10);
-        RTSXDeclareChipRegisterValue(kEnableResponse80ClockTimeout, 0x01);
-    }
-
-    RTSXDeclareChipRegister(rSTAT1, 0xFDA3); // TODO: COMMON
-    namespace STAT1
-    {
-        RTSXDeclareChipRegisterValue(kCRC7Error, 0x80);
-        RTSXDeclareChipRegisterValue(kCRC16Error, 0x40);
-        RTSXDeclareChipRegisterValue(kCRCWriteError, 0x20);
-        RTSXDeclareChipRegisterValue(kCRCWriteErrorMask, 0x1C);
-        RTSXDeclareChipRegisterValue(kCRCGetTimeout, 0x02);
-        RTSXDeclareChipRegisterValue(kTuningCompareError, 0x01);
-    }
-    
-    /// Used by the RTSX USB driver only
-    RTSXDeclareChipRegister(rSTAT2, 0xFDA4);
-    namespace STAT2
-    {
-        RTSXDeclareChipRegisterValue(kResponse80ClockTimeout, 0x01);
-    }
-    
-    RTSXDeclareChipRegister(rBUSSTAT, 0xFDA5); // TODO: COMMON
-    namespace BUSSTAT
-    {
-        RTSXDeclareChipRegisterValue(kClockToggleEnable, 0x80);
-        RTSXDeclareChipRegisterValue(kClockForceStop, 0x40);
-        
-        // Data line status
-        RTSXDeclareChipRegisterValue(kData3Status, 0x10);
-        RTSXDeclareChipRegisterValue(kData2Status, 0x08);
-        RTSXDeclareChipRegisterValue(kData1Status, 0x04);
-        RTSXDeclareChipRegisterValue(kData0Status, 0x02);
-        
-        // Command line status
-        RTSXDeclareChipRegisterValue(kCommandStatus, 0x01);
-        
-        RTSXDeclareChipRegisterValue(kAllLinesStatus, kCommandStatus |
-                                                      kData0Status   |
-                                                      kData1Status   |
-                                                      kData2Status   |
-                                                      kData3Status);
-    }
-    
-    RTSXDeclareChipRegister(rPADCTL, 0xFDA6); // TODO: COMMON
-    namespace PADCTL
-    {
-        RTSXDeclareChipRegisterValue(kUse1d8V, 0x80);
-        RTSXDeclareChipRegisterValue(kUse3d3V, 0x7F);
-        RTSXDeclareChipRegisterValue(kUseTypeADriving, 0x00);
-        RTSXDeclareChipRegisterValue(kUseTypeBDriving, 0x01);
-        RTSXDeclareChipRegisterValue(kUseTypeCDriving, 0x02);
-        RTSXDeclareChipRegisterValue(kUseTypeDDriving, 0x03);
-    }
-    
-    // Sample point control
-    RTSXDeclareChipRegister(rSPCTL, 0xFDA7); // TODO: COMMON
-    namespace SPCTL
-    {
-        RTSXDeclareChipRegisterValue(kDDRFixRxData, 0x00);
-        RTSXDeclareChipRegisterValue(kDDRVarRxData, 0x80);
-        RTSXDeclareChipRegisterValue(kDDRFixRxDataEdge, 0x00);
-        RTSXDeclareChipRegisterValue(kDDRFixRxData14Delay, 0x40);
-        
-        RTSXDeclareChipRegisterValue(kDDRFixRxCommand, 0x00);
-        RTSXDeclareChipRegisterValue(kDDRVarRxCommand, 0x20);
-        RTSXDeclareChipRegisterValue(kDDRFixRxCommandPosEdge, 0x00);
-        RTSXDeclareChipRegisterValue(kDDRFixRxCommand14Delay, 0x10);
-        
-        RTSXDeclareChipRegisterValue(kSD20RxPosEdge, 0x00);
-        RTSXDeclareChipRegisterValue(kSD20Rx14Delay, 0x08);
-        RTSXDeclareChipRegisterValue(kSD20RxSelMask, 0x08);
-    }
-    
-    // Push point control
-    RTSXDeclareChipRegister(rPPCTL, 0xFDA8); // TODO: COMMON
-    namespace PPCTL
-    {
-        RTSXDeclareChipRegisterValue(kDDRFixTxCommandData, 0x00);
-        RTSXDeclareChipRegisterValue(kDDRVarTxCommandData, 0x80);
-        
-        RTSXDeclareChipRegisterValue(kDDRFixTxData14TSU, 0x00);
-        RTSXDeclareChipRegisterValue(kDDRFixTxData12TSU, 0x40);
-        
-        RTSXDeclareChipRegisterValue(kDDRFixTxCommandNegEdge, 0x00);
-        RTSXDeclareChipRegisterValue(kDDRFixTxCommand14Ahead, 0x20);
-        
-        RTSXDeclareChipRegisterValue(kSD20TxNegEdge, 0x00);
-        RTSXDeclareChipRegisterValue(kSD20Tx14Ahead, 0x10);
-        RTSXDeclareChipRegisterValue(kSD20TxSelMask, 0x10);
-        
-        RTSXDeclareChipRegisterValue(kSSDRVarSDClockPolSwap, 0x01);
-    }
-    
-    RTSXDeclareChipRegister(rCMD0, 0xFDA9);
-    RTSXDeclareChipRegister(rCMD1, 0xFDAA);
-    RTSXDeclareChipRegister(rCMD2, 0xFDAB);
-    RTSXDeclareChipRegister(rCMD3, 0xFDAC);
-    RTSXDeclareChipRegister(rCMD4, 0xFDAD);
-    RTSXDeclareChipRegister(rCMD5, 0xFDAE);
-    
-    RTSXDeclareChipRegister(rBYTECNTL, 0xFDAF);
-    RTSXDeclareChipRegister(rBYTECNTH, 0xFDB0);
-    RTSXDeclareChipRegister(rBLOCKCNTL, 0xFDB1);
-    RTSXDeclareChipRegister(rBLOCKCNTH, 0xFDB2);
-    
-    RTSXDeclareChipRegister(rTRANSFER, 0xFDB3); // TODO: COMMON
-    namespace TRANSFER
-    {
-        /// Transfer Control
-        RTSXDeclareChipRegisterValue(kTransferStart, 0x80);
-        RTSXDeclareChipRegisterValue(kTransferEnd, 0x40);
-        RTSXDeclareChipRegisterValue(kTransferIdle, 0x20);
-        RTSXDeclareChipRegisterValue(kTransferError, 0x10);
-        
-        /// Write one or two bytes from SD_CMD2 and SD_CMD3 to the card
-        RTSXDeclareChipRegisterValue(kTMNormalWrite, 0x00);
-        
-        /// Write `nblocks * blockSize` bytes from the ring buffer to the card
-        RTSXDeclareChipRegisterValue(kTMAutoWrite3, 0x01);
-        
-        /// Write `nblocks * blockSize` bytes from the ring buffer to the card and send a CMD12 when done.
-        /// The response to the CMD12 is written to the `SD_CMD{0-4}` registers.
-        RTSXDeclareChipRegisterValue(kTMAutoWrite4, 0x02);
-        
-        /// Read `nblocks * blockSize` bytes from the card to the ring buffer
-        RTSXDeclareChipRegisterValue(kTMAutoRead3, 0x05);
-        
-        /// Read `nblocks * blockSize` bytes from the card to the ring buffer and send a CMD12 when done.
-        /// The response to the CMD12 is written to the `SD_CMD{0-4}` registers.
-        RTSXDeclareChipRegisterValue(kTMAutoRead4, 0x06);
-        
-        /// Send an SD command as specified in the `SD_CMD{0-4}` registers to the card and
-        /// put the 48-bit response into those registers as well.
-        /// However, the 136-bit response is put into the ping-pong buffer 2 instead.
-        RTSXDeclareChipRegisterValue(kTMCmdResp, 0x08);
-        
-        /// Send a write command, get the response from the card,
-        /// write the data from the ring buffer to the card and send a CMD12 when done.
-        /// The response to the CMD12 is written to the `SD_CMD{0-4}` registers.
-        RTSXDeclareChipRegisterValue(kTMAutoWrite1, 0x09);
-        
-        /// Same as `kTMAutoWrite1` except that no CMD12 is sent.
-        RTSXDeclareChipRegisterValue(kTMAutoWrite2, 0x0A);
-        
-        /// Send a read command and read up to 512 bytes (`nblocks * blockSize`)
-        /// from the card to the ring buffer or the ping-pong buffer 2.
-        RTSXDeclareChipRegisterValue(kTMNormalRead, 0x0C);
-        
-        /// Same as `kTMAutoWrite1` but perform a read operation
-        RTSXDeclareChipRegisterValue(kTMAutoRead1, 0x0D);
-        
-        /// Same as `kTMAutoWrite2` but perform a read operation
-        RTSXDeclareChipRegisterValue(kTMAutoRead2, 0x0E);
-        
-        /// Send a CMD19, receive a response and the tuning pattern from the card and report the result
-        RTSXDeclareChipRegisterValue(kTMAutoTuning, 0x0F);
-    }
-    
-    RTSXDeclareChipRegister(rCMDSTATE, 0xFDB5); // TODO: COMMON
-    namespace CMDSTATE
-    {
-        RTSXDeclareChipRegisterValue(kIdle, 0x80);
-    }
-    
-    RTSXDeclareChipRegister(rDATSTATE, 0xFDB6); // TODO: COMMON
-    namespace DATSTATE
-    {
-        RTSXDeclareChipRegisterValue(kIdle, 0x80);
-    }
-}
-
-namespace RTSX::Chip
+namespace RTSX::PCR::Chip
 {
     RTSXDeclareChipRegister(rDUMMY, 0xFE90);
     namespace DUMMY
@@ -1268,7 +980,7 @@ namespace RTSX::Chip
     RTSXDeclareChipRegister(rNFTSTXCTL, 0xFE72);
 }
 
-namespace RTSX::Chip::L1SUB
+namespace RTSX::PCR::Chip::L1SUB
 {
     RTSXDeclareChipRegister(rCFG1, 0xFE8D);
     namespace CFG1
@@ -1290,7 +1002,7 @@ namespace RTSX::Chip::L1SUB
     }
 }
 
-namespace RTSX::Chip
+namespace RTSX::PCR::Chip
 {
     RTSXDeclareChipRegister(rALCFG, 0xFF00);
     namespace ALCFG
@@ -1314,7 +1026,7 @@ namespace RTSX::Chip
     }
 }
 
-namespace RTSX::Chip::PM
+namespace RTSX::PCR::Chip::PM
 {
     RTSXDeclareChipRegister(rCTRL1, 0xFF44);
     namespace CTRL1
@@ -1341,7 +1053,7 @@ namespace RTSX::Chip::PM
     RTSXDeclareChipRegister(rCTRL4, 0xFF47);
 }
 
-namespace RTSX::Chip::LDO
+namespace RTSX::PCR::Chip::LDO
 {
     RTSXDeclareChipRegister(rCTL, 0xFC1E);
     namespace CTL
@@ -1465,7 +1177,7 @@ namespace RTSX::Chip::LDO
     }    
 }
 
-namespace RTSX::Chip
+namespace RTSX::PCR::Chip
 {
     RTSXDeclareChipRegister(rCLKCFG3_525A, 0xFF79);
     namespace CLKCFG3_525A

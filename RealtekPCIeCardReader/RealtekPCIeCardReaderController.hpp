@@ -1331,7 +1331,7 @@ protected:
     ///
     inline bool isASPMEnabled()
     {
-        using namespace RTSX::Chip;
+        using namespace RTSX::PCR::Chip;
         
         UInt8 value;
         
@@ -1352,7 +1352,7 @@ protected:
     ///
     inline IOReturn setL1OffSubConfig(UInt8 value)
     {
-        return this->writeChipRegister(RTSX::Chip::L1SUB::rCFG3, 0xFF, value);
+        return this->writeChipRegister(RTSX::PCR::Chip::L1SUB::rCFG3, 0xFF, value);
     }
     
     ///

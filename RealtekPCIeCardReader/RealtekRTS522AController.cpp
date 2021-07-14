@@ -124,7 +124,7 @@ IOReturn RealtekRTS522AController::setL1OffSubConfigD0(bool active)
 ///
 IOReturn RealtekRTS522AController::forcePowerDown()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -156,7 +156,7 @@ IOReturn RealtekRTS522AController::optimizePhys()
 {
     pinfo("Optimizing the physical layer...");
     
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Enabling the D3 delink mode...");
 
@@ -229,9 +229,9 @@ IOReturn RealtekRTS522AController::initParameters()
     
     this->parameters.ocp.enable = true;
     
-    this->parameters.ocp.sdGlitch = RTSX::Chip::OCP::GLITCH::kSDValue10M;
+    this->parameters.ocp.sdGlitch = RTSX::PCR::Chip::OCP::GLITCH::kSDValue10M;
     
-    this->parameters.ocp.sdTHD800mA = RTSX::Chip::OCP::PARA2::kSDThdValue800_522A;
+    this->parameters.ocp.sdTHD800mA = RTSX::PCR::Chip::OCP::PARA2::kSDThdValue800_522A;
     
     pinfo("Device-specific parameters have been initialized.");
     
@@ -246,7 +246,7 @@ IOReturn RealtekRTS522AController::initParameters()
 ///
 IOItemCount RealtekRTS522AController::initHardwareExtraGetChipRegValuePairs(ChipRegValuePair (&pairs)[64])
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     IOItemCount count = super::initHardwareExtraGetChipRegValuePairs(pairs);
     

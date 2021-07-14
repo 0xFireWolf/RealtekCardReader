@@ -45,8 +45,8 @@ const RealtekRTS5227SeriesController::DrivingTable RealtekRTS5227SeriesControlle
 /// A sequence of registers to transfer to enable SD pull control
 const RealtekRTS5227SeriesController::ChipRegValuePair RealtekRTS5227SeriesController::kSDEnablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xE9 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xE9 },
 };
 
 const RealtekRTS5227SeriesController::SimpleRegValuePairs RealtekRTS5227SeriesController::kSDEnablePullControlTable =
@@ -57,8 +57,8 @@ const RealtekRTS5227SeriesController::SimpleRegValuePairs RealtekRTS5227SeriesCo
 /// A sequence of registers to transfer to disable SD pull control
 const RealtekRTS5227SeriesController::ChipRegValuePair RealtekRTS5227SeriesController::kSDDisablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xD5 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0x55 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xD5 },
 };
 
 const RealtekRTS5227SeriesController::SimpleRegValuePairs RealtekRTS5227SeriesController::kSDDisablePullControlTable =
@@ -78,7 +78,7 @@ const RealtekRTS5227SeriesController::SimpleRegValuePairs RealtekRTS5227SeriesCo
 ///
 IOReturn RealtekRTS5227SeriesController::powerOnCard()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     IOReturn retVal;
     
@@ -152,7 +152,7 @@ IOReturn RealtekRTS5227SeriesController::powerOnCard()
 ///
 IOReturn RealtekRTS5227SeriesController::powerOffCard()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     // Disable the overcurrent protection
     if (this->parameters.ocp.enable)
@@ -203,11 +203,11 @@ IOReturn RealtekRTS5227SeriesController::initParameters()
     
     this->parameters.isSocketReversed = false;
     
-    this->parameters.cardDriveSelector = RTSX::Chip::CARD::DRVSEL::kDefault;
+    this->parameters.cardDriveSelector = RTSX::PCR::Chip::CARD::DRVSEL::kDefault;
     
-    this->parameters.sd30DriveSelector1d8V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
+    this->parameters.sd30DriveSelector1d8V = RTSX::PCR::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
     
-    this->parameters.sd30DriveSelector3d3V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
+    this->parameters.sd30DriveSelector3d3V = RTSX::PCR::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
     
     this->parameters.sd30DriveTable1d8V = &RealtekRTS5227SeriesController::kSD30DriveTable1d8V;
     
@@ -447,7 +447,7 @@ IOReturn RealtekRTS5227SeriesController::initHardwareExtra()
 ///
 IOItemCount RealtekRTS5227SeriesController::initHardwareExtraGetChipRegValuePairs(ChipRegValuePair (&pairs)[64])
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
  
     IOItemCount count = 0;
     

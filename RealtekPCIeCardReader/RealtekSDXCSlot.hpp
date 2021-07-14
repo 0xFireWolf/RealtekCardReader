@@ -12,6 +12,13 @@
 #include "AppleSDXCSlot.hpp"
 #include "Utilities.hpp"
 
+// Forward declarations
+struct RealtekSDSimpleCommandRequest;
+struct RealtekSDCommandWithInboundDataTransferRequest;
+struct RealtekSDCommandWithOutboundDataTransferRequest;
+struct RealtekSDCommandWithBlockDataTransferRequest;
+struct RealtekSDCommandWithBlockDataTransferRequest;
+
 ///
 /// Represents a generic Realtek SD (SC/HC/XC) card slot independent of the concrete card reader controller
 ///

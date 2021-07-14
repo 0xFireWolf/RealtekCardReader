@@ -20,9 +20,9 @@ OSDefineMetaClassAndStructors(RealtekRTS5287Controller, RealtekRTS8411SeriesCont
 /// A sequence of registers to transfer to enable SD pull control (QFN48)
 const RealtekRTS5287Controller::ChipRegValuePair RealtekRTS5287Controller::kSDEnablePullControlTablePairsQFN48[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0x69 | 0x90 },
-    { RTSX::Chip::CARD::PULL::rCTL6, 0x08 | 0x11 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0x69 | 0x90 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL6, 0x08 | 0x11 },
 };
 
 const RealtekRTS5287Controller::SimpleRegValuePairs RealtekRTS5287Controller::kSDEnablePullControlTableQFN48 =
@@ -33,9 +33,9 @@ const RealtekRTS5287Controller::SimpleRegValuePairs RealtekRTS5287Controller::kS
 /// A sequence of registers to transfer to disable SD pull control (QFN48)
 const RealtekRTS5287Controller::ChipRegValuePair RealtekRTS5287Controller::kSDDisablePullControlTablePairsQFN48[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0x65 | 0x90 },
-    { RTSX::Chip::CARD::PULL::rCTL6, 0x04 | 0x11 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0x55 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0x65 | 0x90 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL6, 0x04 | 0x11 },
 };
 
 const RealtekRTS5287Controller::SimpleRegValuePairs RealtekRTS5287Controller::kSDDisablePullControlTableQFN48 =
@@ -46,12 +46,12 @@ const RealtekRTS5287Controller::SimpleRegValuePairs RealtekRTS5287Controller::kS
 /// A sequence of registers to transfer to enable SD pull control (QFN64)
 const RealtekRTS5287Controller::ChipRegValuePair RealtekRTS5287Controller::kSDEnablePullControlTablePairsQFN64[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL1, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0x09 | 0xD0 },
-    { RTSX::Chip::CARD::PULL::rCTL4, 0x09 | 0x50 },
-    { RTSX::Chip::CARD::PULL::rCTL5, 0x05 | 0x50 },
-    { RTSX::Chip::CARD::PULL::rCTL6, 0x04 | 0x11 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL1, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0x09 | 0xD0 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL4, 0x09 | 0x50 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL5, 0x05 | 0x50 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL6, 0x04 | 0x11 },
 };
 
 const RealtekRTS5287Controller::SimpleRegValuePairs RealtekRTS5287Controller::kSDEnablePullControlTableQFN64 =
@@ -62,12 +62,12 @@ const RealtekRTS5287Controller::SimpleRegValuePairs RealtekRTS5287Controller::kS
 /// A sequence of registers to transfer to disable SD pull control (QFN64)
 const RealtekRTS5287Controller::ChipRegValuePair RealtekRTS5287Controller::kSDDisablePullControlTablePairsQFN64[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL1, 0x65 },
-    { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0x05 | 0xD0 },
-    { RTSX::Chip::CARD::PULL::rCTL4, 0x09 | 0x50 },
-    { RTSX::Chip::CARD::PULL::rCTL5, 0x05 | 0x50 },
-    { RTSX::Chip::CARD::PULL::rCTL6, 0x04 | 0x11 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL1, 0x65 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0x55 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0x05 | 0xD0 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL4, 0x09 | 0x50 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL5, 0x05 | 0x50 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL6, 0x04 | 0x11 },
 };
 
 const RealtekRTS5287Controller::SimpleRegValuePairs RealtekRTS5287Controller::kSDDisablePullControlTableQFN64 =
@@ -89,7 +89,7 @@ IOReturn RealtekRTS5287Controller::isQFN48(bool& result)
 {
     UInt8 mode;
     
-    IOReturn retVal = this->readChipRegister(RTSX::Chip::rPKGMODE, mode);
+    IOReturn retVal = this->readChipRegister(RTSX::PCR::Chip::rPKGMODE, mode);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -200,7 +200,7 @@ IOReturn RealtekRTS5287Controller::initVendorSpecificParameters()
 ///
 IOReturn RealtekRTS5287Controller::initHardwareExtra()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {

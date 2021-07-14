@@ -20,12 +20,12 @@ OSDefineMetaClassAndStructors(RealtekRTS5286Controller, RealtekRTS8411SeriesCont
 /// A sequence of registers to transfer to enable SD pull control
 const RealtekRTS5286Controller::ChipRegValuePair RealtekRTS5286Controller::kSDEnablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL1, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xA9 },
-    { RTSX::Chip::CARD::PULL::rCTL4, 0x09 },
-    { RTSX::Chip::CARD::PULL::rCTL5, 0x09 },
-    { RTSX::Chip::CARD::PULL::rCTL6, 0x04 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL1, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xA9 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL4, 0x09 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL5, 0x09 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL6, 0x04 },
 };
 
 const RealtekRTS5286Controller::SimpleRegValuePairs RealtekRTS5286Controller::kSDEnablePullControlTable =
@@ -36,12 +36,12 @@ const RealtekRTS5286Controller::SimpleRegValuePairs RealtekRTS5286Controller::kS
 /// A sequence of registers to transfer to disable SD pull control
 const RealtekRTS5286Controller::ChipRegValuePair RealtekRTS5286Controller::kSDDisablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL1, 0x65 },
-    { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0x95 },
-    { RTSX::Chip::CARD::PULL::rCTL4, 0x09 },
-    { RTSX::Chip::CARD::PULL::rCTL5, 0x05 },
-    { RTSX::Chip::CARD::PULL::rCTL6, 0x04 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL1, 0x65 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0x55 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0x95 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL4, 0x09 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL5, 0x05 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL6, 0x04 },
 };
 
 const RealtekRTS5286Controller::SimpleRegValuePairs RealtekRTS5286Controller::kSDDisablePullControlTable =
@@ -64,7 +64,7 @@ const RealtekRTS5286Controller::SimpleRegValuePairs RealtekRTS5286Controller::kS
 ///
 IOReturn RealtekRTS5286Controller::switchOutputVoltage(OutputVoltage outputVoltage)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return super::switchOutputVoltage(outputVoltage, LDO::CTL::kBppTuned18Shift_8402, LDO::CTL::kBppAsic2V0);
 }

@@ -26,7 +26,7 @@ OSDefineMetaClassAndStructors(RealtekRTS525AController, RealtekRTS5249SeriesCont
 ///
 IOReturn RealtekRTS525AController::powerOnCard()
 {
-    using namespace RTSX::Chip::LDO::VCC;
+    using namespace RTSX::PCR::Chip::LDO::VCC;
     
     auto retVal = this->writeChipRegister(rCFG1, CFG1::kTuneMask, CFG1::k3d3V);
     
@@ -49,7 +49,7 @@ IOReturn RealtekRTS525AController::powerOnCard()
 ///
 IOReturn RealtekRTS525AController::switchOutputVoltage(OutputVoltage outputVoltage)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     ChipRegValuePair pairs[] =
     {
@@ -90,7 +90,7 @@ IOReturn RealtekRTS525AController::optimizePhys()
 {
     pinfo("Optimizing the physical layer...");
     
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Enabling the D3 delink mode...");
 
@@ -153,9 +153,9 @@ IOReturn RealtekRTS525AController::initParameters()
     
     this->parameters.ocp.enable = true;
     
-    this->parameters.ocp.sdGlitch = RTSX::Chip::OCP::GLITCH::kSDValue10M;
+    this->parameters.ocp.sdGlitch = RTSX::PCR::Chip::OCP::GLITCH::kSDValue10M;
     
-    this->parameters.ocp.sdTHD800mA = RTSX::Chip::OCP::PARA2::kSDThdValue800_525A;
+    this->parameters.ocp.sdTHD800mA = RTSX::PCR::Chip::OCP::PARA2::kSDThdValue800_525A;
     
     pinfo("Device-specific parameters have been initialized.");
     
@@ -228,11 +228,11 @@ IOReturn RealtekRTS525AController::setL1OffSubConfigD0(bool active)
         {
             if (this->isCardPresent())
             {
-                regVal &= ~RTSX::Chip::L1SUB::CFG3::kMBIAS2Enable_5250;
+                regVal &= ~RTSX::PCR::Chip::L1SUB::CFG3::kMBIAS2Enable_5250;
             }
             else
             {
-                regVal |= RTSX::Chip::L1SUB::CFG3::kMBIAS2Enable_5250;
+                regVal |= RTSX::PCR::Chip::L1SUB::CFG3::kMBIAS2Enable_5250;
             }
         }
     }
@@ -252,7 +252,7 @@ IOReturn RealtekRTS525AController::setL1OffSubConfigD0(bool active)
 ///
 IOReturn RealtekRTS525AController::forcePowerDown()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -283,7 +283,7 @@ IOReturn RealtekRTS525AController::forcePowerDown()
 ///
 IOItemCount RealtekRTS525AController::initHardwareExtraGetChipRegValuePairs(ChipRegValuePair (&pairs)[64])
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
  
     IOItemCount count = 0;
     

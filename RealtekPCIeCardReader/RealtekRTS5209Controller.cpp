@@ -20,9 +20,9 @@ OSDefineMetaClassAndStructors(RealtekRTS5209Controller, RealtekPCIeCardReaderCon
 /// A sequence of registers to transfer to enable SD pull control
 const RealtekRTS5209Controller::ChipRegValuePair RealtekRTS5209Controller::kSDEnablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL1, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xE9 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL1, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xE9 },
 };
 
 const RealtekRTS5209Controller::SimpleRegValuePairs RealtekRTS5209Controller::kSDEnablePullControlTable =
@@ -33,9 +33,9 @@ const RealtekRTS5209Controller::SimpleRegValuePairs RealtekRTS5209Controller::kS
 /// A sequence of registers to transfer to disable SD pull control
 const RealtekRTS5209Controller::ChipRegValuePair RealtekRTS5209Controller::kSDDisablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL1, 0x55 },
-    { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xD5 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL1, 0x55 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0x55 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xD5 },
 };
 
 const RealtekRTS5209Controller::SimpleRegValuePairs RealtekRTS5209Controller::kSDDisablePullControlTable =
@@ -57,7 +57,7 @@ const RealtekRTS5209Controller::SimpleRegValuePairs RealtekRTS5209Controller::kS
 ///
 IOReturn RealtekRTS5209Controller::turnOnLED()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->writeChipRegister(CARD::rGPIO, CARD::GPIO::kLEDMask, CARD::GPIO::kLEDOn);
 }
@@ -72,7 +72,7 @@ IOReturn RealtekRTS5209Controller::turnOnLED()
 ///
 IOReturn RealtekRTS5209Controller::turnOffLED()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->writeChipRegister(CARD::rGPIO, CARD::GPIO::kLEDMask, CARD::GPIO::kLEDOff);
 }
@@ -87,7 +87,7 @@ IOReturn RealtekRTS5209Controller::turnOffLED()
 ///
 IOReturn RealtekRTS5209Controller::enableLEDBlinking()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->writeChipRegister(CARD::rBLINK, 0xFF, 0x0D);
 }
@@ -102,7 +102,7 @@ IOReturn RealtekRTS5209Controller::enableLEDBlinking()
 ///
 IOReturn RealtekRTS5209Controller::disableLEDBlinking()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->writeChipRegister(CARD::rBLINK, 0x08, 0x00);
 }
@@ -119,7 +119,7 @@ IOReturn RealtekRTS5209Controller::disableLEDBlinking()
 ///
 IOReturn RealtekRTS5209Controller::powerOnCard()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     // Enable the card power in two phases
     // Phase 1: Partial Power
@@ -174,7 +174,7 @@ IOReturn RealtekRTS5209Controller::powerOnCard()
 ///
 IOReturn RealtekRTS5209Controller::powerOffCard()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -195,7 +195,7 @@ IOReturn RealtekRTS5209Controller::powerOffCard()
 IOReturn RealtekRTS5209Controller::switchOutputVoltage(OutputVoltage outputVoltage)
 {
     // The following implementation is identical to `RealtekRTS5229Controller::switchOutputVoltage()`
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     UInt8 selector;
     
@@ -249,7 +249,7 @@ IOReturn RealtekRTS5209Controller::switchOutputVoltage(OutputVoltage outputVolta
 ///
 IOReturn RealtekRTS5209Controller::forcePowerDown()
 {
-    return this->writeChipRegister(RTSX::Chip::rFPDCTL, 0x07, 0x07);
+    return this->writeChipRegister(RTSX::PCR::Chip::rFPDCTL, 0x07, 0x07);
 }
 
 //
@@ -312,11 +312,11 @@ IOReturn RealtekRTS5209Controller::initParameters()
     
     this->parameters.isSocketReversed = false;
     
-    this->parameters.cardDriveSelector = RTSX::Chip::CARD::DRVSEL::kDefault_5209;
+    this->parameters.cardDriveSelector = RTSX::PCR::Chip::CARD::DRVSEL::kDefault_5209;
     
-    this->parameters.sd30DriveSelector1d8V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
+    this->parameters.sd30DriveSelector1d8V = RTSX::PCR::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
     
-    this->parameters.sd30DriveSelector3d3V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeD;
+    this->parameters.sd30DriveSelector3d3V = RTSX::PCR::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeD;
     
     this->parameters.sdEnablePullControlTable = &RealtekRTS5209Controller::kSDEnablePullControlTable;
     
@@ -401,7 +401,7 @@ IOReturn RealtekRTS5209Controller::initHardwareExtra()
 {
     pinfo("Initializing the card reader (device-specific)...");
     
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {

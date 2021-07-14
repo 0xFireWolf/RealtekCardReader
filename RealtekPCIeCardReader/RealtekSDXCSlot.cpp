@@ -7,6 +7,7 @@
 
 #include "RealtekCommonRegisters.hpp"
 #include "RealtekSDXCSlot.hpp"
+#include "RealtekSDRequest.hpp"
 #include "IOSDHostDriver.hpp"
 
 //

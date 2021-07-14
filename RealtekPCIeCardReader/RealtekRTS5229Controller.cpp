@@ -20,8 +20,8 @@ OSDefineMetaClassAndStructors(RealtekRTS5229Controller, RealtekPCIeCardReaderCon
 /// A sequence of registers to transfer to enable SD pull control
 const RealtekRTS5229Controller::ChipRegValuePair RealtekRTS5229Controller::kSDEnablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xE9 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xE9 },
 };
 
 const RealtekRTS5229Controller::SimpleRegValuePairs RealtekRTS5229Controller::kSDEnablePullControlTable =
@@ -31,8 +31,8 @@ const RealtekRTS5229Controller::SimpleRegValuePairs RealtekRTS5229Controller::kS
 
 const RealtekRTS5229Controller::ChipRegValuePair RealtekRTS5229Controller::kSDEnablePullControlTablePairsRevC[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xD9 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xD9 },
 };
 
 const RealtekRTS5229Controller::SimpleRegValuePairs RealtekRTS5229Controller::kSDEnablePullControlTableRevC =
@@ -43,8 +43,8 @@ const RealtekRTS5229Controller::SimpleRegValuePairs RealtekRTS5229Controller::kS
 /// A sequence of registers to transfer to disable SD pull control
 const RealtekRTS5229Controller::ChipRegValuePair RealtekRTS5229Controller::kSDDisablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xD5 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0x55 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xD5 },
 };
 
 const RealtekRTS5229Controller::SimpleRegValuePairs RealtekRTS5229Controller::kSDDisablePullControlTable =
@@ -54,8 +54,8 @@ const RealtekRTS5229Controller::SimpleRegValuePairs RealtekRTS5229Controller::kS
 
 const RealtekRTS5229Controller::ChipRegValuePair RealtekRTS5229Controller::kSDDisablePullControlTablePairsRevC[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xE5 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0x55 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xE5 },
 };
 
 const RealtekRTS5229Controller::SimpleRegValuePairs RealtekRTS5229Controller::kSDDisablePullControlTableRevC =
@@ -75,7 +75,7 @@ const RealtekRTS5229Controller::SimpleRegValuePairs RealtekRTS5229Controller::kS
 ///
 IOReturn RealtekRTS5229Controller::powerOnCard()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     // Enable the card power in two phases
     // Phase 1: Partial Power
@@ -129,7 +129,7 @@ IOReturn RealtekRTS5229Controller::powerOnCard()
 ///
 IOReturn RealtekRTS5229Controller::powerOffCard()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -149,7 +149,7 @@ IOReturn RealtekRTS5229Controller::powerOffCard()
 ///
 IOReturn RealtekRTS5229Controller::switchOutputVoltage(OutputVoltage outputVoltage)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     UInt8 selector;
     
@@ -203,7 +203,7 @@ IOReturn RealtekRTS5229Controller::switchOutputVoltage(OutputVoltage outputVolta
 ///
 IOReturn RealtekRTS5229Controller::forcePowerDown()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->writeChipRegister(rFPDCTL, FPDCTL::kAllPowerMask, FPDCTL::kAllPowerDownValue);
 }
@@ -250,11 +250,11 @@ IOReturn RealtekRTS5229Controller::initParameters()
     
     this->parameters.isSocketReversed = false;
     
-    this->parameters.cardDriveSelector = RTSX::Chip::CARD::DRVSEL::kDefault;
+    this->parameters.cardDriveSelector = RTSX::PCR::Chip::CARD::DRVSEL::kDefault;
     
-    this->parameters.sd30DriveSelector1d8V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
+    this->parameters.sd30DriveSelector1d8V = RTSX::PCR::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
     
-    this->parameters.sd30DriveSelector3d3V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeD;
+    this->parameters.sd30DriveSelector3d3V = RTSX::PCR::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeD;
     
     if (!this->parameters.revision.isRevC())
     {
@@ -342,7 +342,7 @@ IOReturn RealtekRTS5229Controller::initHardwareExtra()
 {
     pinfo("Initializing the card reader (device-specific)...");
     
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {

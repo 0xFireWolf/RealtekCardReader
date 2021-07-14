@@ -69,7 +69,7 @@ IOReturn RealtekRTS5249Controller::switchOutputVoltage(OutputVoltage outputVolta
 ///
 IOReturn RealtekRTS5249Controller::forcePowerDown()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -101,7 +101,7 @@ IOReturn RealtekRTS5249Controller::optimizePhys()
 {
     pinfo("Optimizing the physical layer...");
     
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Enabling the D3 delink mode...");
 
@@ -152,7 +152,7 @@ IOReturn RealtekRTS5249Controller::optimizePhys()
 ///
 IOItemCount RealtekRTS5249Controller::initHardwareExtraGetChipRegValuePairs(ChipRegValuePair (&pairs)[64])
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
  
     IOItemCount count = 0;
     

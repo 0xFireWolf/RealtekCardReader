@@ -27,7 +27,7 @@ OSDefineMetaClassAndAbstractStructors(RealtekRTS8411SeriesController, RealtekPCI
 ///
 IOReturn RealtekRTS8411SeriesController::turnOnLED()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->writeChipRegister(CARD::rGPIO, CARD::GPIO::kLEDMask, CARD::GPIO::kLEDOn);
 }
@@ -42,7 +42,7 @@ IOReturn RealtekRTS8411SeriesController::turnOnLED()
 ///
 IOReturn RealtekRTS8411SeriesController::turnOffLED()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->writeChipRegister(CARD::rGPIO, CARD::GPIO::kLEDMask, CARD::GPIO::kLEDOff);
 }
@@ -57,7 +57,7 @@ IOReturn RealtekRTS8411SeriesController::turnOffLED()
 ///
 IOReturn RealtekRTS8411SeriesController::enableLEDBlinking()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->writeChipRegister(CARD::rBLINK, 0xFF, 0x0D);
 }
@@ -72,7 +72,7 @@ IOReturn RealtekRTS8411SeriesController::enableLEDBlinking()
 ///
 IOReturn RealtekRTS8411SeriesController::disableLEDBlinking()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->writeChipRegister(CARD::rBLINK, 0x08, 0x00);
 }
@@ -89,7 +89,7 @@ IOReturn RealtekRTS8411SeriesController::disableLEDBlinking()
 ///
 IOReturn RealtekRTS8411SeriesController::powerOnCard()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Powering on the card partially (5%%)...");
     
@@ -166,7 +166,7 @@ IOReturn RealtekRTS8411SeriesController::powerOnCard()
 ///
 IOReturn RealtekRTS8411SeriesController::powerOffCard()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -188,7 +188,7 @@ IOReturn RealtekRTS8411SeriesController::powerOffCard()
 ///
 IOReturn RealtekRTS8411SeriesController::switchOutputVoltage(OutputVoltage outputVoltage, UInt8 shift, UInt8 asic)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     UInt8 selector;
     
@@ -229,7 +229,7 @@ IOReturn RealtekRTS8411SeriesController::switchOutputVoltage(OutputVoltage outpu
 ///
 IOReturn RealtekRTS8411SeriesController::switchOutputVoltage(OutputVoltage outputVoltage)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->switchOutputVoltage(outputVoltage, LDO::CTL::kBppTuned18Shift_8411, LDO::CTL::kBppAsic1V8);
 }
@@ -247,7 +247,7 @@ IOReturn RealtekRTS8411SeriesController::switchOutputVoltage(OutputVoltage outpu
 ///
 bool RealtekRTS8411SeriesController::isCardPresent()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     if (!super::isCardPresent())
     {
@@ -332,7 +332,7 @@ UInt32 RealtekRTS8411SeriesController::dividerN2SSCClock(UInt32 n)
 ///
 IOReturn RealtekRTS8411SeriesController::forcePowerDown()
 {
-    return this->writeChipRegister(RTSX::Chip::rFPDCTL, 0x07, 0x07);
+    return this->writeChipRegister(RTSX::PCR::Chip::rFPDCTL, 0x07, 0x07);
 }
 
 //
@@ -351,7 +351,7 @@ IOReturn RealtekRTS8411SeriesController::getRevision(Revision& revision)
     
     UInt8 value;
     
-    IOReturn retVal = this->readChipRegister(RTSX::Chip::rSYSVER, value);
+    IOReturn retVal = this->readChipRegister(RTSX::PCR::Chip::rSYSVER, value);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -396,11 +396,11 @@ IOReturn RealtekRTS8411SeriesController::initParameters()
     
     this->parameters.isSocketReversed = false;
     
-    this->parameters.cardDriveSelector = RTSX::Chip::CARD::DRVSEL::kDefault_8411;
+    this->parameters.cardDriveSelector = RTSX::PCR::Chip::CARD::DRVSEL::kDefault_8411;
     
-    this->parameters.sd30DriveSelector1d8V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
+    this->parameters.sd30DriveSelector1d8V = RTSX::PCR::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
     
-    this->parameters.sd30DriveSelector3d3V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeD;
+    this->parameters.sd30DriveSelector3d3V = RTSX::PCR::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeD;
     
     this->parameters.initialTxClockPhase = {23, 7, 14};
     
@@ -477,7 +477,7 @@ IOReturn RealtekRTS8411SeriesController::initVendorSpecificParameters()
 ///
 IOReturn RealtekRTS8411SeriesController::initHardwareExtra()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {

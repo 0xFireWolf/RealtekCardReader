@@ -98,7 +98,7 @@ UInt32 RealtekRTS5227Controller::getAdjustedCardClockOnDMAError(UInt32 cardClock
 ///
 IOReturn RealtekRTS5227Controller::forcePowerDown()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -130,7 +130,7 @@ IOReturn RealtekRTS5227Controller::optimizePhys()
 {
     pinfo("Optimizing the physical layer...");
     
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Enabling the D3 delink mode...");
 

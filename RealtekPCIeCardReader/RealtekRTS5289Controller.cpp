@@ -20,12 +20,12 @@ OSDefineMetaClassAndStructors(RealtekRTS5289Controller, RealtekRTS8411SeriesCont
 /// A sequence of registers to transfer to enable SD pull control
 const RealtekRTS5289Controller::ChipRegValuePair RealtekRTS5289Controller::kSDEnablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL1, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xA9 },
-    { RTSX::Chip::CARD::PULL::rCTL4, 0x09 },
-    { RTSX::Chip::CARD::PULL::rCTL5, 0x09 },
-    { RTSX::Chip::CARD::PULL::rCTL6, 0x04 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL1, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xA9 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL4, 0x09 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL5, 0x09 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL6, 0x04 },
 };
 
 const RealtekRTS5289Controller::SimpleRegValuePairs RealtekRTS5289Controller::kSDEnablePullControlTable =
@@ -36,12 +36,12 @@ const RealtekRTS5289Controller::SimpleRegValuePairs RealtekRTS5289Controller::kS
 /// A sequence of registers to transfer to disable SD pull control
 const RealtekRTS5289Controller::ChipRegValuePair RealtekRTS5289Controller::kSDDisablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL1, 0x65 },
-    { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0x95 },
-    { RTSX::Chip::CARD::PULL::rCTL4, 0x09 },
-    { RTSX::Chip::CARD::PULL::rCTL5, 0x05 },
-    { RTSX::Chip::CARD::PULL::rCTL6, 0x04 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL1, 0x65 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0x55 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0x95 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL4, 0x09 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL5, 0x05 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL6, 0x04 },
 };
 
 const RealtekRTS5289Controller::SimpleRegValuePairs RealtekRTS5289Controller::kSDDisablePullControlTable =

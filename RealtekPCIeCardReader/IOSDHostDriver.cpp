@@ -13,6 +13,7 @@
 #include <IOKit/IOSubMemoryDescriptor.h>
 #include <IOKit/storage/IOBlockStorageDriver.h>
 #include <i386/param.h>
+#include "RealtekSDRequest.hpp"
 
 //
 // MARK: - Meta Class Definitions

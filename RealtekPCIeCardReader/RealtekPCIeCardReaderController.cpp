@@ -24,23 +24,23 @@ OSDefineMetaClassAndAbstractStructors(RealtekPCIeCardReaderController, RealtekCa
 const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsSDR50[] =
 {
     {
-        RTSX::Chip::SD::rCFG1,
-        RTSX::Chip::SD::CFG1::kModeMask | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST,
-        RTSX::Chip::SD::CFG1::kModeSD30 | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST
+        RTSX::PCR::Chip::SD::rCFG1,
+        RTSX::PCR::Chip::SD::CFG1::kModeMask | RTSX::PCR::Chip::SD::CFG1::kAsyncFIFONotRST,
+        RTSX::PCR::Chip::SD::CFG1::kModeSD30 | RTSX::PCR::Chip::SD::CFG1::kAsyncFIFONotRST
     },
     {
-        RTSX::Chip::CLK::rCTL,
-        RTSX::Chip::CLK::CTL::kLowFrequency,
-        RTSX::Chip::CLK::CTL::kLowFrequency
+        RTSX::PCR::Chip::CLK::rCTL,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency
     },
     {
-        RTSX::Chip::CARD::rCLKSRC,
+        RTSX::PCR::Chip::CARD::rCLKSRC,
         0xFF,
-        RTSX::Chip::CARD::CLKSRC::kCRCVarClock0 | RTSX::Chip::CARD::CLKSRC::kSD30FixClock | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1
+        RTSX::PCR::Chip::CARD::CLKSRC::kCRCVarClock0 | RTSX::PCR::Chip::CARD::CLKSRC::kSD30FixClock | RTSX::PCR::Chip::CARD::CLKSRC::kSampleVarClock1
     },
     {
-        RTSX::Chip::CLK::rCTL,
-        RTSX::Chip::CLK::CTL::kLowFrequency,
+        RTSX::PCR::Chip::CLK::rCTL,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency,
         0
     },
 };
@@ -54,33 +54,33 @@ const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReader
 const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsDDR50[] =
 {
     {
-        RTSX::Chip::SD::rCFG1,
-        RTSX::Chip::SD::CFG1::kModeMask  | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST,
-        RTSX::Chip::SD::CFG1::kModeSDDDR | RTSX::Chip::SD::CFG1::kAsyncFIFONotRST
+        RTSX::PCR::Chip::SD::rCFG1,
+        RTSX::PCR::Chip::SD::CFG1::kModeMask  | RTSX::PCR::Chip::SD::CFG1::kAsyncFIFONotRST,
+        RTSX::PCR::Chip::SD::CFG1::kModeSDDDR | RTSX::PCR::Chip::SD::CFG1::kAsyncFIFONotRST
     },
     {
-        RTSX::Chip::CLK::rCTL,
-        RTSX::Chip::CLK::CTL::kLowFrequency,
-        RTSX::Chip::CLK::CTL::kLowFrequency
+        RTSX::PCR::Chip::CLK::rCTL,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency
     },
     {
-        RTSX::Chip::CARD::rCLKSRC,
+        RTSX::PCR::Chip::CARD::rCLKSRC,
         0xFF,
-        RTSX::Chip::CARD::CLKSRC::kCRCVarClock0 | RTSX::Chip::CARD::CLKSRC::kSD30FixClock | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1
+        RTSX::PCR::Chip::CARD::CLKSRC::kCRCVarClock0 | RTSX::PCR::Chip::CARD::CLKSRC::kSD30FixClock | RTSX::PCR::Chip::CARD::CLKSRC::kSampleVarClock1
     },
     {
-        RTSX::Chip::CLK::rCTL,
-        RTSX::Chip::CLK::CTL::kLowFrequency,
+        RTSX::PCR::Chip::CLK::rCTL,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency,
         0x00
     },
     {
-        RTSX::Chip::SD::rPPCTL,
-        RTSX::Chip::SD::PPCTL::kDDRVarTxCommandData,
-        RTSX::Chip::SD::PPCTL::kDDRVarTxCommandData },
+        RTSX::PCR::Chip::SD::rPPCTL,
+        RTSX::PCR::Chip::SD::PPCTL::kDDRVarTxCommandData,
+        RTSX::PCR::Chip::SD::PPCTL::kDDRVarTxCommandData },
     {
-        RTSX::Chip::SD::rSPCTL,
-        RTSX::Chip::SD::SPCTL::kDDRVarRxData | RTSX::Chip::SD::SPCTL::kDDRVarRxCommand,
-        RTSX::Chip::SD::SPCTL::kDDRVarRxData | RTSX::Chip::SD::SPCTL::kDDRVarRxCommand
+        RTSX::PCR::Chip::SD::rSPCTL,
+        RTSX::PCR::Chip::SD::SPCTL::kDDRVarRxData | RTSX::PCR::Chip::SD::SPCTL::kDDRVarRxCommand,
+        RTSX::PCR::Chip::SD::SPCTL::kDDRVarRxData | RTSX::PCR::Chip::SD::SPCTL::kDDRVarRxCommand
     },
 };
 
@@ -93,34 +93,34 @@ const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReader
 const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsHighSpeed[] =
 {
     {
-        RTSX::Chip::SD::rCFG1,
-        RTSX::Chip::SD::CFG1::kModeMask,
-        RTSX::Chip::SD::CFG1::kModeSD20
+        RTSX::PCR::Chip::SD::rCFG1,
+        RTSX::PCR::Chip::SD::CFG1::kModeMask,
+        RTSX::PCR::Chip::SD::CFG1::kModeSD20
     },
     {
-        RTSX::Chip::CLK::rCTL,
-        RTSX::Chip::CLK::CTL::kLowFrequency,
-        RTSX::Chip::CLK::CTL::kLowFrequency
+        RTSX::PCR::Chip::CLK::rCTL,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency
     },
     {
-        RTSX::Chip::CARD::rCLKSRC,
+        RTSX::PCR::Chip::CARD::rCLKSRC,
         0xFF,
-        RTSX::Chip::CARD::CLKSRC::kCRCFixClock | RTSX::Chip::CARD::CLKSRC::kSD30VarClock0 | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1
+        RTSX::PCR::Chip::CARD::CLKSRC::kCRCFixClock | RTSX::PCR::Chip::CARD::CLKSRC::kSD30VarClock0 | RTSX::PCR::Chip::CARD::CLKSRC::kSampleVarClock1
     },
     {
-        RTSX::Chip::CLK::rCTL,
-        RTSX::Chip::CLK::CTL::kLowFrequency,
+        RTSX::PCR::Chip::CLK::rCTL,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency,
         0x00
     },
     {
-        RTSX::Chip::SD::rPPCTL,
-        RTSX::Chip::SD::PPCTL::kSD20TxSelMask,
-        RTSX::Chip::SD::PPCTL::kSD20Tx14Ahead
+        RTSX::PCR::Chip::SD::rPPCTL,
+        RTSX::PCR::Chip::SD::PPCTL::kSD20TxSelMask,
+        RTSX::PCR::Chip::SD::PPCTL::kSD20Tx14Ahead
     },
     {
-        RTSX::Chip::SD::rSPCTL,
-        RTSX::Chip::SD::SPCTL::kSD20RxSelMask,
-        RTSX::Chip::SD::SPCTL::kSD20Rx14Delay
+        RTSX::PCR::Chip::SD::rSPCTL,
+        RTSX::PCR::Chip::SD::SPCTL::kSD20RxSelMask,
+        RTSX::PCR::Chip::SD::SPCTL::kSD20Rx14Delay
     },
 };
 
@@ -133,33 +133,33 @@ const RealtekPCIeCardReaderController::SimpleRegValuePairs RealtekPCIeCardReader
 const RealtekPCIeCardReaderController::ChipRegValuePair RealtekPCIeCardReaderController::kBusTimingTablePairsDefaultSpeed[] =
 {
     {
-        RTSX::Chip::SD::rCFG1,
-        RTSX::Chip::SD::CFG1::kModeMask,
-        RTSX::Chip::SD::CFG1::kModeSD20
+        RTSX::PCR::Chip::SD::rCFG1,
+        RTSX::PCR::Chip::SD::CFG1::kModeMask,
+        RTSX::PCR::Chip::SD::CFG1::kModeSD20
     },
     {
-        RTSX::Chip::CLK::rCTL,
-        RTSX::Chip::CLK::CTL::kLowFrequency,
-        RTSX::Chip::CLK::CTL::kLowFrequency
+        RTSX::PCR::Chip::CLK::rCTL,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency
     },
     {
-        RTSX::Chip::CARD::rCLKSRC,
+        RTSX::PCR::Chip::CARD::rCLKSRC,
         0xFF,
-        RTSX::Chip::CARD::CLKSRC::kCRCFixClock | RTSX::Chip::CARD::CLKSRC::kSD30VarClock0 | RTSX::Chip::CARD::CLKSRC::kSampleVarClock1
+        RTSX::PCR::Chip::CARD::CLKSRC::kCRCFixClock | RTSX::PCR::Chip::CARD::CLKSRC::kSD30VarClock0 | RTSX::PCR::Chip::CARD::CLKSRC::kSampleVarClock1
     },
     {
-        RTSX::Chip::CLK::rCTL,
-        RTSX::Chip::CLK::CTL::kLowFrequency,
+        RTSX::PCR::Chip::CLK::rCTL,
+        RTSX::PCR::Chip::CLK::CTL::kLowFrequency,
         0x00
     },
     {
-        RTSX::Chip::SD::rPPCTL,
+        RTSX::PCR::Chip::SD::rPPCTL,
         0xFF, 0
     },
     {
-        RTSX::Chip::SD::rSPCTL,
-        RTSX::Chip::SD::SPCTL::kSD20RxSelMask,
-        RTSX::Chip::SD::SPCTL::kSD20RxPosEdge
+        RTSX::PCR::Chip::SD::rSPCTL,
+        RTSX::PCR::Chip::SD::SPCTL::kSD20RxSelMask,
+        RTSX::PCR::Chip::SD::SPCTL::kSD20RxPosEdge
     },
 };
 
@@ -389,7 +389,7 @@ IOReturn RealtekPCIeCardReaderController::writeChipRegisters(const ChipRegValueP
 IOReturn RealtekPCIeCardReaderController::readPhysRegister(UInt8 address, UInt16& value)
 {
     // The driver will program chip registers to access PHY registers
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Read the PHY register at 0x%02x.", address);
     
@@ -484,7 +484,7 @@ IOReturn RealtekPCIeCardReaderController::readPhysRegister(UInt8 address, UInt16
 IOReturn RealtekPCIeCardReaderController::writePhysRegister(UInt8 address, UInt16 value)
 {
     // The driver will program chip registers to access PHY registers
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Write 0x%02x to the PHY register at 0x%02x.", value, address);
     
@@ -1061,7 +1061,7 @@ IOReturn RealtekPCIeCardReaderController::performDMAWrite(IODMACommand* command,
 ///
 void RealtekPCIeCardReaderController::clearCardError()
 {
-    using namespace RTSX::Chip::CARD;
+    using namespace RTSX::PCR::Chip::CARD;
     
     psoftassert(this->writeChipRegister(rSTOP, STOP::kStopSD | STOP::kClearSDError, STOP::kStopSD | STOP::kClearSDError) == kIOReturnSuccess,
                 "Failed to clear the card error.");
@@ -1082,7 +1082,7 @@ void RealtekPCIeCardReaderController::clearHostError()
     
     this->writeRegister32(rHDBCTLR, HDBCTLR::kStopDMA);
     
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -1111,7 +1111,7 @@ void RealtekPCIeCardReaderController::clearHostError()
 ///
 IOReturn RealtekPCIeCardReaderController::turnOnLED()
 {
-    using namespace RTSX::Chip::GPIO;
+    using namespace RTSX::PCR::Chip::GPIO;
     
     return this->writeChipRegister(rCTL, CTL::kLEDMask, CTL::kTurnOnLEDValue);
 }
@@ -1126,7 +1126,7 @@ IOReturn RealtekPCIeCardReaderController::turnOnLED()
 ///
 IOReturn RealtekPCIeCardReaderController::turnOffLED()
 {
-    using namespace RTSX::Chip::GPIO;
+    using namespace RTSX::PCR::Chip::GPIO;
     
     return this->writeChipRegister(rCTL, CTL::kLEDMask, CTL::kTurnOffLEDValue);
 }
@@ -1141,7 +1141,7 @@ IOReturn RealtekPCIeCardReaderController::turnOffLED()
 ///
 IOReturn RealtekPCIeCardReaderController::enableLEDBlinking()
 {
-    using namespace RTSX::Chip::OLT_LED;
+    using namespace RTSX::PCR::Chip::OLT_LED;
     
     return this->writeChipRegister(rCTL, CTL::kBlinkingMask, CTL::kEnableBlinkingValue);
 }
@@ -1156,7 +1156,7 @@ IOReturn RealtekPCIeCardReaderController::enableLEDBlinking()
 ///
 IOReturn RealtekPCIeCardReaderController::disableLEDBlinking()
 {
-    using namespace RTSX::Chip::OLT_LED;
+    using namespace RTSX::PCR::Chip::OLT_LED;
     
     return this->writeChipRegister(rCTL, CTL::kBlinkingMask, CTL::kDisableBlinkingValue);
 }
@@ -1174,7 +1174,7 @@ IOReturn RealtekPCIeCardReaderController::disableLEDBlinking()
 ///
 IOReturn RealtekPCIeCardReaderController::selectCard()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->enqueueWriteRegisterCommand(CARD::rSEL, CARD::SEL::kMask, CARD::SEL::kSD);
 }
@@ -1190,7 +1190,7 @@ IOReturn RealtekPCIeCardReaderController::selectCard()
 ///
 IOReturn RealtekPCIeCardReaderController::selectCardDataSource(bool ppbuf)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->enqueueWriteRegisterCommand(CARD::rDATASRC, CARD::DATASRC::kMask, ppbuf ? CARD::DATASRC::kPingPongBuffer : CARD::DATASRC::kRingBuffer);
 }
@@ -1204,7 +1204,7 @@ IOReturn RealtekPCIeCardReaderController::selectCardDataSource(bool ppbuf)
 ///
 IOReturn RealtekPCIeCardReaderController::configureCardShareMode()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->enqueueWriteRegisterCommand(CARD::rSHAREMODE, CARD::SHAREMODE::kMask, CARD::SHAREMODE::k48SD);
 }
@@ -1222,7 +1222,7 @@ IOReturn RealtekPCIeCardReaderController::configureCardShareMode()
 ///
 IOReturn RealtekPCIeCardReaderController::setupCardDMATransferProperties(UInt32 length, IODirection direction)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     UInt8 regVal = direction == kIODirectionIn ? DMA::CTL::kDirectionFromCard : DMA::CTL::kDirectionToCard;
     
@@ -1261,7 +1261,7 @@ IOReturn RealtekPCIeCardReaderController::setupCardDMATransferProperties(UInt32 
 ///
 IOReturn RealtekPCIeCardReaderController::enableCardClock()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->enqueueWriteRegisterCommand(CARD::rCLK, CARD::CLK::kEnableSD, CARD::CLK::kEnableSD);
 }
@@ -1275,7 +1275,7 @@ IOReturn RealtekPCIeCardReaderController::enableCardClock()
 ///
 IOReturn RealtekPCIeCardReaderController::disableCardClock()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->enqueueWriteRegisterCommand(CARD::rCLK, CARD::CLK::kEnableSD, CARD::CLK::kDisable);
 }
@@ -1289,7 +1289,7 @@ IOReturn RealtekPCIeCardReaderController::disableCardClock()
 ///
 IOReturn RealtekPCIeCardReaderController::enableCardOutput()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->enqueueWriteRegisterCommand(CARD::rOUTPUT, CARD::OUTPUT::kSDMask, CARD::OUTPUT::kEnableSDValue);
 }
@@ -1303,7 +1303,7 @@ IOReturn RealtekPCIeCardReaderController::enableCardOutput()
 ///
 IOReturn RealtekPCIeCardReaderController::disableCardOutput()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     return this->enqueueWriteRegisterCommand(CARD::rOUTPUT, CARD::OUTPUT::kSDMask, CARD::OUTPUT::kDisableSDValue);
 }
@@ -1347,7 +1347,7 @@ IOReturn RealtekPCIeCardReaderController::setDrivingForOutputVoltage(OutputVolta
     }
     
     // Populate the registers and their values
-    using namespace RTSX::Chip::CARD::SD30::DRVSEL;
+    using namespace RTSX::PCR::Chip::CARD::SD30::DRVSEL;
     
     const ChipRegValuePair pairs[] =
     {
@@ -1393,7 +1393,7 @@ UInt32 RealtekPCIeCardReaderController::sscClock2MCUCount(UInt32 clock)
 ///
 UInt8 RealtekPCIeCardReaderController::sscDepth2RegValue(SSCDepth depth)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     switch (depth)
     {
@@ -1439,7 +1439,7 @@ UInt8 RealtekPCIeCardReaderController::sscDepth2RegValue(SSCDepth depth)
 ///
 UInt8 RealtekPCIeCardReaderController::reviseSSCDepthRegValue(UInt8 depth, UInt8 divider)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     if (divider > CLK::DIV::k1)
     {
@@ -1469,7 +1469,7 @@ UInt8 RealtekPCIeCardReaderController::reviseSSCDepthRegValue(UInt8 depth, UInt8
 ///
 IOReturn RealtekPCIeCardReaderController::switchCardClock(UInt8 depth, UInt8 n, UInt8 divider, UInt8 mcus, bool vpclock)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Switching the card clock with SSC depth = %u, N = %u, Divider = %u, MCU Count = %u, Use VPClock = %s.",
           depth, n, divider, mcus, YESNO(vpclock));
@@ -1565,7 +1565,7 @@ IOReturn RealtekPCIeCardReaderController::initOvercurrentProtection()
     }
     
     // Setup overcurrent protection registers
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -1593,7 +1593,7 @@ IOReturn RealtekPCIeCardReaderController::initOvercurrentProtection()
 ///
 IOReturn RealtekPCIeCardReaderController::enableOvercurrentProtection()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -1615,7 +1615,7 @@ IOReturn RealtekPCIeCardReaderController::enableOvercurrentProtection()
 ///
 IOReturn RealtekPCIeCardReaderController::disableOvercurrentProtection()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -1638,7 +1638,7 @@ IOReturn RealtekPCIeCardReaderController::disableOvercurrentProtection()
 ///
 IOReturn RealtekPCIeCardReaderController::getOvercurrentProtectionStatus(UInt8& status)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Fetching the current overcurrent protection status...");
     
@@ -1653,7 +1653,7 @@ IOReturn RealtekPCIeCardReaderController::getOvercurrentProtectionStatus(UInt8& 
 ///
 IOReturn RealtekPCIeCardReaderController::clearOvercurrentProtectionStatus()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     UInt8 mask = OCP::CTL::kSDClearStatMask | OCP::CTL::kSDClearInterruptMask;
     
@@ -1719,7 +1719,7 @@ IOReturn RealtekPCIeCardReaderController::disablePullControlForSDCard()
 ///
 IOReturn RealtekPCIeCardReaderController::changeRxPhase(UInt8 samplePoint)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -1743,7 +1743,7 @@ IOReturn RealtekPCIeCardReaderController::changeRxPhase(UInt8 samplePoint)
 ///
 IOReturn RealtekPCIeCardReaderController::changeTxPhase(UInt8 samplePoint)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -1808,7 +1808,7 @@ IOReturn RealtekPCIeCardReaderController::enableOOBSPolling()
     }
     
     // Configure chip registers to enable OOBS polling
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -1843,7 +1843,7 @@ IOReturn RealtekPCIeCardReaderController::disableOOBSPolling()
     }
     
     // Configure chip registers to disable OOBS polling
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -1894,7 +1894,7 @@ IOReturn RealtekPCIeCardReaderController::readPingPongBuffer(UInt8* destination,
         IOItemCount newLength = static_cast<IOItemCount>(min(length - index, 256));
         
         // Generate a sequence of register addresses
-        ContiguousRegValuePairsForReadAccess pairs(RTSX::Chip::PPBUF::rBASE2 + index, newLength);
+        ContiguousRegValuePairsForReadAccess pairs(RTSX::PCR::Chip::PPBUF::rBASE2 + index, newLength);
         
         // Guard: Read the current set of registers
         IOReturn retVal = this->transferReadRegisterCommands(pairs, 250);
@@ -1958,7 +1958,7 @@ IOReturn RealtekPCIeCardReaderController::writePingPongBuffer(const UInt8* sourc
         IOItemCount newLength = static_cast<IOItemCount>(min(length - index, 256));
         
         // Generate a sequence of register addresses and their values
-        ContiguousRegValuePairsForWriteAccess pairs(RTSX::Chip::PPBUF::rBASE2 + index, newLength, source + index);
+        ContiguousRegValuePairsForWriteAccess pairs(RTSX::PCR::Chip::PPBUF::rBASE2 + index, newLength, source + index);
         
         // Guard: Read the current set of registers
         IOReturn retVal = this->transferWriteRegisterCommands(pairs, 250);
@@ -2013,7 +2013,7 @@ ClockPhase RealtekPCIeCardReaderController::getTxClockPhase()
 ///
 IOReturn RealtekPCIeCardReaderController::setASPM(bool enable)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     if (this->parameters.pm.isASPMEnabled == enable)
     {
@@ -2066,7 +2066,7 @@ IOReturn RealtekPCIeCardReaderController::setL1OffSubConfigD0(bool active)
 ///
 IOReturn RealtekPCIeCardReaderController::setLTRLatency(UInt32 latency)
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Setting tht LTR latency to %d.", latency);
     
@@ -2140,7 +2140,7 @@ void RealtekPCIeCardReaderController::prepareToSleep()
     this->writeRegister32(RTSX::MMIO::rBIER, 0);
     
     // Set the host sleep state
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -2167,7 +2167,7 @@ void RealtekPCIeCardReaderController::prepareToWakeUp()
     pinfo("Prepare to wake up...");
     
     // Set the host sleep state
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     psoftassert(this->writeChipRegister(rHSSTA, HSSTA::kMask, HSSTA::kHostWakeup) == kIOReturnSuccess, "Failed to set the host sleep state.");
     
@@ -2334,7 +2334,7 @@ void RealtekPCIeCardReaderController::onTransferDoneGated(bool succeeded)
 void RealtekPCIeCardReaderController::onSDCardOvercurrentOccurredGated()
 {
     // Guard: Retrieve the current OCP status
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Detected an overcurrent.");
     
@@ -2408,7 +2408,7 @@ IOReturn RealtekPCIeCardReaderController::getRevision(Revision& revision)
 {
     pinfo("Fetching the chip revision...");
     
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     UInt8 regVal = 0xFF;
     
@@ -2471,7 +2471,7 @@ IOReturn RealtekPCIeCardReaderController::initHardwareCommon()
     // TODO: Create a virtual function to support RTS5261
     pinfo("Powering on the SSC...");
     
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     IOReturn retVal = this->writeChipRegister(rFPDCTL, FPDCTL::kSSCPowerMask, FPDCTL::kSSCPowerUpValue);
     
@@ -3080,7 +3080,7 @@ bool RealtekPCIeCardReaderController::init(OSDictionary* dictionary)
     
     this->reserved2 = 0;
     
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     this->sscClockLimits.rangeN = { RealtekPCIeCardReaderController::kMinSSCClockN, RealtekPCIeCardReaderController::kMaxSSCClockN };
     

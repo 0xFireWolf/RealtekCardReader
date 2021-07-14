@@ -45,10 +45,10 @@ const RealtekRTS5249SeriesController::DrivingTable RealtekRTS5249SeriesControlle
 /// A sequence of registers to transfer to enable SD pull control
 const RealtekRTS5249SeriesController::ChipRegValuePair RealtekRTS5249SeriesController::kSDEnablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL1, 0x66 },
-    { RTSX::Chip::CARD::PULL::rCTL2, 0xAA },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xE9 },
-    { RTSX::Chip::CARD::PULL::rCTL4, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL1, 0x66 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0xAA },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xE9 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL4, 0xAA },
 };
 
 const RealtekRTS5249SeriesController::SimpleRegValuePairs RealtekRTS5249SeriesController::kSDEnablePullControlTable =
@@ -59,10 +59,10 @@ const RealtekRTS5249SeriesController::SimpleRegValuePairs RealtekRTS5249SeriesCo
 /// A sequence of registers to transfer to disable SD pull control
 const RealtekRTS5249SeriesController::ChipRegValuePair RealtekRTS5249SeriesController::kSDDisablePullControlTablePairs[] =
 {
-    { RTSX::Chip::CARD::PULL::rCTL1, 0x66 },
-    { RTSX::Chip::CARD::PULL::rCTL2, 0x55 },
-    { RTSX::Chip::CARD::PULL::rCTL3, 0xD5 },
-    { RTSX::Chip::CARD::PULL::rCTL4, 0x55 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL1, 0x66 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL2, 0x55 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL3, 0xD5 },
+    { RTSX::PCR::Chip::CARD::PULL::rCTL4, 0x55 },
 };
 
 const RealtekRTS5249SeriesController::SimpleRegValuePairs RealtekRTS5249SeriesController::kSDDisablePullControlTable =
@@ -82,7 +82,7 @@ const RealtekRTS5249SeriesController::SimpleRegValuePairs RealtekRTS5249SeriesCo
 ///
 IOReturn RealtekRTS5249SeriesController::powerOnCard()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     IOReturn retVal;
     
@@ -155,7 +155,7 @@ IOReturn RealtekRTS5249SeriesController::powerOnCard()
 ///
 IOReturn RealtekRTS5249SeriesController::powerOffCard()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     // Disable the overcurrent protection
     if (this->parameters.ocp.enable)
@@ -205,11 +205,11 @@ IOReturn RealtekRTS5249SeriesController::initParameters()
     
     this->parameters.isSocketReversed = false;
     
-    this->parameters.cardDriveSelector = RTSX::Chip::CARD::DRVSEL::kDefault;
+    this->parameters.cardDriveSelector = RTSX::PCR::Chip::CARD::DRVSEL::kDefault;
     
-    this->parameters.sd30DriveSelector1d8V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
+    this->parameters.sd30DriveSelector1d8V = RTSX::PCR::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
     
-    this->parameters.sd30DriveSelector3d3V = RTSX::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
+    this->parameters.sd30DriveSelector3d3V = RTSX::PCR::Chip::CARD::SD30::DRVSEL::CFG::kDriverTypeB;
     
     this->parameters.sd30DriveTable1d8V = &RealtekRTS5249SeriesController::kSD30DriveTable1d8V;
     

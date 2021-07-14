@@ -123,7 +123,7 @@ bool RealtekRTS524AController::supportsOOBSPolling()
 ///
 IOReturn RealtekRTS524AController::forcePowerDown()
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     const ChipRegValuePair pairs[] =
     {
@@ -155,7 +155,7 @@ IOReturn RealtekRTS524AController::optimizePhys()
 {
     pinfo("Optimizing the physical layer...");
     
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
     
     pinfo("Enabling the D3 delink mode...");
 
@@ -208,7 +208,7 @@ IOReturn RealtekRTS524AController::optimizePhys()
 ///
 IOItemCount RealtekRTS524AController::initHardwareExtraGetChipRegValuePairs(ChipRegValuePair (&pairs)[64])
 {
-    using namespace RTSX::Chip;
+    using namespace RTSX::PCR::Chip;
  
     IOItemCount count = 0;
     
