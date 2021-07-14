@@ -827,7 +827,7 @@ public:
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
-    IOReturn performDMARead(IODMACommand* command, UInt32 timeout);
+    IOReturn performDMARead(IODMACommand* command, UInt32 timeout) override final;
     
     ///
     /// Perform a DMA write operation
@@ -836,7 +836,7 @@ public:
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
-    IOReturn performDMAWrite(IODMACommand* command, UInt32 timeout);
+    IOReturn performDMAWrite(IODMACommand* command, UInt32 timeout) override final;
     
     //
     // MARK: - Clear Error

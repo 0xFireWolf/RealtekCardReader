@@ -892,6 +892,28 @@ public:
     IOReturn withCustomCommandTransfer(EnqueueAction action, UInt32 timeout = 100, UInt32 flags = 0, const void* context = nullptr);
     
     //
+    // MARK: - Host Data Management
+    //
+    
+    ///
+    /// Perform a DMA read operation
+    ///
+    /// @param command A non-null, perpared DMA command
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    ///
+    virtual IOReturn performDMARead(IODMACommand* command, UInt32 timeout) = 0;
+    
+    ///
+    /// Perform a DMA write operation
+    ///
+    /// @param command A non-null, perpared DMA command
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    ///
+    virtual IOReturn performDMAWrite(IODMACommand* command, UInt32 timeout) = 0;
+    
+    //
     // MARK: - Clear Error
     //
     
