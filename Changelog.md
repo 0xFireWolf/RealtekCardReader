@@ -1,5 +1,10 @@
 #  Changelog
 
+#### v0.9.5 Beta
+- Rebranded the project.
+- Refactored the controller and the host device code to support USB-based card readers.
+- Added support for RTS5129, RTS5139 and RTS5179.
+
 #### v0.9.4 Beta
 - Fixed an issue that driving tables are not set for RTS5227 and RTS522A.  
 - Disabled the bonus feature temporarily: Your card reader will not be listed in System Information.  
