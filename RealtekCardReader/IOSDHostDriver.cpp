@@ -936,7 +936,32 @@ void IOSDHostDriver::releaseDMABuffer(IODMACommand* command)
 ///
 IOReturn IOSDHostDriver::waitForRequest(RealtekSDRequest& request)
 {
-    return this->host->processRequest(request);
+    pinfo("Preprocessing the request...");
+    
+    IOReturn retVal = this->host->preprocessRequest(request);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to preprocess the request. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("Processing the request...");
+    
+    retVal = this->host->processRequest(request);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to process the request. Error = 0x%x.", retVal);
+        
+        psoftassert(this->host->postprocessRequest(request) == kIOReturnSuccess,
+                    "Failed to postprocess the request.");
+        
+        return retVal;
+    }
+    
+    return this->host->postprocessRequest(request);
 }
 
 ///
