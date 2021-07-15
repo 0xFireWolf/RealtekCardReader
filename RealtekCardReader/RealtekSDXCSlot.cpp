@@ -14,7 +14,7 @@
 // MARK: - Meta Class Definitions
 //
 
-OSDefineMetaClassAndAbstractStructors(RealtekSDXCSlot, AppleSDXCSlot);
+OSDefineMetaClassAndAbstractStructors(RealtekSDXCSlot, WolfsSDXCSlot);
 
 //
 // MARK: - SD Commander
@@ -2313,7 +2313,7 @@ bool RealtekSDXCSlot::start(IOService* provider)
 
     this->driver = driver;
     
-    //this->registerService();
+    this->registerService();
     
     pinfo("The host driver has been published.");
     

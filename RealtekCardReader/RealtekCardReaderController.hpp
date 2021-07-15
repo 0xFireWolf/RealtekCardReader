@@ -11,7 +11,7 @@
 #include <IOKit/IOBufferMemoryDescriptor.h>
 #include <IOKit/IOWorkLoop.h>
 #include <IOKit/IOCommandGate.h>
-#include "AppleSDXC.hpp"
+#include "WolfsSDXC.hpp"
 #include "ClosedRange.hpp"
 #include "Utilities.hpp"
 #include "Debug.hpp"
@@ -25,7 +25,7 @@ class RealtekSDXCSlot;
 /// @note This is the base class of all Realtek PCIe/USB-based card reader controllers
 ///       and defines the interface for the controller-independent host device.
 ///
-class RealtekCardReaderController: public AppleSDXC
+class RealtekCardReaderController: public WolfsSDXC
 {
     //
     // MARK: - Constructors & Destructors
@@ -33,7 +33,7 @@ class RealtekCardReaderController: public AppleSDXC
     
     OSDeclareAbstractStructors(RealtekCardReaderController);
     
-    using super = AppleSDXC;
+    using super = WolfsSDXC;
     
     //
     // MARK: - Controller-Independent Data Structures (Public)

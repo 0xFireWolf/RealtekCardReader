@@ -1,12 +1,12 @@
 //
-//  AppleSDXC.hpp
+//  WolfsSDXC.hpp
 //  RealtekCardReader
 //
 //  Created by FireWolf on 6/10/21.
 //
 
-#ifndef AppleSDXC_hpp
-#define AppleSDXC_hpp
+#ifndef WolfsSDXC_hpp
+#define WolfsSDXC_hpp
 
 #include <IOKit/IOService.h>
 
@@ -16,15 +16,15 @@
 ///
 /// @see /System/Library/SystemProfiler/SPCardReaderReporter.spreporter
 ///
-class AppleSDXC: public IOService
+class WolfsSDXC: public IOService
 {
     //
     // MARK: - Constructors & Destructors
     //
     
-    OSDeclareDefaultStructors(AppleSDXC);
+    OSDeclareDefaultStructors(WolfsSDXC);
     
     using super = IOService;
 };
 
-#endif /* AppleSDXC_hpp */
+#endif /* WolfsSDXC_hpp */

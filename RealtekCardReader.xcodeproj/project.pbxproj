@@ -82,10 +82,10 @@
 		D5FF56472671484600B0143E /* IOSDBlockRequestEventSource.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF56452671484600B0143E /* IOSDBlockRequestEventSource.hpp */; };
 		D5FF564B26715FBE00B0143E /* IOSDCardEventSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF564926715FBE00B0143E /* IOSDCardEventSource.cpp */; };
 		D5FF564C26715FBE00B0143E /* IOSDCardEventSource.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF564A26715FBE00B0143E /* IOSDCardEventSource.hpp */; };
-		D5FF564F267221B100B0143E /* AppleSDXCSlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF564D267221B100B0143E /* AppleSDXCSlot.cpp */; };
-		D5FF5650267221B100B0143E /* AppleSDXCSlot.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF564E267221B100B0143E /* AppleSDXCSlot.hpp */; };
-		D5FF5653267225D800B0143E /* AppleSDXC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF5651267225D800B0143E /* AppleSDXC.cpp */; };
-		D5FF5654267225D800B0143E /* AppleSDXC.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF5652267225D800B0143E /* AppleSDXC.hpp */; };
+		D5FF564F267221B100B0143E /* WolfsSDXCSlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF564D267221B100B0143E /* WolfsSDXCSlot.cpp */; };
+		D5FF5650267221B100B0143E /* WolfsSDXCSlot.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF564E267221B100B0143E /* WolfsSDXCSlot.hpp */; };
+		D5FF5653267225D800B0143E /* WolfsSDXC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF5651267225D800B0143E /* WolfsSDXC.cpp */; };
+		D5FF5654267225D800B0143E /* WolfsSDXC.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF5652267225D800B0143E /* WolfsSDXC.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -169,10 +169,10 @@
 		D5FF56452671484600B0143E /* IOSDBlockRequestEventSource.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDBlockRequestEventSource.hpp; sourceTree = "<group>"; };
 		D5FF564926715FBE00B0143E /* IOSDCardEventSource.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDCardEventSource.cpp; sourceTree = "<group>"; };
 		D5FF564A26715FBE00B0143E /* IOSDCardEventSource.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDCardEventSource.hpp; sourceTree = "<group>"; };
-		D5FF564D267221B100B0143E /* AppleSDXCSlot.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AppleSDXCSlot.cpp; sourceTree = "<group>"; };
-		D5FF564E267221B100B0143E /* AppleSDXCSlot.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = AppleSDXCSlot.hpp; sourceTree = "<group>"; };
-		D5FF5651267225D800B0143E /* AppleSDXC.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AppleSDXC.cpp; sourceTree = "<group>"; };
-		D5FF5652267225D800B0143E /* AppleSDXC.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = AppleSDXC.hpp; sourceTree = "<group>"; };
+		D5FF564D267221B100B0143E /* WolfsSDXCSlot.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = WolfsSDXCSlot.cpp; sourceTree = "<group>"; };
+		D5FF564E267221B100B0143E /* WolfsSDXCSlot.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = WolfsSDXCSlot.hpp; sourceTree = "<group>"; };
+		D5FF5651267225D800B0143E /* WolfsSDXC.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = WolfsSDXC.cpp; sourceTree = "<group>"; };
+		D5FF5652267225D800B0143E /* WolfsSDXC.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = WolfsSDXC.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -206,8 +206,8 @@
 		D51D6FA626622C4E00871FA3 /* Card Slots */ = {
 			isa = PBXGroup;
 			children = (
-				D5FF564D267221B100B0143E /* AppleSDXCSlot.cpp */,
-				D5FF564E267221B100B0143E /* AppleSDXCSlot.hpp */,
+				D5FF564D267221B100B0143E /* WolfsSDXCSlot.cpp */,
+				D5FF564E267221B100B0143E /* WolfsSDXCSlot.hpp */,
 				D59E0781266C09E0009E96EE /* IOSDHostDevice.cpp */,
 				D59E0782266C09E0009E96EE /* IOSDHostDevice.hpp */,
 				D51D6F9D2660BE3800871FA3 /* RealtekSDXCSlot.cpp */,
@@ -232,8 +232,8 @@
 		D51D6FA826622CA000871FA3 /* Base */ = {
 			isa = PBXGroup;
 			children = (
-				D5FF5651267225D800B0143E /* AppleSDXC.cpp */,
-				D5FF5652267225D800B0143E /* AppleSDXC.hpp */,
+				D5FF5651267225D800B0143E /* WolfsSDXC.cpp */,
+				D5FF5652267225D800B0143E /* WolfsSDXC.hpp */,
 				D595F81A269A3467005893B8 /* RealtekCardReaderController.cpp */,
 				D595F81B269A3467005893B8 /* RealtekCardReaderController.hpp */,
 				D5D2EE8625DF1316004B5310 /* RealtekPCICardReaderController.cpp */,
@@ -284,6 +284,7 @@
 		D5D2EE0F25DE007E004B5310 = {
 			isa = PBXGroup;
 			children = (
+				D57FA6AC267D50400023097C /* LICENSE */,
 				D57FA6A2267C07D90023097C /* Docs */,
 				D5D2EE1B25DE007E004B5310 /* RealtekCardReader */,
 				D5D2EE1A25DE007E004B5310 /* Products */,
@@ -308,10 +309,9 @@
 				D51D6FA926622CBC00871FA3 /* Definitions */,
 				D5FF56482671490300B0143E /* Host Drivers */,
 				D51D6FAA26622CDC00871FA3 /* Miscellaneous */,
-				D57FA6A1267C007A0023097C /* README.md */,
-				D5E8E0C3267FEF1400703407 /* Changelog.md */,
 				D5D2EE2025DE007E004B5310 /* Info.plist */,
-				D57FA6AC267D50400023097C /* LICENSE */,
+				D5E8E0C3267FEF1400703407 /* Changelog.md */,
+				D57FA6A1267C007A0023097C /* README.md */,
 			);
 			path = RealtekCardReader;
 			sourceTree = "<group>";
@@ -467,7 +467,7 @@
 				D5E8E0C7267FF24B00703407 /* RealtekRTS8411SeriesController.hpp in Headers */,
 				D5E8E0D726803DC400703407 /* RealtekRTS5227SeriesController.hpp in Headers */,
 				D57FA69C267B0BB00023097C /* IOSDSimpleBlockRequest.hpp in Headers */,
-				D5FF5654267225D800B0143E /* AppleSDXC.hpp in Headers */,
+				D5FF5654267225D800B0143E /* WolfsSDXC.hpp in Headers */,
 				D59E078E266C0FD3009E96EE /* ClosedRange.hpp in Headers */,
 				D59E076C2664B53E009E96EE /* IOSDBusConfig.hpp in Headers */,
 				D59E07802669F153009E96EE /* IOSDCard.hpp in Headers */,
@@ -479,7 +479,7 @@
 				D57B48B725EB08B1000D3E67 /* Utilities.hpp in Headers */,
 				D59E076826646BE3009E96EE /* RealtekSDCommand.hpp in Headers */,
 				D5E8E0C2267DA32500703407 /* RealtekRTS5229Controller.hpp in Headers */,
-				D5FF5650267221B100B0143E /* AppleSDXCSlot.hpp in Headers */,
+				D5FF5650267221B100B0143E /* WolfsSDXCSlot.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -555,7 +555,7 @@
 				D57FA6A5267C1F340023097C /* RealtekRTS5209Controller.cpp in Sources */,
 				D59E0791266DF6B5009E96EE /* IOSDBlockRequest.cpp in Sources */,
 				D57FA6A9267D2C8D0023097C /* RealtekRTS524AController.cpp in Sources */,
-				D5FF5653267225D800B0143E /* AppleSDXC.cpp in Sources */,
+				D5FF5653267225D800B0143E /* WolfsSDXC.cpp in Sources */,
 				D5E8E0C1267DA32500703407 /* RealtekRTS5229Controller.cpp in Sources */,
 				D51D6F9F2660BE3800871FA3 /* RealtekSDXCSlot.cpp in Sources */,
 				D5D2EE8825DF1316004B5310 /* RealtekPCICardReaderController.cpp in Sources */,
@@ -572,7 +572,7 @@
 				D5E8E0DA26803DDE00703407 /* RealtekRTS5227Controller.cpp in Sources */,
 				D595F81826996F16005893B8 /* RealtekUSBCardReaderController.cpp in Sources */,
 				D5E8E0CA267FF26000703407 /* RealtekRTS5286Controller.cpp in Sources */,
-				D5FF564F267221B100B0143E /* AppleSDXCSlot.cpp in Sources */,
+				D5FF564F267221B100B0143E /* WolfsSDXCSlot.cpp in Sources */,
 				D57FA69F267B0BBE0023097C /* IOSDComplexBlockRequest.cpp in Sources */,
 				D5FF564B26715FBE00B0143E /* IOSDCardEventSource.cpp in Sources */,
 				D595F824269B7EC7005893B8 /* IOUSBHostInterface.cpp in Sources */,

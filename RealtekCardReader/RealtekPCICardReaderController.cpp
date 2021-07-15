@@ -3251,7 +3251,7 @@ bool RealtekPCICardReaderController::start(IOService* provider)
         pinfo("The card is not present when the driver starts.");
     }
     
-    //this->registerService();
+    this->registerService();
     
     pinfo("ASPM Enabled: %s.", YESNO(this->isASPMEnabled()));
     

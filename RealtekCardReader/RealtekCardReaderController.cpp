@@ -13,7 +13,7 @@
 // MARK: - Meta Class Definitions
 //
 
-OSDefineMetaClassAndAbstractStructors(RealtekCardReaderController, AppleSDXC);
+OSDefineMetaClassAndAbstractStructors(RealtekCardReaderController, WolfsSDXC);
 
 //
 // MARK: - Access Chip Registers

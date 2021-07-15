@@ -9,7 +9,7 @@
 #define RealtekSDXCSlot_hpp
 
 #include "RealtekCardReaderController.hpp"
-#include "AppleSDXCSlot.hpp"
+#include "WolfsSDXCSlot.hpp"
 #include "Utilities.hpp"
 
 // Forward declarations
@@ -22,7 +22,7 @@ struct RealtekSDCommandWithBlockDataTransferRequest;
 ///
 /// Represents a generic Realtek SD (SC/HC/XC) card slot independent of the concrete card reader controller
 ///
-class RealtekSDXCSlot: public AppleSDXCSlot
+class RealtekSDXCSlot: public WolfsSDXCSlot
 {
     //
     // MARK: - Constructors & Destructors
@@ -30,7 +30,7 @@ class RealtekSDXCSlot: public AppleSDXCSlot
     
     OSDeclareAbstractStructors(RealtekSDXCSlot);
     
-    using super = AppleSDXCSlot;
+    using super = WolfsSDXCSlot;
     
     //
     // MARK: - Type Definitions

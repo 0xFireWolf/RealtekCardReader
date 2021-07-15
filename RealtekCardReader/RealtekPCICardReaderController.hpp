@@ -21,7 +21,7 @@
 #include "RealtekPCIRegisters.hpp"
 #include "Utilities.hpp"
 #include "Debug.hpp"
-#include "AppleSDXC.hpp"
+#include "WolfsSDXC.hpp"
 #include "BitOptions.hpp"
 #include "ClosedRange.hpp"
 

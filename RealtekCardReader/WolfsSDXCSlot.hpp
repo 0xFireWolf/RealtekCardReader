@@ -1,12 +1,12 @@
 //
-//  AppleSDXCSlot.hpp
+//  WolfsSDXCSlot.hpp
 //  RealtekCardReader
 //
 //  Created by FireWolf on 6/10/21.
 //
 
-#ifndef AppleSDXCSlot_hpp
-#define AppleSDXCSlot_hpp
+#ifndef WolfsSDXCSlot_hpp
+#define WolfsSDXCSlot_hpp
 
 #include "IOSDHostDevice.hpp"
 
@@ -16,15 +16,15 @@
 ///
 /// @see /System/Library/SystemProfiler/SPCardReaderReporter.spreporter
 ///
-class AppleSDXCSlot: public IOSDHostDevice
+class WolfsSDXCSlot: public IOSDHostDevice
 {
     //
     // MARK: - Constructors & Destructors
     //
     
-    OSDeclareAbstractStructors(AppleSDXCSlot);
+    OSDeclareAbstractStructors(WolfsSDXCSlot);
     
     using super = IOSDHostDevice;
 };
 
-#endif /* AppleSDXCSlot_hpp */
+#endif /* WolfsSDXCSlot_hpp */
