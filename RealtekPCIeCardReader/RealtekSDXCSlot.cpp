@@ -1853,26 +1853,9 @@ UInt8 RealtekSDXCSlot::searchFinalPhase(UInt32 phaseMap)
 ///
 IOReturn RealtekSDXCSlot::waitForIdleDataLine()
 {
-    using namespace RTSX::COM::Chip::SD;
-    
-    UInt8 status;
-    
-    IOReturn retVal;
-    
-    for (auto attempt = 0; attempt < 100; attempt += 1)
+    for (auto attempt = 0; attempt < 200; attempt += 1)
     {
-        // TODO: Use `Controller::isDataLineIdle()` or move the entire func to controller
-        // TODO: e.g, Controller::WaitForIdleDataLine()
-        retVal = this->controller->readChipRegister(rDATSTATE, status);
-        
-        if (retVal != kIOReturnSuccess)
-        {
-            perr("Failed to read the data line status. Error = 0x%x.", retVal);
-            
-            return retVal;
-        }
-        
-        if (BitOptions(status).contains(DATSTATE::kIdle))
+        if (!this->controller->isCardDataLineBusy())
         {
             return kIOReturnSuccess;
         }

@@ -349,7 +349,6 @@ private:
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, other values otherwise.
     /// @note Port: This function replaces `sd_wait_data_idle()` defined in `rtsx_pci_sdmmc.c`.
     ///
-    DEPRECATE("Need further investigation. Will be replaced by Controller::waitForIdleDataLine().")
     IOReturn waitForIdleDataLine();
     
     ///
