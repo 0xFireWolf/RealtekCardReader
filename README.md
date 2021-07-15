@@ -1,9 +1,9 @@
-#  Realtek PCIe Card Reader Driver for macOS
+#  Realtek Card Reader Driver for macOS
 Unleash the full potential of your SDXC UHS-I cards
 
 ## Introduction
 
-An unofficial macOS kernel extension for Realtek PCIe-based SD card readers.  
+An unofficial macOS kernel extension for Realtek PCIe/USB-based SD card readers.  
 It uses the Linux driver as a reference implementation but is written from scratch and carefully designed for macOS to deliver the best performance.
 
 ## Features
@@ -19,10 +19,11 @@ It uses the Linux driver as a reference implementation but is written from scrat
 - SD Express cards are not supported
 
 ## Current Status
-- **Last Updated:** Jul 8, 2021
+- **Last Updated:** Jul 14, 2021
 - **Reference:** [Linux Kernel 5.11](https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.11.tar.xz)
-- **Driver Status:** Pre-1.0 Beta (v0.9.4)
+- **Driver Status:** Pre-1.0 Beta (v0.9.5)
     - Basic power management is now available.
+    - USB-based RTS5129, 5139 and 5179 card readers are now supported.
     - I/O performance and the overall driver stability are of the most concern at this moment.
 
 ## Supported Systems
@@ -34,8 +35,11 @@ It uses the Linux driver as a reference implementation but is written from scrat
 - Other systems are not tested yet.
 
 ## Supported Devices
-| Series |   PCI ID   |               Name               | Supported | Since |
+| Series | Device ID  |               Name               | Supported | Since |
 |:------:|:----------:|:--------------------------------:|:---------:|:-----:|
+|  51X9  | 0x0BDA0129 |  RTS5129 USB 2.0/3.0 Card Reader |    Yes    | 0.9.5 |
+|  51X9  | 0x0BDA0139 |  RTS5139 USB 2.0/3.0 Card Reader |    Yes    | 0.9.5 |
+|  51X9  | 0x0BDA0140 |  RTS5179 USB 2.0/3.0 Card Reader |    Yes    | 0.9.5 |
 |  5209  | 0x10EC5209 |  RTS5209 PCI Express Card Reader |    Yes    | 0.9.1 |
 |  5227  | 0x10EC5227 |  RTS5227 PCI Express Card Reader |    Yes    | 0.9.3 |
 |  5227  | 0x10EC522A |  RTS522A PCI Express Card Reader |    Yes    | 0.9.3 |
@@ -54,6 +58,7 @@ It uses the Linux driver as a reference implementation but is written from scrat
 - By design, all listed devices are supported, and devices that have the same series share most of the controller code.
 - RTS525A has the highest priority than other chips, because that's the only chip available for me to test the driver.
 - If a device's support status is "Not Yet", its controller is not implemented yet.
+- Other Realtek USB card readers (e.g., RTS5138) conform to the USB Attached SCSI (UAS) protocol and therefore may be supported by the native driver.
 
 ## Questions, Issues and Documentation
 
@@ -83,7 +88,7 @@ If you would like to support my work, please consider a donation.
 
 ## Credits
 - [Acidanthera](https://github.com/acidanthera) for [MacKernelSDK](https://github.com/acidanthera/MacKernelSDK)
-- [Realtek](https://www.realtek.com/) for the Linux [RTSX PCI](https://github.com/torvalds/linux/tree/master/drivers/misc/cardreader) driver
+- [Realtek](https://www.realtek.com/) for the Linux [RTSX PCI/USB](https://github.com/torvalds/linux/tree/master/drivers/misc/cardreader) driver
 - [FireWolf](https://github.com/0xFireWolf) for developing the card reader driver for macOS
 
 ## License
