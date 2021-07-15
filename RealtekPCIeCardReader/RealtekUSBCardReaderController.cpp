@@ -1194,6 +1194,50 @@ bool RealtekUSBCardReaderController::isCardPresent()
     return BitOptions<UInt16>(status).contains(CardStatus::kSDPresent);
 }
 
+///
+/// Check whether the command line of the card is busy
+///
+/// @return `true` if the card CMD line is busy, `false` otherwise.
+/// @warning This function returns `true` if failed to read the register.
+///
+bool RealtekUSBCardReaderController::isCardCommandLineBusy()
+{
+    using namespace RTSX::UCR::Chip::SD;
+    
+    UInt8 status = 0;
+    
+    if (this->readChipRegisterViaControlEndpoint(rCMDSTATE, status) != kIOReturnSuccess)
+    {
+        perr("Failed to read the command state register. Will assume that the command line is busy.");
+        
+        return true;
+    }
+    
+    return !BitOptions(status).contains(CMDSTATE::kIdle);
+}
+
+///
+/// Check whether the data line of the card is busy
+///
+/// @return `true` if the card DAT lines are busy, `false` otherwise.
+/// @warning This function returns `true` if failed to read the register.
+///
+bool RealtekUSBCardReaderController::isCardDataLineBusy()
+{
+    using namespace RTSX::UCR::Chip::SD;
+    
+    UInt8 status = 0;
+    
+    if (this->readChipRegisterViaControlEndpoint(rDATSTATE, status) != kIOReturnSuccess)
+    {
+        perr("Failed to read the command state register. Will assume that the data lines are busy.");
+        
+        return true;
+    }
+    
+    return !BitOptions(status).contains(DATSTATE::kIdle);
+}
+
 //
 // MARK: - Card Pull Control Management
 //

@@ -1543,6 +1543,50 @@ bool RealtekPCICardReaderController::isCardPresent()
     return BitOptions(this->readRegister32(rBIPR)).contains(BIPR::kSDExists);
 }
 
+///
+/// Check whether the command line of the card is busy
+///
+/// @return `true` if the card CMD line is busy, `false` otherwise.
+/// @warning This function returns `true` if failed to read the register.
+///
+bool RealtekPCICardReaderController::isCardCommandLineBusy()
+{
+    using namespace RTSX::PCR::Chip::SD;
+    
+    UInt8 status = 0;
+    
+    if (this->readChipRegister(rCMDSTATE, status) != kIOReturnSuccess)
+    {
+        perr("Failed to read the command state register. Will assume that the command line is busy.");
+        
+        return true;
+    }
+    
+    return !BitOptions(status).contains(CMDSTATE::kIdle);
+}
+
+///
+/// Check whether the data line of the card is busy
+///
+/// @return `true` if the card DAT lines are busy, `false` otherwise.
+/// @warning This function returns `true` if failed to read the register.
+///
+bool RealtekPCICardReaderController::isCardDataLineBusy()
+{
+    using namespace RTSX::PCR::Chip::SD;
+    
+    UInt8 status = 0;
+    
+    if (this->readChipRegister(rDATSTATE, status) != kIOReturnSuccess)
+    {
+        perr("Failed to read the command state register. Will assume that the data lines are busy.");
+        
+        return true;
+    }
+    
+    return !BitOptions(status).contains(DATSTATE::kIdle);
+}
+
 //
 // MARK: - Overcurrent Protection Support
 //

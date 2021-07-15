@@ -1118,6 +1118,22 @@ public:
     ///
     bool isCardPresent() override;
     
+    ///
+    /// Check whether the command line of the card is busy
+    ///
+    /// @return `true` if the card CMD line is busy, `false` otherwise.
+    /// @warning This function returns `true` if failed to read the register.
+    ///
+    bool isCardCommandLineBusy() override final;
+    
+    ///
+    /// Check whether the data line of the card is busy
+    ///
+    /// @return `true` if the card DAT lines are busy, `false` otherwise.
+    /// @warning This function returns `true` if failed to read the register.
+    ///
+    bool isCardDataLineBusy() override final;
+    
     //
     // MARK: - Overcurrent Protection Support
     //
