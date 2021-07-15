@@ -830,7 +830,7 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// Check whether a card is present
     ///
     /// @return `true` if a card exists, `false` otherwise.
-    /// @note Port: This function replaces `rtsx_pci_card_exist()` and `cd_deglitch()` defined in `rtsx_psr.c`.
+    /// @note Port: This function replaces `sdmmc_get_cd()` defined in `rtsx_usb_sdmmc.c`.
     /// @warning: This function supports SD cards only.
     ///
     bool isCardPresent() override;

@@ -7,6 +7,7 @@
 
 #include "RealtekUSBCardReaderController.hpp"
 #include "RealtekUSBRegisters.hpp"
+#include "RealtekUSBSDXCSlot.hpp"
 #include "BitOptions.hpp"
 
 //
@@ -1177,7 +1178,7 @@ bool RealtekUSBCardReaderController::isCardWriteProtected()
 /// Check whether a card is present
 ///
 /// @return `true` if a card exists, `false` otherwise.
-/// @note Port: This function replaces `rtsx_pci_card_exist()` and `cd_deglitch()` defined in `rtsx_psr.c`.
+/// @note Port: This function replaces `sdmmc_get_cd()` defined in `rtsx_usb_sdmmc.c`.
 /// @warning: This function supports SD cards only.
 ///
 bool RealtekUSBCardReaderController::isCardPresent()
@@ -1834,8 +1835,51 @@ bool RealtekUSBCardReaderController::setupHostBuffer()
 ///
 bool RealtekUSBCardReaderController::createCardSlot()
 {
-    // TODO: IMP THIS
-    return 0;
+    pinfo("Creating the card slot...");
+    
+    RealtekSDXCSlot* slot = OSTypeAlloc(RealtekUSBSDXCSlot);
+    
+    if (slot == nullptr)
+    {
+        perr("Failed to allocate the card slot.");
+        
+        return false;
+    }
+    
+    if (!slot->init())
+    {
+        perr("Failed to initialize the card slot.");
+        
+        slot->release();
+        
+        return false;
+    }
+    
+    if (!slot->attach(this))
+    {
+        perr("Failed to attach the card slot.");
+        
+        slot->release();
+        
+        return false;
+    }
+    
+    if (!slot->start(this))
+    {
+        perr("Failed to start the card slot.");
+        
+        slot->detach(this);
+        
+        slot->release();
+        
+        return false;
+    }
+    
+    this->slot = slot;
+    
+    pinfo("The card slot has been created and published.");
+    
+    return true;
 }
 
 //
@@ -1874,7 +1918,16 @@ void RealtekUSBCardReaderController::tearDownHostBuffer()
 ///
 void RealtekUSBCardReaderController::destroyCardSlot()
 {
-    // TODO: IMP THIS
+    pinfo("Stopping the card slot...");
+    
+    if (this->slot != nullptr)
+    {
+        this->slot->stop(this);
+        
+        this->slot->detach(this);
+        
+        OSSafeReleaseNULL(this->slot);
+    }
 }
 
 //
@@ -1998,6 +2051,20 @@ bool RealtekUSBCardReaderController::start(IOService* provider)
         perr("Failed to create the card slot.");
         
         goto error3;
+    }
+    
+    // USB-based card readers start when the user inserts a card
+    // Check whether the card is still there
+    if (this->isCardPresent())
+    {
+        pinfo("Detected a card when the driver starts. Will notify the host device.");
+        
+        // Notify the host device
+        this->slot->onSDCardInsertedGated();
+    }
+    else
+    {
+        pinfo("The card is not present when the driver starts.");
     }
     
     //this->registerService();
