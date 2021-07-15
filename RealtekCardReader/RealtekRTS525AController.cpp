@@ -146,9 +146,9 @@ IOReturn RealtekRTS525AController::initParameters()
     
     this->parameters.initialTxClockPhase = {25, 29, 11};
     
-    this->parameters.pm.ltrL1OffSSPowerGate = LTR_L1OFF_SSPWRGATE_5250_DEF;
+    this->parameters.pm.ltrL1OffSSPowerGate = LTRDefaults::kL1OffSSPowerGate_525A;
     
-    this->parameters.pm.ltrL1OffSnoozeSSPowerGate = LTR_L1OFF_SNOOZE_SSPWRGATE_5250_DEF;
+    this->parameters.pm.ltrL1OffSnoozeSSPowerGate = LTRDefaults::kL1OffSnoozeSSPowerGate_525A;
     
     this->parameters.ocp.enable = true;
     

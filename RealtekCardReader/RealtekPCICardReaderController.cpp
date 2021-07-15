@@ -2029,7 +2029,7 @@ IOReturn RealtekPCICardReaderController::writePingPongBuffer(const UInt8* source
 ///
 /// @return The clock phase.
 ///
-ClockPhase RealtekPCICardReaderController::getRxClockPhase()
+RealtekPCICardReaderController::ClockPhase RealtekPCICardReaderController::getRxClockPhase()
 {
     return this->parameters.initialRxClockPhase;
 }
@@ -2039,7 +2039,7 @@ ClockPhase RealtekPCICardReaderController::getRxClockPhase()
 ///
 /// @return The clock phase.
 ///
-ClockPhase RealtekPCICardReaderController::getTxClockPhase()
+RealtekPCICardReaderController::ClockPhase RealtekPCICardReaderController::getTxClockPhase()
 {
     return this->parameters.initialTxClockPhase;
 }

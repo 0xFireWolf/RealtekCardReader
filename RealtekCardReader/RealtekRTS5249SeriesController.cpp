@@ -232,17 +232,17 @@ IOReturn RealtekRTS5249SeriesController::initParameters()
     
     this->parameters.pm.enableLTRMode = true;
     
-    this->parameters.pm.ltrActiveLatency = LTR_ACTIVE_LATENCY_DEF;
+    this->parameters.pm.ltrActiveLatency = LTRDefaults::kActiveLatency;
     
-    this->parameters.pm.ltrIdleLatency = LTR_IDLE_LATENCY_DEF;
+    this->parameters.pm.ltrIdleLatency = LTRDefaults::kIdleLatency;
     
-    this->parameters.pm.ltrL1OffLatency = LTR_L1OFF_LATENCY_DEF;
+    this->parameters.pm.ltrL1OffLatency = LTRDefaults::kL1OffLatency;
     
-    this->parameters.pm.ltrSnoozeDelay = L1_SNOOZE_DELAY_DEF;
+    this->parameters.pm.ltrSnoozeDelay = LTRDefaults::kL1SnoozeDelay;
     
-    this->parameters.pm.ltrL1OffSSPowerGate = LTR_L1OFF_SSPWRGATE_5249_DEF;
+    this->parameters.pm.ltrL1OffSSPowerGate = LTRDefaults::kL1OffSSPowerGate_5249;
     
-    this->parameters.pm.ltrL1OffSnoozeSSPowerGate = LTR_L1OFF_SNOOZE_SSPWRGATE_5249_DEF;
+    this->parameters.pm.ltrL1OffSnoozeSSPowerGate = LTRDefaults::kL1OffSnoozeSSPowerGate_5249;
     
     pinfo("Device-specific parameters have been initialized.");
     

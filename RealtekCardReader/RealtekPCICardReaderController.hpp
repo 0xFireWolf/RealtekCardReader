@@ -25,33 +25,6 @@
 #include "BitOptions.hpp"
 #include "ClosedRange.hpp"
 
-// TODO: RELOCATED THIS
-// TODO: Specific to the PCIe-based controller
-/// TX/RX clock phase
-struct ClockPhase
-{
-    UInt8 sdr104, sdr50, ddr50;
-    
-    ClockPhase()
-        : sdr104(0), sdr50(0), ddr50(0) {}
-    
-    ClockPhase(UInt8 sdr104, UInt8 sdr50, UInt8 ddr50)
-        : sdr104(sdr104), sdr50(sdr50), ddr50(ddr50) {}
-};
-
-// TODO: RELOCATE THIS
-// TODO: Specific to the PCIe-based controller
-#define LTR_ACTIVE_LATENCY_DEF        0x883C
-#define LTR_IDLE_LATENCY_DEF        0x892C
-#define LTR_L1OFF_LATENCY_DEF        0x9003
-#define L1_SNOOZE_DELAY_DEF        1
-#define LTR_L1OFF_SSPWRGATE_522A_DEF        0x7F
-#define LTR_L1OFF_SSPWRGATE_5249_DEF        0xAF
-#define LTR_L1OFF_SSPWRGATE_5250_DEF        0xFF
-#define LTR_L1OFF_SNOOZE_SSPWRGATE_522A_DEF    0x78
-#define LTR_L1OFF_SNOOZE_SSPWRGATE_5249_DEF    0xAC
-#define LTR_L1OFF_SNOOZE_SSPWRGATE_5250_DEF    0xF8
-
 /// Forward Declaration (Client of the card reader controller)
 class RealtekSDXCSlot;
 
@@ -115,6 +88,25 @@ class RealtekPCICardReaderController: public RealtekCardReaderController
     /// A sequence of chip registers to switch the bus speed mode to Default Speed
     static const ChipRegValuePair kBusTimingTablePairsDefaultSpeed[];
     static const SimpleRegValuePairs kBusTimingTableDefaultSpeed;
+    
+    //
+    // MARK: - Constants: LTR Configurations
+    //
+    
+    /// A namespace where LTR-related constants are defined
+    struct LTRDefaults
+    {
+        static constexpr UInt32 kActiveLatency = 0x883C;
+        static constexpr UInt32 kIdleLatency = 0x892C;
+        static constexpr UInt32 kL1OffLatency = 0x9003;
+        static constexpr UInt32 kL1SnoozeDelay = 1;
+        static constexpr UInt32 kL1OffSSPowerGate_522A = 0x7F;
+        static constexpr UInt32 kL1OffSSPowerGate_5249 = 0xAF;
+        static constexpr UInt32 kL1OffSSPowerGate_525A = 0xFF;
+        static constexpr UInt32 kL1OffSnoozeSSPowerGate_522A = 0x78;
+        static constexpr UInt32 kL1OffSnoozeSSPowerGate_5249 = 0xAC;
+        static constexpr UInt32 kL1OffSnoozeSSPowerGate_525A = 0xF8;
+    };
     
     //
     // MARK: - Private Data Structures
@@ -222,6 +214,18 @@ class RealtekPCICardReaderController: public RealtekCardReaderController
         {
             return this->value == Value::kD;
         }
+    };
+    
+    /// TX/RX clock phase
+    struct ClockPhase
+    {
+        UInt8 sdr104, sdr50, ddr50;
+        
+        ClockPhase()
+            : sdr104(0), sdr50(0), ddr50(0) {}
+        
+        ClockPhase(UInt8 sdr104, UInt8 sdr50, UInt8 ddr50)
+            : sdr104(sdr104), sdr50(sdr50), ddr50(ddr50) {}
     };
       
     /// Device-specific parameters
