@@ -11,7 +11,7 @@
 #include "RealtekRTS5227SeriesController.hpp"
 
 ///
-/// Represents the RTS5227 card reader controller
+/// Represents the RTS522A card reader controller
 ///
 class RealtekRTS522AController: public RealtekRTS5227SeriesController
 {

@@ -15,7 +15,10 @@
 ///
 class RealtekRTS5249Controller: public RealtekRTS5249SeriesController
 {
+    //
     // MARK: - Constructors & Destructors
+    //
+    
     OSDeclareDefaultStructors(RealtekRTS5249Controller);
     
     using super = RealtekRTS5249SeriesController;

@@ -38,7 +38,7 @@ IOReturn RealtekRTS8411SeriesController::turnOnLED()
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
 /// @note Port: This function replaces `turn_off_led()` defined in `struct pcr_ops`.
 ///             The base controller class implements this function by changing the value of `GPIO_CTL`.
-///             RTS5209, 5286, 5287 and 5289 controllers must override this function.
+///             RTS5209, 5260, 5286, 5287 and 5289 controllers must override this function.
 ///
 IOReturn RealtekRTS8411SeriesController::turnOffLED()
 {
