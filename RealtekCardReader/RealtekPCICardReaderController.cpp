@@ -1746,7 +1746,7 @@ bool RealtekPCICardReaderController::shouldPowerOffCardOnOvercurrentInterruptGat
     }
     
     // Guard: Check the current OCP status
-    if (!BitOptions(status).contains(OCP::STAT::kSDNow | OCP::STAT::kSDEver))
+    if (!BitOptions(status).containsOneOf(OCP::STAT::kSDNow, OCP::STAT::kSDEver))
     {
         pinfo("The current OCP status 0x%x shows that no overcurrent event detected on SD.", status);
         

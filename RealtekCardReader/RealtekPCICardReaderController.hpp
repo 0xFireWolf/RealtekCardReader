@@ -1176,9 +1176,8 @@ protected:
     /// @param status The status on return
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_get_ocpstat()` defined in `rtsx_psr.c`.
-    ///             RTS5228, RTS5260 and RTS5261 controllers must override this function.
     ///
-    virtual IOReturn getOvercurrentProtectionStatus(UInt8& status);
+    IOReturn getOvercurrentProtectionStatus(UInt8& status);
     
     ///
     /// Clear the overcurrent protection status
