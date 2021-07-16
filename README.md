@@ -11,8 +11,11 @@ It uses the Linux driver as a reference implementation but is written from scrat
 - Supports SDSC/HC/XC cards
 - Supports the default and the high speed modes
 - Supports UHS-I SDR12/25/50/104 and DDR50 modes
-- Recognizable as a built-in card reader device
+- Recognizable as a built-in card reader device*
 - Device-independent SD host driver stack
+
+#### Notes:
+- [RealtekCardReaderFriend](https://github.com/0xFireWolf/RealtekCardReaderFriend/) is required to enable this feature as of v0.9.5.
 
 ## Limitations
 - MMC cards are not supported
