@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D5096F0A26A132C00065BE70 /* RealtekRTS5260Controller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5096F0826A132C00065BE70 /* RealtekRTS5260Controller.cpp */; };
+		D5096F0B26A132C00065BE70 /* RealtekRTS5260Controller.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5096F0926A132C00065BE70 /* RealtekRTS5260Controller.hpp */; };
 		D51D6F9C2660B7E100871FA3 /* SD.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D51D6F9A2660B7E100871FA3 /* SD.hpp */; };
 		D51D6F9F2660BE3800871FA3 /* RealtekSDXCSlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D51D6F9D2660BE3800871FA3 /* RealtekSDXCSlot.cpp */; };
 		D51D6FA02660BE3800871FA3 /* RealtekSDXCSlot.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D51D6F9E2660BE3800871FA3 /* RealtekSDXCSlot.hpp */; };
@@ -89,6 +91,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D5096F0826A132C00065BE70 /* RealtekRTS5260Controller.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekRTS5260Controller.cpp; sourceTree = "<group>"; };
+		D5096F0926A132C00065BE70 /* RealtekRTS5260Controller.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS5260Controller.hpp; sourceTree = "<group>"; };
 		D51D6F9A2660B7E100871FA3 /* SD.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SD.hpp; sourceTree = "<group>"; };
 		D51D6F9D2660BE3800871FA3 /* RealtekSDXCSlot.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekSDXCSlot.cpp; sourceTree = "<group>"; };
 		D51D6F9E2660BE3800871FA3 /* RealtekSDXCSlot.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekSDXCSlot.hpp; sourceTree = "<group>"; };
@@ -380,6 +384,8 @@
 		D5D2EE9225DF1C4A004B5310 /* RTS5260 */ = {
 			isa = PBXGroup;
 			children = (
+				D5096F0826A132C00065BE70 /* RealtekRTS5260Controller.cpp */,
+				D5096F0926A132C00065BE70 /* RealtekRTS5260Controller.hpp */,
 			);
 			name = RTS5260;
 			sourceTree = "<group>";
@@ -468,6 +474,7 @@
 				D5E8E0D726803DC400703407 /* RealtekRTS5227SeriesController.hpp in Headers */,
 				D57FA69C267B0BB00023097C /* IOSDSimpleBlockRequest.hpp in Headers */,
 				D5FF5654267225D800B0143E /* WolfsSDXC.hpp in Headers */,
+				D5096F0B26A132C00065BE70 /* RealtekRTS5260Controller.hpp in Headers */,
 				D59E078E266C0FD3009E96EE /* ClosedRange.hpp in Headers */,
 				D59E076C2664B53E009E96EE /* IOSDBusConfig.hpp in Headers */,
 				D59E07802669F153009E96EE /* IOSDCard.hpp in Headers */,
@@ -584,6 +591,7 @@
 				D5FF56422670B1C500B0143E /* IOSDBlockRequestQueue.cpp in Sources */,
 				D59E077726675FB9009E96EE /* IOSDHostDriver.cpp in Sources */,
 				D59B34B42651C23F004C3348 /* RealtekRTS5249SeriesController.cpp in Sources */,
+				D5096F0A26A132C00065BE70 /* RealtekRTS5260Controller.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

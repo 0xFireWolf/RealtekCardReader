@@ -310,6 +310,15 @@ namespace RTSX::NAMESPACE::Chip::SD
     {
         RTSXDeclareChipRegisterValue(kIdle, 0x80);
     }
+    
+    // RTS5260 only
+    RTSXDeclareChipRegister(rSTOPCLK, 0xFDB8);
+    namespace STOPCLK
+    {
+        RTSXDeclareChipRegisterValue(kEnableConfig, 0x04);
+        RTSXDeclareChipRegisterValue(kConfig1, 0x02);
+        RTSXDeclareChipRegisterValue(kConfig0, 0x01);
+    }
 }
 
 #endif /* RealtekCommonRegisters_hpp */

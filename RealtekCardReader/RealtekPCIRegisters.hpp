@@ -340,6 +340,18 @@ namespace RTSX::PCR::Chip::OLT_LED
 /// Chip registers that manages GPIO pins
 namespace RTSX::PCR::Chip::GPIO
 {
+    /// Address of the register that manages GPIO pins (RTS5260 only)
+    RTSXDeclareChipRegister(rCTL0, 0xFC1A);
+    
+    /// Special values and flags for the CTL0 register
+    namespace CTL0
+    {
+        /// Bit 0 is set to turn on the LED
+        RTSXDeclareChipRegisterValue(kLEDMask, 0x01);
+        RTSXDeclareChipRegisterValue(kTurnOnLEDValue, 0x01);
+        RTSXDeclareChipRegisterValue(kTurnOffLEDValue, 0x00);
+    }
+    
     /// Address of the register that manages GPIO pins
     RTSXDeclareChipRegister(rCTL, 0xFC1F);
     
@@ -536,6 +548,20 @@ namespace RTSX::PCR::Chip::CARD
         RTSXDeclareChipRegisterValue(kMask, 0x1E);
     }
     
+    // RTS5260: Pre-R/W mode?
+    RTSXDeclareChipRegister(rPRWMODE, 0xFD70);
+    namespace PRWMODE
+    {
+        RTSXDeclareChipRegisterValue(kEnableInfiniteMode, 0x01);
+    }
+    
+    // RTS5228 and RTS5261
+    RTSXDeclareChipRegister(rCRCDUMMY0, 0xFD71);
+    namespace CRCDUMMY0
+    {
+        RTSXDeclareChipRegisterValue(kPowAutoPD, 1 << 0);
+    }
+    
     /// 8411 series specific
     RTSXDeclareChipRegister(rPADCTL, 0xFD73);
     namespace PADCTL
@@ -708,6 +734,33 @@ namespace RTSX::PCR::Chip::OCP
         /// Bit 6 is set to indicate that SDVIO has an overcurrent event now
         RTSXDeclareChipRegisterValue(kSDVIONow, 1 << 6);
     }
+    
+    /// RTS5260: DV3318
+    namespace DV3318
+    {
+        /// Address of the register that controls the overcurrent protection
+        RTSXDeclareChipRegister(rCTL, 0xFD89);
+        
+        namespace CTL
+        {
+            RTSXDeclareChipRegisterValue(kTimeMask, 0xF0);
+            RTSXDeclareChipRegisterValue(kEnableDetection, 0x08);
+            RTSXDeclareChipRegisterValue(kEnableInterrupt, 0x04);
+            RTSXDeclareChipRegisterValue(kClearInterrupt, 0x02);
+            RTSXDeclareChipRegisterValue(kClear, 0x01);
+        }
+        
+        /// Address of the register that contains the current status
+        RTSXDeclareChipRegister(rSTAT, 0xFD8A);
+        
+        namespace STAT
+        {
+            RTSXDeclareChipRegisterValue(kGlitchTimeMask, 0xF0);
+            RTSXDeclareChipRegisterValue(kDetect, 0x08);
+            RTSXDeclareChipRegisterValue(kNow, 0x04);
+            RTSXDeclareChipRegisterValue(kEver, 0x02);
+        }
+    }
 }
 
 namespace RTSX::PCR::Chip
@@ -763,6 +816,19 @@ namespace RTSX::PCR::Chip::DMA
         RTSXDeclareChipRegisterValue(kPackSize1024, 3 << 4);
         RTSXDeclareChipRegisterValue(kPackSizeMask, 0x30);
     }
+    
+    /// Address of the register that resets DMA for RTS5260
+    RTSXDeclareChipRegister(rRSTCTL0, 0xFEBF);
+    
+    /// Special values and flags for the CTL register
+    namespace RSTCTL0
+    {
+        RTSXDeclareChipRegisterValue(kResetDMA, 0x80);
+        RTSXDeclareChipRegisterValue(kResetADMA3, 0x40);
+        
+        RTSXDeclareChipRegisterValue(kResetAllMask, kResetDMA | kResetADMA3);
+        RTSXDeclareChipRegisterValue(kResetAll, kResetDMA | kResetADMA3);
+    }
 }
 
 namespace RTSX::PCR::Chip::RBUF
@@ -775,6 +841,10 @@ namespace RTSX::PCR::Chip::RBUF
         /// Bit 7 is set to flush the buffer
         RTSXDeclareChipRegisterValue(kFlushMask, 0x80);
         RTSXDeclareChipRegisterValue(kFlushValue, 0x80);
+        
+        RTSXDeclareChipRegisterValue(kAutoDMAMask, 0x20);
+        RTSXDeclareChipRegisterValue(kAutoDMAEnable, 0x20);
+        RTSXDeclareChipRegisterValue(kAutoDMADisable, 0x00);
     }
 }
 
@@ -1053,6 +1123,76 @@ namespace RTSX::PCR::Chip::PM
     RTSXDeclareChipRegister(rCTRL4, 0xFF47);
 }
 
+namespace RTSX::PCR::Chip
+{
+    RTSXDeclareChipRegister(rPGLCTL, 0xF200);
+    namespace PGLCTL
+    {
+        RTSXDeclareChipRegisterValue(kEnablePCIeL1_0, 0x09);
+        RTSXDeclareChipRegisterValue(kEnablePCIeL1_1, 0x0A);
+        RTSXDeclareChipRegisterValue(kEnablePCIeL1_2, 0x0C);
+    }
+    
+    RTSXDeclareChipRegister(rPFECTL, 0xF201);
+    namespace PFECTL
+    {
+        RTSXDeclareChipRegisterValue(kEnablePCIeL1_0PDFE, 0x09);
+        RTSXDeclareChipRegisterValue(kEnablePCIeL1_1PDFE, 0x0A);
+        RTSXDeclareChipRegisterValue(kEnablePCIeL1_2PDFE, 0x0C);
+    }
+    
+    RTSXDeclareChipRegister(rAPHY0, 0xF204);
+    namespace APHY0
+    {
+        RTSXDeclareChipRegisterValue(kDefault, 0xBF);
+    }
+    
+    RTSXDeclareChipRegister(rAPHY1, 0xF205);
+    namespace APHY1
+    {
+        RTSXDeclareChipRegisterValue(kDefault, 0xFF);
+    }
+    
+    RTSXDeclareChipRegister(rAPHY2, 0xF206);
+    namespace APHY2
+    {
+        RTSXDeclareChipRegisterValue(kDefault, 0x01);
+    }
+    
+    RTSXDeclareChipRegister(rAPHY3, 0xF207);
+    namespace APHY3
+    {
+        RTSXDeclareChipRegisterValue(kDefault, 0x00);
+    }
+    
+    namespace L10RV
+    {
+        RTSXDeclareChipRegister(rMAC, 0xF20C);
+        RTSXDeclareChipRegister(rDPHY, 0xF20E);
+        RTSXDeclareChipRegister(rSYS, 0xF210);
+        RTSXDeclareChipRegister(rCRCMISC, 0xF212);
+        RTSXDeclareChipRegister(rCRCSD30, 0xF214);
+        RTSXDeclareChipRegister(rCRCSD40, 0xF216);
+        
+        RTSXDeclareChipRegisterValue(kDefaultRetValue, 0x1B);
+        RTSXDeclareChipRegisterValue(kDefaultRetValueCRCMisc, 0x0C);
+    }
+    
+    RTSXDeclareChipRegister(rLFVAL, 0xF219);
+    namespace LFVAL
+    {
+        RTSXDeclareChipRegisterValue(kDefault, 0x18);
+    }
+    
+    RTSXDeclareChipRegister(rPWCCDR, 0xF253);
+    namespace PWCCDR
+    {
+        RTSXDeclareChipRegisterValue(kDefault, 0x03);
+    }
+    
+    RTSXDeclareChipRegister(rPWDSPEN, 0xFE76);
+}
+
 namespace RTSX::PCR::Chip::LDO
 {
     RTSXDeclareChipRegister(rCTL, 0xFC1E);
@@ -1104,6 +1244,8 @@ namespace RTSX::PCR::Chip::LDO
         RTSXDeclareChipRegisterValue(kD33181d8V, 0x02);
         
         RTSXDeclareChipRegisterValue(kDV331812VDD1, 0x04);
+        
+        RTSXDeclareChipRegisterValue(kDV331812Mask, 0x08);
         RTSXDeclareChipRegisterValue(kDV331812PowerOn, 0x08);
         RTSXDeclareChipRegisterValue(kDV331812PowerOff, 0x00);
     }
@@ -1115,6 +1257,10 @@ namespace RTSX::PCR::Chip::LDO
         {
             RTSXDeclareChipRegisterValue(kLMTVTHMask, 0x30);
             RTSXDeclareChipRegisterValue(kLMTVTH2A, 0x10);
+            
+            // RTS5260 only
+            RTSXDeclareChipRegisterValue(kTuneMask, 0x70);
+            RTSXDeclareChipRegisterValue(kTune3V3, 0x70);
         }
         
         RTSXDeclareChipRegister(rCFG1, 0xFF73);
@@ -1126,6 +1272,11 @@ namespace RTSX::PCR::Chip::LDO
             RTSXDeclareChipRegisterValue(k1d8V, 0x04);
             RTSXDeclareChipRegisterValue(k3d3V, 0x07);
             RTSXDeclareChipRegisterValue(kLimitEnable, 0x08);
+            
+            // RTS5260 only
+            RTSXDeclareChipRegisterValue(kLDOPowSDVDD1Mask, 0x08);
+            RTSXDeclareChipRegisterValue(kLDOPowSDVDD1On, 0x08);
+            RTSXDeclareChipRegisterValue(kLDOPowSDVDD1Off, 0x00);
         }
     }
     
@@ -1183,6 +1334,68 @@ namespace RTSX::PCR::Chip
     namespace CLKCFG3_525A
     {
         RTSXDeclareChipRegisterValue(kMemPD, 0xF0);
+    }
+}
+
+// RTS5260 only
+namespace RTSX::PCR::Chip
+{
+    RTSXDeclareChipRegister(rDV331812CTL, 0xFF71);
+    namespace DV331812CTL
+    {
+        RTSXDeclareChipRegisterValue(kEnableOCP, 0x01 << 7);
+        
+        RTSXDeclareChipRegisterValue(kPowerOn, 0x01 << 3);
+        
+        RTSXDeclareChipRegisterValue(kSelectVDDMask, 0x01 << 2);
+        RTSXDeclareChipRegisterValue(kSelectVDD1, 0x01 << 2);
+        RTSXDeclareChipRegisterValue(kSelectVDD2, 0x00 << 2);
+        
+        RTSXDeclareChipRegisterValue(kOCPThdMask, 0x07 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd120, 0x00 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd140, 0x01 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd160, 0x02 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd180, 0x03 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd210, 0x04 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd240, 0x05 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd270, 0x06 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd300, 0x07 << 4);
+    }
+    
+    RTSXDeclareChipRegister(rDVCCCTL, 0xFF73);
+    namespace DVCCCTL
+    {
+        RTSXDeclareChipRegisterValue(kEnableOCP, 0x01 << 7);
+        RTSXDeclareChipRegisterValue(kPowerOn, 0x01 << 3);
+        RTSXDeclareChipRegisterValue(kEnableOCPCL, 0x01 << 2);
+        
+        RTSXDeclareChipRegisterValue(kOCPThdMask, 0x07 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd550, 0x00 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd970, 0x05 << 4);
+    }
+    
+    RTSXDeclareChipRegister(rDVIOCTL, 0xFF75);
+    namespace DVIOCTL
+    {
+        RTSXDeclareChipRegisterValue(kEnableOCP, 0x01 << 7);
+        RTSXDeclareChipRegisterValue(kPowerOn, 0x01 << 3);
+        RTSXDeclareChipRegisterValue(kEnableOCPCL, 0x01 << 2);
+        
+        RTSXDeclareChipRegisterValue(kOCPThdMask, 0x07 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd250, 0x00 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd300, 0x01 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd350, 0x02 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd400, 0x03 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd450, 0x04 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd500, 0x05 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd550, 0x06 << 4);
+        RTSXDeclareChipRegisterValue(kOCPThd600, 0x07 << 4);
+    }
+    
+    RTSXDeclareChipRegister(rALCFG4, 0xFF7F);
+    namespace ALCFG4
+    {
+        RTSXDeclareChipRegisterValue(kDisableMIMO, 0x8A);
     }
 }
 
