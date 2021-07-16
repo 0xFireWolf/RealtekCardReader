@@ -1422,6 +1422,16 @@ public:
     
 protected:
     ///
+    /// Check if the controller should enable the clock power management
+    ///
+    /// @return `true` if the driver should write 0x01 to `PM_CLK_FORCE_CTL`, `false` otherwise.
+    /// @note Port: This function replaces the code block that checks the device ID and writes to the register in `rtsx_pci_init_hw()` defined in `rtsx_psr.c`.
+    ///             The base controller returns `false` by default.
+    ///             RTS524A, RTS525A, RTS5260, RTS5261 and RTS5228 controllers should override this function and return `true`.
+    ///
+    virtual bool shouldEnableClockPowerManagement();
+    
+    ///
     /// Power down the controller forcedly
     ///
     /// @return `kIOReturnSuccess` on success, other values otherwise.

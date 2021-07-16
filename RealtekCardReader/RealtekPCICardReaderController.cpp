@@ -2203,6 +2203,19 @@ void RealtekPCICardReaderController::enterWorkerState()
 //
 
 ///
+/// Check if the controller should enable the clock power management
+///
+/// @return `true` if the driver should write 0x01 to `PM_CLK_FORCE_CTL`, `false` otherwise.
+/// @note Port: This function replaces the code block that checks the device ID and writes to the register in `rtsx_pci_init_hw()` defined in `rtsx_psr.c`.
+///             The base controller returns `false` by default.
+///             RTS524A, RTS525A, RTS5260, RTS5261 and RTS5228 controllers should override this function and return `true`.
+///
+bool RealtekPCICardReaderController::shouldEnableClockPowerManagement()
+{
+    return false;
+}
+
+///
 /// Prepare to enter the sleep state
 ///
 /// @note Port: This function replaces `rtsx_pci_suspend()` defined in `rtsx_psr.c`.
@@ -2641,17 +2654,19 @@ IOReturn RealtekPCICardReaderController::initHardwareCommon()
     pinfo("Overcurrent protection has been initialized.");
     
     // Enable the clock power management
-    // Need to write this register if the chip is RTS5250/524A/525A/5260/5261/5228
-    // TODO: Create a virtual function `enableClockPowerManagement()`
-    pinfo("Enabling the clock power management...");
-    
-    retVal = this->writeChipRegister(rPMCLKFCTL, PMCLKFCTL::kEnableClockPM, PMCLKFCTL::kEnableClockPM);
-    
-    if (retVal != kIOReturnSuccess)
+    // Need to write this register if the chip is RTS524A/525A/5260/5261/5228
+    if (this->shouldEnableClockPowerManagement())
     {
-        perr("Failed to enable the clock power management. Error = 0x%x.", retVal);
+        pinfo("Enabling the clock power management...");
         
-        return retVal;
+        retVal = this->writeChipRegister(rPMCLKFCTL, PMCLKFCTL::kEnableClockPM, PMCLKFCTL::kEnableClockPM);
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to enable the clock power management. Error = 0x%x.", retVal);
+            
+            return retVal;
+        }
     }
     
     IOPCIeDeviceConfigSet16(this->device, PCI_EXP_LNKCTL, PCI_EXP_LNKCTL_CLKREQ_EN);
