@@ -1,5 +1,8 @@
 #  Changelog
 
+#### v0.9.6 Beta
+- Added support for RTS5260.
+
 #### v0.9.5 Beta
 - Rebranded the project.
 - Refactored the controller and the host device code to support USB-based card readers.
