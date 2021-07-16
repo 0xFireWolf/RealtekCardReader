@@ -406,7 +406,7 @@ class RealtekPCICardReaderController: public RealtekCardReaderController
     static constexpr IOByteCount kHostCommandBufferOffset = 0;
     
     /// The host data buffer starts at the offset 1024 in the host buffer
-    static constexpr IOByteCount kHostDatabufferOffset = RTSX::MMIO::HCBAR::kMaxNumCmds * 4;
+    static constexpr IOByteCount kHostDataBufferOffset = RTSX::MMIO::HCBAR::kMaxNumCmds * 4;
     
     /// The maximum number of DMA segments supported by the card reader
     static constexpr IOItemCount kMaxNumSegments = 256;
@@ -745,7 +745,7 @@ protected:
     ///
     inline IOReturn writeHostDataBuffer(IOByteCount offset, const void* buffer, IOByteCount length)
     {
-        return this->writeHostBuffer(RealtekPCICardReaderController::kHostDatabufferOffset + offset, buffer, length);
+        return this->writeHostBuffer(RealtekPCICardReaderController::kHostDataBufferOffset + offset, buffer, length);
     }
     
     //
@@ -795,7 +795,7 @@ protected:
     /// @param segment An entry in the scatter/gather list
     /// @return The value to be written to the host data buffer.
     /// @note Port: This helper function is refactored from `rtsx_pci_add_sg_tbl()` defined in `rtsx_psr.c`.
-    ///             RTS5261 and RTS5208 controllers must override this function but should not include the `option` part in the returned value.
+    ///             RTS5261 and RTS5228 controllers must override this function but should not include the `option` part in the returned value.
     ///
     virtual UInt64 transformIOVMSegment(IODMACommand::Segment32 segment);
     
@@ -1052,7 +1052,7 @@ protected:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `*_fill_driving()` defined in each concrete controller file.
     ///
-    virtual IOReturn setDrivingForOutputVoltage(OutputVoltage outputVoltage, bool intermediate, UInt32 timeout);
+    IOReturn setDrivingForOutputVoltage(OutputVoltage outputVoltage, bool intermediate, UInt32 timeout);
     
     //
     // MARK: - Card Clock Configurations
@@ -1148,6 +1148,7 @@ protected:
     ///
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_init_ocp()` defined in `rtsx_psr.c`.
+    ///             RTS5228, RTS5260 and RTS5261 controllers must override this function.
     ///
     virtual IOReturn initOvercurrentProtection();
     
@@ -1156,6 +1157,7 @@ protected:
     ///
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_enable_ocp()` defined in `rtsx_psr.c`.
+    ///             RTS5228, RTS5260 and RTS5261 controllers must override this function.
     ///
     virtual IOReturn enableOvercurrentProtection();
     
@@ -1164,6 +1166,7 @@ protected:
     ///
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_disable_ocp()` defined in `rtsx_psr.c`.
+    ///             RTS5228, RTS5260 and RTS5261 controllers must override this function.
     ///
     virtual IOReturn disableOvercurrentProtection();
     
@@ -1173,6 +1176,7 @@ protected:
     /// @param status The status on return
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_get_ocpstat()` defined in `rtsx_psr.c`.
+    ///             RTS5228, RTS5260 and RTS5261 controllers must override this function.
     ///
     virtual IOReturn getOvercurrentProtectionStatus(UInt8& status);
     
@@ -1181,8 +1185,19 @@ protected:
     ///
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `rtsx_pci_clear_ocpstat()` defined in `rtsx_psr.c`.
+    ///             RTS5228, RTS5260 and RTS5261 controllers must override this function.
     ///
     virtual IOReturn clearOvercurrentProtectionStatus();
+    
+    ///
+    /// Check whether the controller should power off the card when it receives an OCP interrupt
+    ///
+    /// @return `true` if the controller should take necessary actions to protect the card, `false` otherwise.
+    /// @note Port: This function replaces the code block that examines the OCP status in `rtsx_pci_process_ocp()` defined in `rtsx_psr.c`.
+    ///             RTS5260 controller must override this function.
+    /// @note This function runs in a gated context and is invoked by the OCP interrupt service routine.
+    ///
+    virtual bool shouldPowerOffCardOnOvercurrentInterruptGated();
     
     //
     // MARK: - Card Pull Control Management
@@ -1217,7 +1232,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces the Rx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
     ///
-    IOReturn changeRxPhase(UInt8 samplePoint) override;
+    IOReturn changeRxPhase(UInt8 samplePoint) override final;
     
     ///
     /// Change the Tx phase
@@ -1226,7 +1241,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces the Tx portion of `sd_change_phase()` defined in `rtsx_pci_sdmmc.c`.
     ///
-    IOReturn changeTxPhase(UInt8 samplePoint) override;
+    IOReturn changeTxPhase(UInt8 samplePoint) override final;
     
     //
     // MARK: - OOBS Polling
@@ -1477,7 +1492,7 @@ private:
     /// @note Port: This function replaces `rtsx_pci_process_ocp_interrupt()` and `rtsx_pci_process_ocp()` defined in `rtsx_psr.c`.
     /// @note Unlike the Linux driver, this function is invoked if and only if OCP is enabled.
     ///
-    virtual void onSDCardOvercurrentOccurredGated();
+    void onSDCardOvercurrentOccurredGated();
     
     ///
     /// Helper interrupt service routine when a SD card is inserted

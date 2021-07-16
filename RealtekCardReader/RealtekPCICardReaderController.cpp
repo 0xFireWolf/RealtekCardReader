@@ -975,7 +975,7 @@ IOReturn RealtekPCICardReaderController::performDMATransfer(IODMACommand* comman
         
         instance->hostBufferTransferStatus = kIOReturnNotReady;
         
-        instance->writeRegister32(rHDBAR, instance->hostBufferAddress + RealtekPCICardReaderController::kHostDatabufferOffset);
+        instance->writeRegister32(rHDBAR, instance->hostBufferAddress + RealtekPCICardReaderController::kHostDataBufferOffset);
         
         instance->writeRegister32(rHDBCTLR, *reinterpret_cast<UInt32*>(control));
         
@@ -1724,6 +1724,40 @@ IOReturn RealtekPCICardReaderController::clearOvercurrentProtectionStatus()
     return retVal;
 }
 
+///
+/// Check whether the controller should power off the card when it receives an OCP interrupt
+///
+/// @return `true` if the controller should take necessary actions to protect the card, `false` otherwise.
+/// @note Port: This function replaces the code block that examines the OCP status in `rtsx_pci_process_ocp()` defined in `rtsx_psr.c`.
+///             RTS5260 controller must override this function.
+/// @note This function runs in a gated context and is invoked by the OCP interrupt service routine.
+///
+bool RealtekPCICardReaderController::shouldPowerOffCardOnOvercurrentInterruptGated()
+{
+    using namespace RTSX::PCR::Chip;
+    
+    UInt8 status = 0;
+    
+    if (this->getOvercurrentProtectionStatus(status) != kIOReturnSuccess)
+    {
+        perr("Failed to retrieve the current OCP status.");
+        
+        return false;
+    }
+    
+    // Guard: Check the current OCP status
+    if (!BitOptions(status).contains(OCP::STAT::kSDNow | OCP::STAT::kSDEver))
+    {
+        pinfo("The current OCP status 0x%x shows that no overcurrent event detected on SD.", status);
+        
+        return false;
+    }
+    
+    pinfo("The controller should take actions to protect the card.");
+    
+    return true;
+}
+
 //
 // MARK: - Card Pull Control Management
 //
@@ -2380,26 +2414,18 @@ void RealtekPCICardReaderController::onSDCardOvercurrentOccurredGated()
     // Guard: Retrieve the current OCP status
     using namespace RTSX::PCR::Chip;
     
-    pinfo("Detected an overcurrent.");
+    pinfo("Received an overcurrent interrupt.");
     
-    UInt8 status = 0;
-    
-    if (this->getOvercurrentProtectionStatus(status) != kIOReturnSuccess)
+    if (!this->shouldPowerOffCardOnOvercurrentInterruptGated())
     {
-        perr("Failed to retrieve the current OCP status.");
-        
-        return;
-    }
-    
-    // Guard: Check the current OCP status
-    if (!BitOptions(status).contains(OCP::STAT::kSDNow | OCP::STAT::kSDEver))
-    {
-        pinfo("The current OCP status 0x%x shows that no overcurrent event detected on SD.", status);
+        pinfo("Detected a spurious interrupt. Will ignore it.");
         
         return;
     }
     
     // Overcurrent Detected
+    pinfo("Detected an overcurrent event. Will power off the card.");
+    
     psoftassert(this->powerOffCard() == kIOReturnSuccess,
                 "Failed to power off the card.");
     
