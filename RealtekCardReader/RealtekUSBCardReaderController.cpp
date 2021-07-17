@@ -1828,7 +1828,9 @@ bool RealtekUSBCardReaderController::setupUSBHostInterface()
     // Get the bulk endpoints
     pinfo("Fetching the bulk endpoints...");
     
-    this->inputPipe = this->interface->copyPipe(Endpoints::Bulk::kInput);
+    // Failed on Sherlocks's machine: The pipe address might not be identical to the one on Linux??
+    // this->inputPipe = this->interface->copyPipe(Endpoints::Bulk::kInput);
+    this->inputPipe = IOUSBHostInterfaceFindPipe(this->interface, kIOUSBEndpointTypeBulk, kIOUSBEndpointDirectionIn);
     
     if (this->inputPipe == nullptr)
     {
@@ -1837,7 +1839,8 @@ bool RealtekUSBCardReaderController::setupUSBHostInterface()
         goto error1;
     }
     
-    this->outputPipe = this->interface->copyPipe(Endpoints::Bulk::kOutput);
+    // this->outputPipe = this->interface->copyPipe(Endpoints::Bulk::kOutput);
+    this->outputPipe = IOUSBHostInterfaceFindPipe(this->interface, kIOUSBEndpointTypeBulk, kIOUSBEndpointDirectionOut);
     
     if (this->outputPipe == nullptr)
     {
