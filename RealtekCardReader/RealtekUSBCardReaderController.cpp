@@ -1573,7 +1573,7 @@ IOReturn RealtekUSBCardReaderController::resetHardware()
                 { CARD::PULL::rCTL6, 0x0C, 0x04 },
             };
             
-            retVal = self->enqueueReadRegisterCommands(SimpleRegValuePairs(lqft48));
+            retVal = self->enqueueWriteRegisterCommands(SimpleRegValuePairs(lqft48));
             
             if (retVal != kIOReturnSuccess)
             {
@@ -1598,11 +1598,11 @@ IOReturn RealtekUSBCardReaderController::resetHardware()
         
         if (self->isRTS5179)
         {
-            retVal = self->enqueueReadRegisterCommands(SimpleRegValuePairs(pairs1));
+            retVal = self->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs1));
         }
         else
         {
-            retVal = self->enqueueReadRegisterCommands(SimpleRegValuePairs(pairs1, arrsize(pairs1) - 1));
+            retVal = self->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs1, arrsize(pairs1) - 1));
         }
         
         if (retVal != kIOReturnSuccess)
@@ -1828,8 +1828,6 @@ bool RealtekUSBCardReaderController::setupUSBHostInterface()
     // Get the bulk endpoints
     pinfo("Fetching the bulk endpoints...");
     
-    // Failed on Sherlocks's machine: The pipe address might not be identical to the one on Linux??
-    // this->inputPipe = this->interface->copyPipe(Endpoints::Bulk::kInput);
     this->inputPipe = IOUSBHostInterfaceFindPipe(this->interface, kIOUSBEndpointTypeBulk, kIOUSBEndpointDirectionIn);
     
     if (this->inputPipe == nullptr)
@@ -1839,7 +1837,6 @@ bool RealtekUSBCardReaderController::setupUSBHostInterface()
         goto error1;
     }
     
-    // this->outputPipe = this->interface->copyPipe(Endpoints::Bulk::kOutput);
     this->outputPipe = IOUSBHostInterfaceFindPipe(this->interface, kIOUSBEndpointTypeBulk, kIOUSBEndpointDirectionOut);
     
     if (this->outputPipe == nullptr)
@@ -2114,7 +2111,7 @@ bool RealtekUSBCardReaderController::start(IOService* provider)
     }
     
     // Initialize the hardware
-    if (!this->initHardware())
+    if (this->initHardware() != kIOReturnSuccess)
     {
         perr("Failed to initialize the card reader.");
         

@@ -351,6 +351,7 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
             }
         };
         
+        // TODO: DEPRECATED: Addresses are not the same as the ones on Linux
         /// The bulk endpoints
         struct Bulk
         {
