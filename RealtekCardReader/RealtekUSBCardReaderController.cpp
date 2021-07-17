@@ -1742,11 +1742,76 @@ IOReturn RealtekUSBCardReaderController::initHardware()
 //
 
 ///
+/// Setup the USB device and configurations
+///
+/// @param provider The provider
+/// @return `true` on success, `false` otherwise.
+///
+bool RealtekUSBCardReaderController::setupUSBHostDevice(IOService* provider)
+{
+    // Fetch the host device
+    this->device = OSDynamicCast(IOUSBHostDevice, provider);
+    
+    if (this->device == nullptr)
+    {
+        perr("The provider is not a valid host device.");
+        
+        return false;
+    }
+    
+    this->device->retain();
+    
+    // Take the ownership of the host device
+    pinfo("Taking the onwership of the USB host device...");
+    
+    if (!this->device->open(this))
+    {
+        perr("Failed to take the ownership of the device.");
+        
+        goto error1;
+    }
+    
+    pinfo("The card reader controller now owns the host device.");
+    
+    // Set the device configuration if necessary
+    // Realtek SD card readers are simple: Single configuration and single interface
+    if (IOUSBHostDeviceSetConfiguration(this->device, this, 0) != kIOReturnSuccess)
+    {
+        perr("Failed to set the device configuration index to 0.");
+        
+        goto error2;
+    }
+    
+    // Fetch the first host interface
+    // Note that the returned interface has already been retained
+    this->interface = IOUSBHostDeviceFindFirstInterface(this->device);
+    
+    if (this->interface == nullptr)
+    {
+        perr("Failed to fetch the first host interface.");
+        
+        goto error2;
+    }
+    
+    pinfo("The host device has been set up.");
+    
+    return true;
+    
+error2:
+    this->device->close(this);
+    
+error1:
+    OSSafeReleaseNULL(this->device);
+    
+    return false;
+}
+
+///
 /// Setup the USB interface and endpoints
 ///
 /// @return `true` on success, `false` otherwise.
 ///
-bool RealtekUSBCardReaderController::setupUSBInterface()
+bool RealtekUSBCardReaderController::setupUSBHostInterface()
 {
     // Take the ownership of the host interface
     pinfo("Taking the ownership of the USB host interface...");
@@ -1887,9 +1952,21 @@ bool RealtekUSBCardReaderController::createCardSlot()
 //
 
 ///
+/// Tear down the USB device and configurations
+///
+void RealtekUSBCardReaderController::tearDownUSBHostDevice()
+{
+    OSSafeReleaseNULL(this->interface);
+    
+    this->device->close(this);
+    
+    OSSafeReleaseNULL(this->device);
+}
+
+///
 /// Tear down the USB interface and endpoints
 ///
-void RealtekUSBCardReaderController::tearDownUSBInterface()
+void RealtekUSBCardReaderController::tearDownUSBHostInterface()
 {
     OSSafeReleaseNULL(this->inputPipe);
     
@@ -2009,22 +2086,18 @@ bool RealtekUSBCardReaderController::start(IOService* provider)
         return false;
     }
     
-    // Setup the host interface (Part 1)
-    this->interface = OSDynamicCast(IOUSBHostInterface, provider);
-    
-    if (this->interface == nullptr)
+    // Setup the host device
+    if (!this->setupUSBHostDevice(provider))
     {
-        perr("The provider is not a valid host interface.");
+        perr("Failed to setup the USB host device.");
         
         return false;
     }
     
-    this->interface->retain();
-    
     // Setup the host interface (Part 2)
-    if (!this->setupUSBInterface())
+    if (!this->setupUSBHostInterface())
     {
-        perr("Failed to setup the host interface.");
+        perr("Failed to setup the USB host interface.");
         
         goto error1;
     }
@@ -2079,10 +2152,10 @@ error3:
     this->tearDownHostBuffer();
     
 error2:
-    this->tearDownUSBInterface();
+    this->tearDownUSBHostInterface();
     
 error1:
-    OSSafeReleaseNULL(this->interface);
+    this->tearDownUSBHostDevice();
     
     return false;
 }
@@ -2098,9 +2171,9 @@ void RealtekUSBCardReaderController::stop(IOService* provider)
     
     this->tearDownHostBuffer();
     
-    this->tearDownUSBInterface();
+    this->tearDownUSBHostInterface();
     
-    OSSafeReleaseNULL(this->interface);
+    this->tearDownUSBHostDevice();
     
     super::stop(provider);
 }

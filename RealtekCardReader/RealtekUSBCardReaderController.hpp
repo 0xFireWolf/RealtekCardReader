@@ -9,6 +9,7 @@
 #define RealtekUSBCardReaderController_hpp
 
 #include "RealtekCardReaderController.hpp"
+#include "IOUSBHostDevice.hpp"
 #include "IOUSBHostInterface.hpp"
 #include "Utilities.hpp"
 
@@ -395,7 +396,10 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     // MARK: - IOKit Basics
     //
     
-    /// The USB host interface (provider)
+    /// The USB host device (provider)
+    IOUSBHostDevice* device;
+    
+    /// The USB host interface
     IOUSBHostInterface* interface;
     
     /// The input bulk pipe
@@ -1040,11 +1044,19 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     //
     
     ///
+    /// Setup the USB device and configurations
+    ///
+    /// @param provider The provider
+    /// @return `true` on success, `false` otherwise.
+    ///
+    bool setupUSBHostDevice(IOService* provider);
+    
+    ///
     /// Setup the USB interface and endpoints
     ///
     /// @return `true` on success, `false` otherwise.
     ///
-    bool setupUSBInterface();
+    bool setupUSBHostInterface();
     
     ///
     /// Setup the host command and buffer management module
@@ -1065,9 +1077,14 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     //
     
     ///
+    /// Tear down the USB device and configurations
+    ///
+    void tearDownUSBHostDevice();
+    
+    ///
     /// Tear down the USB interface and endpoints
     ///
-    void tearDownUSBInterface();
+    void tearDownUSBHostInterface();
     
     ///
     /// Tear down the host command and buffer management module
