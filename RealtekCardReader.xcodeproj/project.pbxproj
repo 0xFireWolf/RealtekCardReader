@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		D5096F0A26A132C00065BE70 /* RealtekRTS5260Controller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5096F0826A132C00065BE70 /* RealtekRTS5260Controller.cpp */; };
 		D5096F0B26A132C00065BE70 /* RealtekRTS5260Controller.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5096F0926A132C00065BE70 /* RealtekRTS5260Controller.hpp */; };
+		D5096F0E26A2A15C0065BE70 /* IOUSBHostDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5096F0C26A2A15C0065BE70 /* IOUSBHostDevice.cpp */; };
+		D5096F0F26A2A15C0065BE70 /* IOUSBHostDevice.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5096F0D26A2A15C0065BE70 /* IOUSBHostDevice.hpp */; };
 		D51D6F9C2660B7E100871FA3 /* SD.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D51D6F9A2660B7E100871FA3 /* SD.hpp */; };
 		D51D6F9F2660BE3800871FA3 /* RealtekSDXCSlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D51D6F9D2660BE3800871FA3 /* RealtekSDXCSlot.cpp */; };
 		D51D6FA02660BE3800871FA3 /* RealtekSDXCSlot.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D51D6F9E2660BE3800871FA3 /* RealtekSDXCSlot.hpp */; };
@@ -93,6 +95,8 @@
 /* Begin PBXFileReference section */
 		D5096F0826A132C00065BE70 /* RealtekRTS5260Controller.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekRTS5260Controller.cpp; sourceTree = "<group>"; };
 		D5096F0926A132C00065BE70 /* RealtekRTS5260Controller.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS5260Controller.hpp; sourceTree = "<group>"; };
+		D5096F0C26A2A15C0065BE70 /* IOUSBHostDevice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOUSBHostDevice.cpp; sourceTree = "<group>"; };
+		D5096F0D26A2A15C0065BE70 /* IOUSBHostDevice.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOUSBHostDevice.hpp; sourceTree = "<group>"; };
 		D51D6F9A2660B7E100871FA3 /* SD.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SD.hpp; sourceTree = "<group>"; };
 		D51D6F9D2660BE3800871FA3 /* RealtekSDXCSlot.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekSDXCSlot.cpp; sourceTree = "<group>"; };
 		D51D6F9E2660BE3800871FA3 /* RealtekSDXCSlot.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekSDXCSlot.hpp; sourceTree = "<group>"; };
@@ -262,6 +266,8 @@
 				D5FAD6B92696CC2700A5A587 /* IOPCIeDevice.hpp */,
 				D595F822269B7EC7005893B8 /* IOUSBHostInterface.cpp */,
 				D595F823269B7EC7005893B8 /* IOUSBHostInterface.hpp */,
+				D5096F0C26A2A15C0065BE70 /* IOUSBHostDevice.cpp */,
+				D5096F0D26A2A15C0065BE70 /* IOUSBHostDevice.hpp */,
 			);
 			name = Definitions;
 			sourceTree = "<group>";
@@ -475,6 +481,7 @@
 				D57FA69C267B0BB00023097C /* IOSDSimpleBlockRequest.hpp in Headers */,
 				D5FF5654267225D800B0143E /* WolfsSDXC.hpp in Headers */,
 				D5096F0B26A132C00065BE70 /* RealtekRTS5260Controller.hpp in Headers */,
+				D5096F0F26A2A15C0065BE70 /* IOUSBHostDevice.hpp in Headers */,
 				D59E078E266C0FD3009E96EE /* ClosedRange.hpp in Headers */,
 				D59E076C2664B53E009E96EE /* IOSDBusConfig.hpp in Headers */,
 				D59E07802669F153009E96EE /* IOSDCard.hpp in Headers */,
@@ -575,6 +582,7 @@
 				D59E0783266C09E0009E96EE /* IOSDHostDevice.cpp in Sources */,
 				D5E8E0D626803DC400703407 /* RealtekRTS5227SeriesController.cpp in Sources */,
 				D595F81C269A3467005893B8 /* RealtekCardReaderController.cpp in Sources */,
+				D5096F0E26A2A15C0065BE70 /* IOUSBHostDevice.cpp in Sources */,
 				D5FF56462671484600B0143E /* IOSDBlockRequestEventSource.cpp in Sources */,
 				D5E8E0DA26803DDE00703407 /* RealtekRTS5227Controller.cpp in Sources */,
 				D595F81826996F16005893B8 /* RealtekUSBCardReaderController.cpp in Sources */,
