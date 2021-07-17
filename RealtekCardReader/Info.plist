@@ -51,14 +51,12 @@
 			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 			<key>IOClass</key>
 			<string>RealtekUSBCardReaderController</string>
+			<key>IOProbeScore</key>
+			<integer>1000</integer>
 			<key>IOProviderClass</key>
-			<string>IOUSBHostInterface</string>
+			<string>IOUSBHostDevice</string>
 			<key>Physical Interconnect Location</key>
 			<string>Internal</string>
-			<key>bConfigurationValue</key>
-			<integer>1</integer>
-			<key>bInterfaceNumber</key>
-			<integer>0</integer>
 			<key>idProduct</key>
 			<integer>297</integer>
 			<key>idVendor</key>
@@ -70,14 +68,12 @@
 			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 			<key>IOClass</key>
 			<string>RealtekUSBCardReaderController</string>
+			<key>IOProbeScore</key>
+			<integer>1000</integer>
 			<key>IOProviderClass</key>
-			<string>IOUSBHostInterface</string>
+			<string>IOUSBHostDevice</string>
 			<key>Physical Interconnect Location</key>
 			<string>Internal</string>
-			<key>bConfigurationValue</key>
-			<integer>1</integer>
-			<key>bInterfaceNumber</key>
-			<integer>0</integer>
 			<key>idProduct</key>
 			<integer>313</integer>
 			<key>idVendor</key>
@@ -89,14 +85,12 @@
 			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 			<key>IOClass</key>
 			<string>RealtekUSBCardReaderController</string>
+			<key>IOProbeScore</key>
+			<integer>1000</integer>
 			<key>IOProviderClass</key>
-			<string>IOUSBHostInterface</string>
+			<string>IOUSBHostDevice</string>
 			<key>Physical Interconnect Location</key>
 			<string>Internal</string>
-			<key>bConfigurationValue</key>
-			<integer>1</integer>
-			<key>bInterfaceNumber</key>
-			<integer>0</integer>
 			<key>idProduct</key>
 			<integer>320</integer>
 			<key>idVendor</key>

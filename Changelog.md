@@ -2,6 +2,7 @@
 
 #### v0.9.6 Beta
 - Added support for RTS5260.
+- Fixed an issue that the driver is not loaded if the USB card reader is not configured and thus does not expose its host interface.
 
 #### v0.9.5 Beta
 - Rebranded the project.
