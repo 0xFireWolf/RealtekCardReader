@@ -1738,6 +1738,64 @@ IOReturn RealtekUSBCardReaderController::initHardware()
 }
 
 //
+// MARK: - Polling Device Status
+//
+
+///
+/// Fetch the device status periodically
+///
+/// @param sender The timer event source
+/// @note This funtion runs in a gated context.
+///
+void RealtekUSBCardReaderController::fetchDeviceStatusGated(IOTimerEventSource* sender)
+{
+    // -------------------------
+    // | Before | Now | Action |
+    // -------------------------
+    // |  Yes   | Yes | Ignore |
+    // -------------------------
+    // |  Yes   |  No | Remove |
+    // -------------------------
+    // |   No   | Yes | Insert |
+    // -------------------------
+    // |   No   |  No | Ignore |
+    // -------------------------
+    
+    // Check whether a card is present now
+    bool isCardPresentNow = this->isCardPresent();
+    
+    // Check whether the driver should take action to process the card event
+    if (!(this->isCardPresentBefore ^ isCardPresentNow))
+    {
+        return;
+    }
+    
+    // Process the card event
+    if (isCardPresentNow)
+    {
+        this->onSDCardInsertedGated();
+    }
+    else
+    {
+        this->onSDCardRemovedGated();
+    }
+    
+    // Update the cached status
+    this->isCardPresentBefore = isCardPresentNow;
+    
+    // Check whether the controller is terminated
+    if (this->isInactive())
+    {
+        pinfo("The controller is inactive. Will stop polling the device status.");
+        
+        return;
+    }
+    
+    // Schedule the next action
+    sender->setTimeoutMS(kPollingInterval);
+}
+
+//
 // MARK: - Startup Routines
 //
 
@@ -1894,6 +1952,39 @@ bool RealtekUSBCardReaderController::setupHostBuffer()
 }
 
 ///
+/// Setup the polling timer
+///
+/// @return `true` on success, `false` otherwise.
+/// @note This function does not enable the timer automatically.
+///
+bool RealtekUSBCardReaderController::setupPollingTimer()
+{
+    pinfo("Setting up the polling timer...");
+    
+    auto handler = OSMemberFunctionCast(IOTimerEventSource::Action, this, &RealtekUSBCardReaderController::fetchDeviceStatusGated);
+    
+    this->timer = IOTimerEventSource::timerEventSource(this, handler);
+    
+    if (this->timer == nullptr)
+    {
+        perr("Failed to create the timer event source.");
+        
+        return false;
+    }
+    
+    if (this->workLoop->addEventSource(this->timer) != kIOReturnSuccess)
+    {
+        perr("Failed to add the timer event source to the work loop.");
+        
+        OSSafeReleaseNULL(this->timer);
+        
+        return false;
+    }
+    
+    return true;
+}
+
+///
 /// Create the card slot and publish it
 ///
 /// @return `true` on success, `false` otherwise.
@@ -1987,6 +2078,23 @@ void RealtekUSBCardReaderController::tearDownHostBuffer()
         this->hostBufferDescriptor->release();
         
         this->hostBufferDescriptor = nullptr;
+    }
+}
+
+///
+/// Destroy the polling timer
+///
+void RealtekUSBCardReaderController::tearDownPollingTimer()
+{
+    if (this->timer != nullptr)
+    {
+        this->timer->cancelTimeout();
+        
+        this->workLoop->removeEventSource(this->timer);
+        
+        this->timer->release();
+        
+        this->timer = nullptr;
     }
 }
 
@@ -2118,28 +2226,45 @@ bool RealtekUSBCardReaderController::start(IOService* provider)
         goto error3;
     }
     
+    // Setup the timer for polling the device status
+    if (!this->setupPollingTimer())
+    {
+        perr("Failed to setup the polling timer.");
+        
+        goto error3;
+    }
+    
     // Create the card slot
     if (!this->createCardSlot())
     {
         perr("Failed to create the card slot.");
         
-        goto error3;
+        goto error4;
     }
     
-    // USB-based card readers start when the user inserts a card
-    // Check whether the card is still there
+    // Check whether the card is present when the driver starts
     if (this->isCardPresent())
     {
         pinfo("Detected a card when the driver starts. Will notify the host device.");
         
+        // Cache the status
+        this->isCardPresentBefore = true;
+        
         // Notify the host device
-        this->slot->onSDCardInsertedGated();
+        this->onSDCardInsertedGated();
     }
     else
     {
+        // Cache the status
+        this->isCardPresentBefore = false;
+        
         pinfo("The card is not present when the driver starts.");
     }
     
+    // Enable the polling timer
+    this->timer->setTimeoutMS(kPollingInterval);
+    
+    // Register the service so that the reporter can see the device
     this->registerService();
     
     pinfo("================================================");
@@ -2147,6 +2272,9 @@ bool RealtekUSBCardReaderController::start(IOService* provider)
     pinfo("================================================");
     
     return true;
+    
+error4:
+    this->tearDownPollingTimer();
     
 error3:
     this->tearDownHostBuffer();
@@ -2168,6 +2296,8 @@ error1:
 void RealtekUSBCardReaderController::stop(IOService* provider)
 {
     this->destroyCardSlot();
+    
+    this->tearDownPollingTimer();
     
     this->tearDownHostBuffer();
     

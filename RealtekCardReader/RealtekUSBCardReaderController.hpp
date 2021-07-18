@@ -170,6 +170,13 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     static constexpr IOItemCount kMaxNumCommands = (kHostBufferSize - Offset::kHostCmdOff) / 4;
     
     //
+    // MARK: - Constants: Device Status Polling Interval
+    //
+    
+    /// Poll the device status every 100ms
+    static constexpr UInt32 kPollingInterval = 100;
+    
+    //
     // MARK: - Data Structures (Private)
     //
     
@@ -392,9 +399,15 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// The output bulk pipe
     IOUSBHostPipe* outputPipe;
     
+    /// A timer that polls the device status every 100ms
+    IOTimerEventSource* timer;
+    
     //
     // MARK: - Host States
     //
+    
+    /// True if the card is present (cached)
+    bool isCardPresentBefore;
     
     /// True if the packet is LQFT48
     bool isLQFT48;
@@ -1024,6 +1037,18 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     IOReturn initHardware();
     
     //
+    // MARK: - Polling Device Status
+    //
+    
+    ///
+    /// Fetch the device status periodically
+    ///
+    /// @param sender The timer event source
+    /// @note This funtion runs in a gated context.
+    ///
+    void fetchDeviceStatusGated(IOTimerEventSource* sender);
+    
+    //
     // MARK: - Startup Routines
     //
     
@@ -1050,6 +1075,14 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     bool setupHostBuffer();
     
     ///
+    /// Setup the polling timer
+    ///
+    /// @return `true` on success, `false` otherwise.
+    /// @note This function does not enable the timer automatically.
+    ///
+    bool setupPollingTimer();
+    
+    ///
     /// Create the card slot and publish it
     ///
     /// @return `true` on success, `false` otherwise.
@@ -1074,6 +1107,11 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// Tear down the host command and buffer management module
     ///
     void tearDownHostBuffer();
+    
+    ///
+    /// Destroy the polling timer
+    ///
+    void tearDownPollingTimer();
     
     ///
     /// Destroy the card slot
