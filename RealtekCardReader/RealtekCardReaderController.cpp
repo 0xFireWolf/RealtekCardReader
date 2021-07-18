@@ -7,6 +7,7 @@
 
 #include "RealtekCardReaderController.hpp"
 #include "RealtekCommonRegisters.hpp"
+#include "RealtekSDXCSlot.hpp"
 #include "Utilities.hpp"
 
 //
@@ -669,6 +670,40 @@ IOReturn RealtekCardReaderController::setPowerState(unsigned long powerStateOrdi
     pinfo("The power state has been set to %lu.", powerStateOrdinal);
     
     return kIOPMAckImplied;
+}
+
+//
+// MARK: - Interrupt Service Routines
+//
+
+///
+/// Helper interrupt service routine when a SD card is inserted
+///
+/// @note This interrupt service routine runs in a gated context.
+/// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
+///             This function is invoked by the polling thread when a SD card has been inserted to the USB card reader.
+///
+void RealtekCardReaderController::onSDCardInsertedGated()
+{
+    // Notify the host device
+    pinfo("A SD card is inserted.");
+    
+    this->slot->onSDCardInsertedGated();
+}
+
+///
+/// Helper interrupt service routine when a SD card is removed
+///
+/// @note This interrupt service routine runs in a gated context.
+/// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
+///             This function is invoked by the polling thread when a SD card has been removed from the USB card reader.
+///
+void RealtekCardReaderController::onSDCardRemovedGated()
+{
+    // Notify the host device
+    pinfo("The SD card has been removed.");
+    
+    this->slot->onSDCardRemovedGated();
 }
 
 //

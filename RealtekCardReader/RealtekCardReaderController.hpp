@@ -1398,6 +1398,29 @@ public:
     IOReturn setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice) override;
     
     //
+    // MARK: - Interrupt Service Routines
+    //
+    
+protected:
+    ///
+    /// Helper interrupt service routine when a SD card is inserted
+    ///
+    /// @note This interrupt service routine runs in a gated context.
+    /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
+    ///             This function is invoked by the polling thread when a SD card has been inserted to the USB card reader.
+    ///
+    void onSDCardInsertedGated();
+    
+    ///
+    /// Helper interrupt service routine when a SD card is removed
+    ///
+    /// @note This interrupt service routine runs in a gated context.
+    /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
+    ///             This function is invoked by the polling thread when a SD card has been removed from the USB card reader.
+    ///
+    void onSDCardRemovedGated();
+    
+    //
     // MARK: - Startup Routines
     //
     
