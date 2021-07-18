@@ -749,7 +749,7 @@ bool IOSDCard::setUHSCurrentLimit(SwitchCaps::BusSpeed busSpeed)
 {
     // Current limit switch is only defined for SDR50, SDR104 and DDR50 modes
     // For other bus speed modes, we do not change the current limit
-    if (isNotOneOf(busSpeed, SwitchCaps::BusSpeed::kSpeedUHSSDR50, SwitchCaps::BusSpeed::kSpeedUHSSDR104, SwitchCaps::BusSpeed::kSpeedUHSDDR50))
+    if (Value::of(busSpeed).isNotOneOf(SwitchCaps::BusSpeed::kSpeedUHSSDR50, SwitchCaps::BusSpeed::kSpeedUHSSDR104, SwitchCaps::BusSpeed::kSpeedUHSDDR50))
     {
         pinfo("No need to change the current limit.");
         

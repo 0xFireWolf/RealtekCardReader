@@ -11,6 +11,44 @@
 #include <IOKit/pci/IOPCIDevice.h>
 #include "Debug.hpp"
 
+//
+// MARK: - Attributes
+//
+
+/**
+ *  Export function or symbol for linking
+ */
+#define EXPORT __attribute__((visibility("default")))
+
+/**
+ *  Ensure the symbol is not exported
+ */
+#define PRIVATE __attribute__((visibility("hidden")))
+
+/**
+ *  For private fallback symbol definition
+ */
+#define WEAKFUNC __attribute__((weak))
+
+/**
+ *  Remove padding between fields
+ */
+#define PACKED __attribute__((packed))
+
+/**
+ *  Deprecate the interface
+ */
+#define DEPRECATE(x) __attribute__((deprecated(x)))
+
+/**
+ *  Non-null argument
+ */
+#define NONNULL __attribute__((nonnull))
+
+//
+// MARK: - Convenient Helpers
+//
+
 static constexpr IOPMPowerFlags kIOPMPowerOff = 0;
 
 /// Get the number of elements in an array
@@ -66,16 +104,33 @@ constexpr T Hz2MHz(T hz)
     return hz / 1000000;
 }
 
-template <typename T, typename... Ts>
-bool isOneOf(T value, Ts... args)
+namespace Value
 {
-    return ((value == args) || ...);
-}
+    template <typename T>
+    struct Value
+    {
+        T value;
 
-template <typename T, typename... Ts>
-bool isNotOneOf(T value, Ts... args)
-{
-    return ((value != args) && ...);
+        explicit Value(T value) : value(value) {}
+
+        template<typename... Ts>
+        bool isOneOf(Ts... args)
+        {
+            return ((this->value == args) || ...);
+        }
+
+        template <typename... Ts>
+        bool isNotOneOf(Ts... args)
+        {
+            return ((this->value != args) && ...);
+        }
+    };
+
+    template <typename T>
+    static Value<T> of(T value)
+    {
+        return Value<T>(value);
+    }
 }
 
 /// Align the given numeric value to the next `boundary` bytes boundary
@@ -129,36 +184,6 @@ static inline bool OSDictionaryAddDataToDictionary(OSDictionary* dictionary, con
 {
     return OSDictionaryAddDataToDictionary(dictionary, key, bytes, N);
 }
-
-/**
- *  Export function or symbol for linking
- */
-#define EXPORT __attribute__((visibility("default")))
-
-/**
- *  Ensure the symbol is not exported
- */
-#define PRIVATE __attribute__((visibility("hidden")))
-
-/**
- *  For private fallback symbol definition
- */
-#define WEAKFUNC __attribute__((weak))
-
-/**
- *  Remove padding between fields
- */
-#define PACKED __attribute__((packed))
-
-/**
- *  Deprecate the interface
- */
-#define DEPRECATE(x) __attribute__((deprecated(x)))
-
-/**
- *  Non-null argument
- */
-#define NONNULL __attribute__((nonnull))
 
 /*
  * Find Last Set bit

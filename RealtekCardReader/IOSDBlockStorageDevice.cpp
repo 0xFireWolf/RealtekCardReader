@@ -321,7 +321,7 @@ IOReturn IOSDBlockStorageDevice::doAsyncReadWrite(IOMemoryDescriptor* buffer, UI
     // Guard: Check the buffer direction
     IODirection direction = buffer->getDirection();
     
-    if (isNotOneOf(direction, kIODirectionIn, kIODirectionOut))
+    if (Value::of(direction).isNotOneOf(kIODirectionIn, kIODirectionOut))
     {
         perr("The buffer direction %d is invalid.", direction);
         
