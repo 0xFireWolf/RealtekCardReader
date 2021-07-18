@@ -1542,42 +1542,82 @@ IOReturn RealtekSDXCSlot::waitVoltageStable1()
     IOSleep(1);
     
     // Read the current status of both CMD and DATA lines
-    UInt8 status;
+    UInt8 status = 0;
     
-    IOReturn retVal = this->controller->readChipRegister(SD::rBUSSTAT, status);
+    IOReturn retVal = kIOReturnSuccess;
     
-    if (retVal != kIOReturnSuccess)
+    // Some cards are just slow so let's be graceful
+    // Wait until the card drive both CMD and DATA lines to low
+    for (auto attempt = 0; attempt < 200; attempt += 1)
     {
-        perr("Failed to read the command and the data line status. Error = 0x%x.", retVal);
+        IOSleep(20);
         
-        return retVal;
+        pinfo("[%02d] Reading the status of all lines...", attempt);
+        
+        retVal = this->controller->readChipRegister(SD::rBUSSTAT, status);
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to read the command and the data line status. Error = 0x%x.", retVal);
+            
+            continue;
+        }
+        
+        pinfo("[%02d] Current line status = 0x%02x.", attempt, status);
+        
+        // Guard: Ensure that both lines are low
+        if (BitOptions(status).containsOneOf(SD::BUSSTAT::kCommandStatus,
+                                             SD::BUSSTAT::kData0Status,
+                                             SD::BUSSTAT::kData1Status,
+                                             SD::BUSSTAT::kData2Status,
+                                             SD::BUSSTAT::kData3Status))
+        {
+            perr("At least one of lines is high.");
+            
+            continue;
+        }
+        
+        pinfo("Both command and data lines are low.");
+        
+        // Stop the SD clock
+        retVal = this->controller->writeChipRegister(SD::rBUSSTAT, 0xFF, SD::BUSSTAT::kClockForceStop);
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to stop the SD clock. Error = 0x%x.", retVal);
+            
+            return retVal;
+        }
+        
+        return kIOReturnSuccess;
     }
     
-    pinfo("Current line status is 0x%x.", status);
+    perr("Timed out while waiting for the card to drive both lines to low.");
     
-    // Guard: Ensure that both lines are low
-    if (BitOptions(status).containsOneOf(SD::BUSSTAT::kCommandStatus,
-                                         SD::BUSSTAT::kData0Status,
-                                         SD::BUSSTAT::kData1Status,
-                                         SD::BUSSTAT::kData2Status,
-                                         SD::BUSSTAT::kData3Status))
-    {
-        perr("Current line status is 0x%x. At least one of lines is high.", status);
-        
-        return kIOReturnInvalid;
-    }
+    return kIOReturnTimeout;
     
-    // Stop the SD clock
-    retVal = this->controller->writeChipRegister(SD::rBUSSTAT, 0xFF, SD::BUSSTAT::kClockForceStop);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to stop the SD clock. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    return kIOReturnSuccess;
+//    retVal = this->controller->readChipRegister(SD::rBUSSTAT, status);
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to read the command and the data line status. Error = 0x%x.", retVal);
+//
+//        return retVal;
+//    }
+//
+//    pinfo("Current line status is 0x%x.", status);
+//
+//    // Guard: Ensure that both lines are low
+//    if (BitOptions(status).containsOneOf(SD::BUSSTAT::kCommandStatus,
+//                                         SD::BUSSTAT::kData0Status,
+//                                         SD::BUSSTAT::kData1Status,
+//                                         SD::BUSSTAT::kData2Status,
+//                                         SD::BUSSTAT::kData3Status))
+//    {
+//        perr("Current line status is 0x%x. At least one of lines is high.", status);
+//
+//        return kIOReturnInvalid;
+//    }
 }
 
 ///
@@ -1903,7 +1943,6 @@ IOReturn RealtekSDXCSlot::tuningRxCommand(UInt8 samplePoint)
         perr("Failed to send the CMD19 and get the response. Error = 0x%x.", retVal);
         
         // Wait until the data lines become idle
-        // TODO: USB: DIFF IMP
         psoftassert(this->waitForIdleDataLine() == kIOReturnSuccess,
                     "Failed to wait for the data lines to be idle.");
         
