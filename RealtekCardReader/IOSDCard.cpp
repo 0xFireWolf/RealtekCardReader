@@ -334,11 +334,11 @@ bool IOSDCard::initDefaultSpeedMode()
     if (!this->enable4BitWideBus())
     {
         perr("Failed to enable the 4-bit wide bus.");
-        
-        return false;
     }
-    
-    pinfo("The 4-bit bus has been enabled.")
+    else
+    {
+        pinfo("The 4-bit bus has been enabled.")
+    }
     
     pinfo("The card has been initialized with the default speed mode enabled.");
     
@@ -405,11 +405,11 @@ bool IOSDCard::initHighSpeedMode()
     if (!this->enable4BitWideBus())
     {
         perr("Failed to enable the 4-bit wide bus.");
-        
-        return false;
     }
-    
-    pinfo("The 4-bit bus has been enabled.")
+    else
+    {
+        pinfo("The 4-bit bus has been enabled.");
+    }
     
     // The card initialization sequence finishes
     pinfo("The card has been initialized with the high speed mode enabled.");
