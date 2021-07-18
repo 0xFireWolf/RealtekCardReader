@@ -1503,22 +1503,6 @@ private:
     ///
     void onSDCardOvercurrentOccurredGated();
     
-    ///
-    /// Helper interrupt service routine when a SD card is inserted
-    ///
-    /// @note This interrupt service routine runs in a gated context.
-    /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
-    ///
-    void onSDCardInsertedGated();
-    
-    ///
-    /// Helper interrupt service routine when a SD card is removed
-    ///
-    /// @note This interrupt service routine runs in a gated context.
-    /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
-    ///
-    void onSDCardRemovedGated();
-    
     //
     // MARK: - Hardware Initialization and Configuration
     //

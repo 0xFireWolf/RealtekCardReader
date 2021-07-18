@@ -2449,34 +2449,6 @@ void RealtekPCICardReaderController::onSDCardOvercurrentOccurredGated()
                 "Failed to clear the OCP status.");
 }
 
-///
-/// Helper interrupt service routine when a SD card is inserted
-///
-/// @note This interrupt service routine runs in a gated context.
-/// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
-///
-void RealtekPCICardReaderController::onSDCardInsertedGated()
-{
-    // Notify the host device
-    pinfo("A SD card is inserted.");
-    
-    this->slot->onSDCardInsertedGated();
-}
-
-///
-/// Helper interrupt service routine when a SD card is removed
-///
-/// @note This interrupt service routine runs in a gated context.
-/// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
-///
-void RealtekPCICardReaderController::onSDCardRemovedGated()
-{
-    // Notify the host device
-    pinfo("The SD card has been removed.");
-    
-    this->slot->onSDCardRemovedGated();
-}
-
 //
 // MARK: - Hardware Initialization and Configuration
 //
