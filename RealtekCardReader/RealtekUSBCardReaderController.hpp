@@ -8,6 +8,7 @@
 #ifndef RealtekUSBCardReaderController_hpp
 #define RealtekUSBCardReaderController_hpp
 
+#include <IOKit/IOTimerEventSource.h>
 #include "RealtekCardReaderController.hpp"
 #include "IOUSBHostDevice.hpp"
 #include "IOUSBHostInterface.hpp"
@@ -349,24 +350,6 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
                 
                 return OSSwapInt16(address);
             }
-        };
-        
-        // TODO: DEPRECATED: Addresses are not the same as the ones on Linux
-        /// The bulk endpoints
-        struct Bulk
-        {
-            /// Endpoint address of the input bulk endpoint
-            static constexpr UInt8 kInput = 1;
-            
-            /// Endpoint address of the output bulk endpoint
-            static constexpr UInt8 kOutput = 2;
-        };
-        
-        /// The interrupt endpoint
-        struct Interrupt
-        {
-            /// Endpoint address of the interrupt endpoint
-            static constexpr UInt8 kInterrupt = 3;
         };
     };
     
