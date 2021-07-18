@@ -2515,7 +2515,7 @@ bool IOSDHostDriver::setupPreallocatedDMACommands()
     
     UInt64 maxSegmentSize = this->host->getDMALimits().maxSegmentSize;
     
-    pinfo("Maximum segment size suppported by the host device = %llu bytes.", maxSegmentSize);
+    pinfo("Maximum segment size supported by the host device = %llu bytes.", maxSegmentSize);
     
     for (auto index = 0; index < IOSDHostDriver::kDefaultPoolSize; index += 1)
     {
@@ -2763,7 +2763,7 @@ bool IOSDHostDriver::setupBlockRequestEventSource()
     
     this->processorWorkLoop->addEventSource(this->queueEventSource);
     
-    pinfo("The block request event source has been created and registerd with the processor work loop.");
+    pinfo("The block request event source has been created and registered with the processor work loop.");
     
     return true;
 }
