@@ -3,6 +3,9 @@
 #### v0.9.6 Beta
 - Added support for RTS5260.
 - Fixed an issue that the driver is not loaded if the USB card reader is not configured and thus does not expose its host interface.
+- Addressed an issue that the driver fails to find the bulk endpoints of the USB card reader.
+- Resolved an issue that the driver fails to initialize the USB card reader properly.
+- Resolved an issue that the driver cannot detect whether the user has inserted/removed the card to/from the USB card reader.
 
 #### v0.9.5 Beta
 - Rebranded the project.
