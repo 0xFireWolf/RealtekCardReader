@@ -57,6 +57,11 @@
 			<string>IOUSBHostDevice</string>
 			<key>Physical Interconnect Location</key>
 			<string>Internal</string>
+			<key>Protocol Characteristics</key>
+			<dict>
+				<key>Physical Interconnect</key>
+				<string>USB</string>
+			</dict>
 			<key>idProduct</key>
 			<integer>297</integer>
 			<key>idVendor</key>
@@ -74,6 +79,11 @@
 			<string>IOUSBHostDevice</string>
 			<key>Physical Interconnect Location</key>
 			<string>Internal</string>
+			<key>Protocol Characteristics</key>
+			<dict>
+				<key>Physical Interconnect</key>
+				<string>USB</string>
+			</dict>
 			<key>idProduct</key>
 			<integer>313</integer>
 			<key>idVendor</key>
@@ -91,6 +101,11 @@
 			<string>IOUSBHostDevice</string>
 			<key>Physical Interconnect Location</key>
 			<string>Internal</string>
+			<key>Protocol Characteristics</key>
+			<dict>
+				<key>Physical Interconnect</key>
+				<string>USB</string>
+			</dict>
 			<key>idProduct</key>
 			<integer>320</integer>
 			<key>idVendor</key>
