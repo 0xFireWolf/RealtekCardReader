@@ -1595,29 +1595,6 @@ IOReturn RealtekSDXCSlot::waitVoltageStable1()
     perr("Timed out while waiting for the card to drive both lines to low.");
     
     return kIOReturnTimeout;
-    
-//    retVal = this->controller->readChipRegister(SD::rBUSSTAT, status);
-//
-//    if (retVal != kIOReturnSuccess)
-//    {
-//        perr("Failed to read the command and the data line status. Error = 0x%x.", retVal);
-//
-//        return retVal;
-//    }
-//
-//    pinfo("Current line status is 0x%x.", status);
-//
-//    // Guard: Ensure that both lines are low
-//    if (BitOptions(status).containsOneOf(SD::BUSSTAT::kCommandStatus,
-//                                         SD::BUSSTAT::kData0Status,
-//                                         SD::BUSSTAT::kData1Status,
-//                                         SD::BUSSTAT::kData2Status,
-//                                         SD::BUSSTAT::kData3Status))
-//    {
-//        perr("Current line status is 0x%x. At least one of lines is high.", status);
-//
-//        return kIOReturnInvalid;
-//    }
 }
 
 ///
