@@ -133,7 +133,7 @@ IOReturn RealtekRTS5227Controller::optimizePhys()
     
     pinfo("Enabling the D3 delink mode...");
 
-    IOReturn retVal = this->writeChipRegister(PM::rCTRL3_52XA, PM::CTRL3::kEnableD3DelinkMode, 0x00);
+    IOReturn retVal = this->writeChipRegister(PM::rCTRL3, PM::CTRL3::kEnableD3DelinkMode, 0x00);
 
     if (retVal != kIOReturnSuccess)
     {

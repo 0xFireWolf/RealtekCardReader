@@ -126,6 +126,7 @@ IOReturn RealtekRTS5227SeriesController::powerOnCard()
         { CARD::rPWRCTRL, CARD::PWRCTRL::kSDPowerMask, CARD::PWRCTRL::kSDPowerOn },
         { rPWRGATECTRL, PWRGATECTRL::kMask, PWRGATECTRL::kVCC1 | PWRGATECTRL::kVCC2 },
         { CARD::rOUTPUT, CARD::OUTPUT::kSDMask, CARD::OUTPUT::kEnableSDValue },
+        { CARD::rOUTPUT, CARD::OUTPUT::kMSMask, CARD::OUTPUT::kEnableMSValue },
     };
     
     retVal = this->transferWriteRegisterCommands(SimpleRegValuePairs(fpairs));

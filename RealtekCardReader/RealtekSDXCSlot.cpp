@@ -1621,6 +1621,7 @@ IOReturn RealtekSDXCSlot::waitVoltageStable2()
         return retVal;
     }
     
+    // The card should now start at SDR12 with 1.8V
     // Read the current status of both CMD and DATA lines
     UInt8 status = 0;
     
