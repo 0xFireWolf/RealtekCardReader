@@ -1133,6 +1133,8 @@ IOReturn RealtekUSBCardReaderController::getCardStatus(UInt16& status)
 {
     using namespace RTSX::UCR::Chip;
     
+    pinfo("Getting the card status...");
+    
     const ChipRegValuePair pairs[] =
     {
         { CARD::rEXIST },
@@ -1152,6 +1154,8 @@ IOReturn RealtekUSBCardReaderController::getCardStatus(UInt16& status)
     
     status = ((value >> 10) & 0x0F) | ((value & 0x03) << 4);
 
+    pinfo("Card status = 0x%04x.", status);
+    
     return kIOReturnSuccess;
 }
 
@@ -1981,6 +1985,8 @@ bool RealtekUSBCardReaderController::setupPollingTimer()
         return false;
     }
     
+    pinfo("The polling timer has been set up.");
+    
     return true;
 }
 
@@ -2262,7 +2268,7 @@ bool RealtekUSBCardReaderController::start(IOService* provider)
     }
     
     // Enable the polling timer
-    this->timer->setTimeoutMS(kPollingInterval);
+    psoftassert(this->timer->setTimeoutMS(kPollingInterval) == kIOReturnSuccess, "Failed to enable the polling timer.");
     
     // Register the service so that the reporter can see the device
     this->registerService();
