@@ -242,7 +242,12 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note The given arguments are guaranteed to be valid.
     ///
-    IOReturn submitReadBlockRequest(IOMemoryDescriptor* buffer, UInt64 block, UInt64 nblocks, IOStorageAttributes* attributes, IOStorageCompletion* completion);
+    inline IOReturn submitReadBlockRequest(IOMemoryDescriptor* buffer, UInt64 block, UInt64 nblocks, IOStorageAttributes* attributes, IOStorageCompletion* completion)
+    {
+        auto processor = OSMemberFunctionCast(IOSDBlockRequest::Processor, this, &IOSDHostDriver::processReadBlockRequest);
+        
+        return this->submitBlockRequest(processor, buffer, block, nblocks, attributes, completion);
+    }
     
     ///
     /// Submit a request to write a single block
@@ -255,7 +260,12 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note The given arguments are guaranteed to be valid.
     ///
-    IOReturn submitWriteBlockRequest(IOMemoryDescriptor* buffer, UInt64 block, UInt64 nblocks, IOStorageAttributes* attributes, IOStorageCompletion* completion);
+    inline IOReturn submitWriteBlockRequest(IOMemoryDescriptor* buffer, UInt64 block, UInt64 nblocks, IOStorageAttributes* attributes, IOStorageCompletion* completion)
+    {
+        auto processor = OSMemberFunctionCast(IOSDBlockRequest::Processor, this, &IOSDHostDriver::processWriteBlockRequest);
+        
+        return this->submitBlockRequest(processor, buffer, block, nblocks, attributes, completion);
+    }
     
     ///
     /// Submit a request to read multiple blocks
@@ -268,7 +278,12 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note The given arguments are guaranteed to be valid.
     ///
-    IOReturn submitReadBlocksRequest(IOMemoryDescriptor* buffer, UInt64 block, UInt64 nblocks, IOStorageAttributes* attributes, IOStorageCompletion* completion);
+    inline IOReturn submitReadBlocksRequest(IOMemoryDescriptor* buffer, UInt64 block, UInt64 nblocks, IOStorageAttributes* attributes, IOStorageCompletion* completion)
+    {
+        auto processor = OSMemberFunctionCast(IOSDBlockRequest::Processor, this, &IOSDHostDriver::processReadBlocksRequest);
+        
+        return this->submitBlockRequest(processor, buffer, block, nblocks, attributes, completion);
+    }
     
     ///
     /// Submit a request to write multiple blocks
@@ -281,7 +296,12 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note The given arguments are guaranteed to be valid.
     ///
-    IOReturn submitWriteBlocksRequest(IOMemoryDescriptor* buffer, UInt64 block, UInt64 nblocks, IOStorageAttributes* attributes, IOStorageCompletion* completion);
+    inline IOReturn submitWriteBlocksRequest(IOMemoryDescriptor* buffer, UInt64 block, UInt64 nblocks, IOStorageAttributes* attributes, IOStorageCompletion* completion)
+    {
+        auto processor = OSMemberFunctionCast(IOSDBlockRequest::Processor, this, &IOSDHostDriver::processWriteBlocksRequest);
+        
+        return this->submitBlockRequest(processor, buffer, block, nblocks, attributes, completion);
+    }
     
     ///
     /// Transform the given starting block number to the argument of CMD17/18/24/25 if necessary
