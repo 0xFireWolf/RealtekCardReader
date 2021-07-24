@@ -1741,6 +1741,37 @@ IOReturn RealtekUSBCardReaderController::initHardware()
     return this->resetHardware();
 }
 
+///
+/// Set the device properties
+///
+void RealtekUSBCardReaderController::setDeviceProperties()
+{
+    pinfo("Setting the USB device properties...");
+    
+    static const char* keys[] = { "idVendor", "idProduct", "kUSBSerialNumberString" };
+    
+    OSDictionary* deviceInfo = OSDictionary::withCapacity(3);
+    
+    for (const char* key : keys)
+    {
+        psoftassert(deviceInfo->setObject(key, this->device->getProperty(key)), "Failed to set the key \"%s\".", key);
+    }
+    
+    psoftassert(this->setProperty("USB Device Info", deviceInfo), "Failed to set the USB device information.");
+    
+    OSSafeReleaseNULL(deviceInfo);
+    
+    pinfo("Setting the revision level...");
+    
+    char buffer[8] = {};
+    
+    snprintf(buffer, arrsize(buffer), "%d.00", this->revision);
+    
+    psoftassert(this->setProperty("Product Revision Level", buffer), "Failed to set the revision level.");
+    
+    pinfo("USB device properties have been set.");
+}
+
 //
 // MARK: - Polling Device Status
 //
@@ -1766,26 +1797,26 @@ void RealtekUSBCardReaderController::fetchDeviceStatusGated(IOTimerEventSource* 
     // -------------------------
     
     // Check whether a card is present now
+    pinfo("Fetching the device status...");
+    
     bool isCardPresentNow = this->isCardPresent();
     
     // Check whether the driver should take action to process the card event
-    if (!(this->isCardPresentBefore ^ isCardPresentNow))
+    if (this->isCardPresentBefore ^ isCardPresentNow)
     {
-        return;
+        // Process the card event
+        if (isCardPresentNow)
+        {
+            this->onSDCardInsertedGated();
+        }
+        else
+        {
+            this->onSDCardRemovedGated();
+        }
+        
+        // Update the cached status
+        this->isCardPresentBefore = isCardPresentNow;
     }
-    
-    // Process the card event
-    if (isCardPresentNow)
-    {
-        this->onSDCardInsertedGated();
-    }
-    else
-    {
-        this->onSDCardRemovedGated();
-    }
-    
-    // Update the cached status
-    this->isCardPresentBefore = isCardPresentNow;
     
     // Check whether the controller is terminated
     if (this->isInactive())
@@ -2201,7 +2232,7 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
 ///
 /// Start the controller
 ///
-/// @param provider An instance of USB host interface that represents the card reader
+/// @param provider An instance of USB host device that represents the card reader
 /// @return `true` on success, `false` otherwise.
 ///
 bool RealtekUSBCardReaderController::start(IOService* provider)
@@ -2266,6 +2297,9 @@ bool RealtekUSBCardReaderController::start(IOService* provider)
         goto error4;
     }
     
+    // Publish the device properties
+    this->setDeviceProperties();
+    
     // Enable the polling timer
     psoftassert(this->timer->setTimeoutMS(kPollingInterval) == kIOReturnSuccess, "Failed to enable the polling timer.");
     
@@ -2296,7 +2330,7 @@ error1:
 ///
 /// Stop the controller
 ///
-/// @param provider An instance of USB host interface that represents the card reader
+/// @param provider An instance of USB host device that represents the card reader
 ///
 void RealtekUSBCardReaderController::stop(IOService* provider)
 {

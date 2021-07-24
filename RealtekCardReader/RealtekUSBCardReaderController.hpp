@@ -174,7 +174,7 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     //
     
     /// Poll the device status every 100ms
-    static constexpr UInt32 kPollingInterval = 100;
+    static constexpr UInt32 kPollingInterval = /*100*/1000;
     
     //
     // MARK: - Data Structures (Private)
@@ -1036,6 +1036,11 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     ///
     IOReturn initHardware();
     
+    ///
+    /// Set the device properties
+    ///
+    void setDeviceProperties();
+    
     //
     // MARK: - Polling Device Status
     //
@@ -1133,7 +1138,7 @@ public:
     ///
     /// Start the controller
     ///
-    /// @param provider An instance of USB host interface that represents the card reader
+    /// @param provider An instance of USB host device that represents the card reader
     /// @return `true` on success, `false` otherwise.
     ///
     bool start(IOService* provider) override;
@@ -1141,7 +1146,7 @@ public:
     ///
     /// Stop the controller
     ///
-    /// @param provider An instance of USB host interface that represents the card reader
+    /// @param provider An instance of USB host device that represents the card reader
     ///
     void stop(IOService* provider) override;
 };
