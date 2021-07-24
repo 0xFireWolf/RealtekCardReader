@@ -2177,6 +2177,24 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
     
     this->dataTransferFlags.commandWithOutboundDMATransfer = Packet::Flags::kCDOR;
     
+    this->device = nullptr;
+    
+    this->interface = nullptr;
+    
+    this->inputPipe = nullptr;
+    
+    this->outputPipe = nullptr;
+    
+    this->timer = nullptr;
+    
+    this->isCardPresentBefore = false;
+    
+    this->isLQFT48 = false;
+    
+    this->isRTS5179 = false;
+    
+    this->revision = 0;
+    
     return true;
 }
 
@@ -2246,25 +2264,6 @@ bool RealtekUSBCardReaderController::start(IOService* provider)
         perr("Failed to create the card slot.");
         
         goto error4;
-    }
-    
-    // Check whether the card is present when the driver starts
-    if (this->isCardPresent())
-    {
-        pinfo("Detected a card when the driver starts. Will notify the host device.");
-        
-        // Cache the status
-        this->isCardPresentBefore = true;
-        
-        // Notify the host device
-        this->onSDCardInsertedGated();
-    }
-    else
-    {
-        // Cache the status
-        this->isCardPresentBefore = false;
-        
-        pinfo("The card is not present when the driver starts.");
     }
     
     // Enable the polling timer
