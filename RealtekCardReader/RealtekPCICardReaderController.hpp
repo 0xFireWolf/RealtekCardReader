@@ -219,13 +219,13 @@ class RealtekPCICardReaderController: public RealtekCardReaderController
     /// TX/RX clock phase
     struct ClockPhase
     {
-        UInt8 sdr104, sdr50, ddr50;
+        UInt8 sdr104, sdr50, ddr50, reserved;
         
         ClockPhase()
-            : sdr104(0), sdr50(0), ddr50(0) {}
+            : sdr104(0), sdr50(0), ddr50(0), reserved(0) {}
         
         ClockPhase(UInt8 sdr104, UInt8 sdr50, UInt8 ddr50)
-            : sdr104(sdr104), sdr50(sdr50), ddr50(ddr50) {}
+            : sdr104(sdr104), sdr50(sdr50), ddr50(ddr50), reserved(0) {}
     };
       
     /// Device-specific parameters
@@ -1340,7 +1340,7 @@ protected:
     /// Enable the active state power management
     ///
     /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces ``
+    /// @note Port: This function replaces `rtsx_enable_aspm()` defined in `rtsx_psr.c`.
     ///
     inline IOReturn enableASPM()
     {

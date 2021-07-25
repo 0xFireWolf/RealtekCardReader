@@ -133,6 +133,65 @@ namespace Value
     }
 }
 
+/// A simplified version of c++17 std::optional<T>
+/// T must be default constructable
+template <typename T>
+struct Optional
+{
+    T value;
+    
+    bool exists;
+    
+    Optional(const T& value) : value(value), exists(true) {}
+    
+    Optional() : value(), exists(false) {}
+    
+    inline bool hasValue()
+    {
+        return this->exists;
+    }
+    
+    T* operator->()
+    {
+        return &this->value;
+    }
+    
+    T& operator*()
+    {
+        return this->value;
+    }
+    
+    static Optional<T> nullopt()
+    {
+        return Optional<T>();
+    }
+};
+
+namespace BootArgs
+{
+    static inline bool contains(const char* name)
+    {
+        int dummy = 0;
+        
+        return PE_parse_boot_argn(name, &dummy, sizeof(dummy));
+    }
+    
+    template <typename T>
+    Optional<T> get(const char* name)
+    {
+        T value;
+        
+        if (PE_parse_boot_argn(name, &value, sizeof(T)))
+        {
+            return Optional<T>(value);
+        }
+        else
+        {
+            return Optional<T>::nullopt();
+        }
+    }
+}
+
 /// Align the given numeric value to the next `boundary` bytes boundary
 template <typename T>
 T align(T value, T boundary)
