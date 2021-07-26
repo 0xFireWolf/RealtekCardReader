@@ -7,6 +7,7 @@
 
 #include "IOSDCard.hpp"
 #include "IOSDHostDriver.hpp"
+#include "RealtekUserConfigs.hpp"
 
 //
 // MARK: - Meta Class Definitions
@@ -66,6 +67,14 @@ bool IOSDCard::init(IOSDHostDriver* driver, UInt32 ocr)
         pinfo("The host supports UHS-I mode and will try to request the card to switch to 1.8V signal voltage.");
         
         ocr |= OCR::kRequest1d8V;
+    }
+    
+    // Check whether users request to initialize the card at 3.3V
+    if (RealtekUserConfigs::Card::InitAt3v3)
+    {
+        pinfo("User requests to initialize the card at 3.3V. Will not request the card to switch to 1.8V.");
+        
+        ocr &= (~OCR::kRequest1d8V);
     }
     
     // Check whether the host can supply more than 150mA at the current voltage level

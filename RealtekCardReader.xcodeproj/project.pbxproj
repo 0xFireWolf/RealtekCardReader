@@ -26,6 +26,7 @@
 		D57FA6A9267D2C8D0023097C /* RealtekRTS524AController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D57FA6A7267D2C8D0023097C /* RealtekRTS524AController.cpp */; };
 		D57FA6AA267D2C8D0023097C /* RealtekRTS524AController.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D57FA6A8267D2C8D0023097C /* RealtekRTS524AController.hpp */; };
 		D57FA6AD267D50400023097C /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = D57FA6AC267D50400023097C /* LICENSE */; };
+		D58FCBBA26AE301C009D3C46 /* RealtekUserConfigs.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D58FCBB826AE301C009D3C46 /* RealtekUserConfigs.hpp */; };
 		D595F81826996F16005893B8 /* RealtekUSBCardReaderController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D595F81626996F16005893B8 /* RealtekUSBCardReaderController.cpp */; };
 		D595F81926996F16005893B8 /* RealtekUSBCardReaderController.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D595F81726996F16005893B8 /* RealtekUSBCardReaderController.hpp */; };
 		D595F81C269A3467005893B8 /* RealtekCardReaderController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D595F81A269A3467005893B8 /* RealtekCardReaderController.cpp */; };
@@ -114,6 +115,7 @@
 		D57FA6A8267D2C8D0023097C /* RealtekRTS524AController.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS524AController.hpp; sourceTree = "<group>"; };
 		D57FA6AB267D3C610023097C /* FAQ.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FAQ.md; sourceTree = "<group>"; };
 		D57FA6AC267D50400023097C /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
+		D58FCBB826AE301C009D3C46 /* RealtekUserConfigs.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekUserConfigs.hpp; sourceTree = "<group>"; };
 		D595F81626996F16005893B8 /* RealtekUSBCardReaderController.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekUSBCardReaderController.cpp; sourceTree = "<group>"; };
 		D595F81726996F16005893B8 /* RealtekUSBCardReaderController.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekUSBCardReaderController.hpp; sourceTree = "<group>"; };
 		D595F81A269A3467005893B8 /* RealtekCardReaderController.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekCardReaderController.cpp; sourceTree = "<group>"; };
@@ -268,6 +270,7 @@
 				D595F823269B7EC7005893B8 /* IOUSBHostInterface.hpp */,
 				D5096F0C26A2A15C0065BE70 /* IOUSBHostDevice.cpp */,
 				D5096F0D26A2A15C0065BE70 /* IOUSBHostDevice.hpp */,
+				D58FCBB826AE301C009D3C46 /* RealtekUserConfigs.hpp */,
 			);
 			name = Definitions;
 			sourceTree = "<group>";
@@ -467,6 +470,7 @@
 				D59E076426646BD7009E96EE /* RealtekSDRequest.hpp in Headers */,
 				D51D6F9C2660B7E100871FA3 /* SD.hpp in Headers */,
 				D5D2EE9F25E0B639004B5310 /* BitOptions.hpp in Headers */,
+				D58FCBBA26AE301C009D3C46 /* RealtekUserConfigs.hpp in Headers */,
 				D5D2EE3725DE0358004B5310 /* RealtekRTS525AController.hpp in Headers */,
 				D5FAD6BB2696CC2700A5A587 /* IOPCIeDevice.hpp in Headers */,
 				D59E077C266841FA009E96EE /* IOSDBlockStorageDevice.hpp in Headers */,
