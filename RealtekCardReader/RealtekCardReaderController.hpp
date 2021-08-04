@@ -350,6 +350,43 @@ protected:
             this->value |= static_cast<UInt32>(value);
         }
         
+        ///
+        /// Create a command for reading from the chip register at the given address
+        ///
+        /// @param address The register address
+        /// @return The host command.
+        ///
+        static inline Command forReadRegister(UInt16 address)
+        {
+            return Command(kReadRegister, address, 0, 0);
+        }
+        
+        ///
+        /// Create a command for writing to the chip register at the given address
+        ///
+        /// @param address The register address
+        /// @param mask The register value mask
+        /// @param value The register value
+        /// @return The host command.
+        ///
+        static inline Command forWriteRegister(UInt16 address, UInt8 mask, UInt8 value)
+        {
+            return Command(kWriteRegister, address, mask, value);
+        }
+        
+        ///
+        /// Create a command for checking the value of the chip register at the given address
+        ///
+        /// @param address The register address
+        /// @param mask The register value mask
+        /// @param value The register value
+        /// @return The host command.
+        ///
+        static inline Command forCheckRegister(UInt16 address, UInt8 mask, UInt8 value)
+        {
+            return Command(kCheckRegister, address, mask, value);
+        }
+        
         /// Get the command type
         inline Type getType() const
         {
@@ -852,7 +889,7 @@ public:
     {
         pinfo("Enqueue: Address = 0x%04x; Mask = 0x%02x; Value = 0x%02x.", address, 0, 0);
         
-        return this->enqueueCommand(Command(Command::kReadRegister, address, 0, 0));
+        return this->enqueueCommand(Command::forReadRegister(address));
     }
     
     ///
@@ -868,7 +905,7 @@ public:
     {
         pinfo("Enqueue: Address = 0x%04x; Mask = 0x%02x; Value = 0x%02x.", address, mask, value);
         
-        return this->enqueueCommand(Command(Command::kWriteRegister, address, mask, value));
+        return this->enqueueCommand(Command::forWriteRegister(address, mask, value));
     }
     
     ///
@@ -884,7 +921,7 @@ public:
     {
         pinfo("Enqueue: Address = 0x%04x; Mask = 0x%02x; Value = 0x%02x.", address, mask, value);
         
-        return this->enqueueCommand(Command(Command::kCheckRegister, address, mask, value));
+        return this->enqueueCommand(Command::forCheckRegister(address, mask, value));
     }
     
     ///
