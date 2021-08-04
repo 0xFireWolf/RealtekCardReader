@@ -165,7 +165,7 @@ namespace RTSX::UCR::Chip::SSC
         RTSXDeclareChipRegisterValue(kSelector8M, 0x18);
     }
     
-    RTSXDeclareChipRegister(rCTL2, 0xFC10);
+    RTSXDeclareChipRegister(rCTL2, 0xFC0A);
     namespace CTL2
     {
         // Different from the ones for PCIe-based controllers
