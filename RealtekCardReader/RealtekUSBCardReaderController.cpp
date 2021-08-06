@@ -1416,12 +1416,13 @@ IOReturn RealtekUSBCardReaderController::writePingPongBuffer(const UInt8* source
 /// @param buffer A memory descriptor that contains the data of interest
 /// @param length The total number of bytes to transfer
 /// @param timeout Specify the amount of time in milliseconds
+/// @param retries Abort and return an error if the pipe is still stalled after a certain number of attempts
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note This function increases the timeout to 600 ms if the given timeout is less than 600 ms.
 /// @note This function returns an error if the actual number of bytes transferred is not identical to the given `length`.
 /// @note Port: This function in a sense replaces `rtsx_usb_transfer_data()` and `rtsx_usb_bulk_transfer_sglist()` defined in `rtsx_usb.c`.
 ///
-IOReturn RealtekUSBCardReaderController::performBulkTransfer(IOUSBHostPipe* pipe, IOMemoryDescriptor* buffer, IOByteCount length, UInt32 timeout)
+IOReturn RealtekUSBCardReaderController::performBulkTransfer(IOUSBHostPipe* pipe, IOMemoryDescriptor* buffer, IOByteCount length, UInt32 timeout, UInt32 retries)
 {
     pinfo("Initiating a bulk transfer with length = %llu bytes and timeout = %u ms...", length, timeout);
     
@@ -1431,23 +1432,43 @@ IOReturn RealtekUSBCardReaderController::performBulkTransfer(IOUSBHostPipe* pipe
     
     IOByteCount32 actualLength = 0;
     
-    IOReturn retVal = pipe->io(buffer, bufferLength, actualLength, timeout);
+    IOReturn retVal = kIOReturnSuccess;
     
-    if (retVal != kIOReturnSuccess)
+    for (auto retry = 0; retry < retries; retry += 1)
     {
-        perr("Failed to request the bulk transfer. Error = 0x%x.", retVal);
+        pinfo("[%02d] Requesting the bulk transfer...", retry);
         
-        return retVal;
+        retVal = pipe->io(buffer, bufferLength, actualLength, timeout);
+        
+        if (retVal == kUSBHostReturnPipeStalled)
+        {
+            perr("The given pipe is stalled. Will clear the stall status.");
+            
+            psoftassert(pipe->clearStall(true) == kIOReturnSuccess, "Failed to clear the stall status.");
+            
+            continue;
+        }
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to request the bulk transfer. Error = 0x%x.", retVal);
+            
+            return retVal;
+        }
+        
+        if (actualLength != bufferLength)
+        {
+            perr("The number of bytes transferred (%u) is not identical to the requested one.", actualLength);
+            
+            return kIOReturnError;
+        }
+        
+        return kIOReturnSuccess;
     }
     
-    if (actualLength != bufferLength)
-    {
-        perr("The number of bytes transferred (%u) is not identical to the requested one.", actualLength);
-        
-        return kIOReturnError;
-    }
+    pinfo("Reached the maximum number of attempts. Error = 0x%x.", retVal);
     
-    return kIOReturnSuccess;
+    return retVal;
 }
 
 ///

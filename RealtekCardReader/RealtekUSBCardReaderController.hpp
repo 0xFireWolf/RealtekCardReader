@@ -929,12 +929,13 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// @param buffer A memory descriptor that contains the data of interest
     /// @param length The total number of bytes to transfer
     /// @param timeout Specify the amount of time in milliseconds
+    /// @param retries Abort and return an error if the pipe is still stalled after a certain number of attempts
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note This function increases the timeout to 600 ms if the given timeout is less than 600 ms.
     /// @note This function returns an error if the actual number of bytes transferred is not identical to the given `length`.
     /// @note Port: This function in a sense replaces `rtsx_usb_transfer_data()` and `rtsx_usb_bulk_transfer_sglist()` defined in `rtsx_usb.c`.
     ///
-    IOReturn performBulkTransfer(IOUSBHostPipe* pipe, IOMemoryDescriptor* buffer, IOByteCount length, UInt32 timeout);
+    IOReturn performBulkTransfer(IOUSBHostPipe* pipe, IOMemoryDescriptor* buffer, IOByteCount length, UInt32 timeout, UInt32 retries = 3);
     
     ///
     /// Perform an inbound transfer on the bulk endpoint
