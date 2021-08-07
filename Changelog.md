@@ -6,6 +6,9 @@
 - Addressed an issue that the driver fails to find the bulk endpoints of the USB card reader.
 - Resolved an issue that the driver fails to initialize the USB card reader properly.
 - Resolved an issue that the driver cannot detect whether the user has inserted/removed the card to/from the USB card reader.
+- Added an option to delay the initialization of the card found during the system boots.
+- Corrected the address of the USB-based card reader register that controls the SSC depth.
+- Fixed an issue that System Information does not list the USB-based card reader properly.
 
 #### v0.9.5 Beta
 - Rebranded the project.
