@@ -679,31 +679,33 @@ IOReturn RealtekCardReaderController::setPowerState(unsigned long powerStateOrdi
 ///
 /// Helper interrupt service routine when a SD card is inserted
 ///
+/// @param completion A nullable completion routine to be invoked when the card is attached
 /// @note This interrupt service routine runs in a gated context.
 /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
 ///             This function is invoked by the polling thread when a SD card has been inserted to the USB card reader.
 ///
-void RealtekCardReaderController::onSDCardInsertedGated()
+void RealtekCardReaderController::onSDCardInsertedGated(IOSDCard::Completion* completion)
 {
     // Notify the host device
     pinfo("A SD card is inserted.");
     
-    this->slot->onSDCardInsertedGated();
+    this->slot->onSDCardInsertedGated(completion);
 }
 
 ///
 /// Helper interrupt service routine when a SD card is removed
 ///
+/// @param completion A nullable completion routine to be invoked when the card is detached
 /// @note This interrupt service routine runs in a gated context.
 /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
 ///             This function is invoked by the polling thread when a SD card has been removed from the USB card reader.
 ///
-void RealtekCardReaderController::onSDCardRemovedGated()
+void RealtekCardReaderController::onSDCardRemovedGated(IOSDCard::Completion* completion)
 {
     // Notify the host device
     pinfo("The SD card has been removed.");
     
-    this->slot->onSDCardRemovedGated();
+    this->slot->onSDCardRemovedGated(completion);
 }
 
 //

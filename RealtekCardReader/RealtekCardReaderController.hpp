@@ -12,6 +12,7 @@
 #include <IOKit/IOWorkLoop.h>
 #include <IOKit/IOCommandGate.h>
 #include "WolfsSDXC.hpp"
+#include "IOSDCard.hpp"
 #include "ClosedRange.hpp"
 #include "Utilities.hpp"
 #include "Debug.hpp"
@@ -1442,20 +1443,22 @@ protected:
     ///
     /// Helper interrupt service routine when a SD card is inserted
     ///
+    /// @param completion A nullable completion routine to be invoked when the card is attached
     /// @note This interrupt service routine runs in a gated context.
     /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
     ///             This function is invoked by the polling thread when a SD card has been inserted to the USB card reader.
     ///
-    void onSDCardInsertedGated();
+    void onSDCardInsertedGated(IOSDCard::Completion* completion = nullptr);
     
     ///
     /// Helper interrupt service routine when a SD card is removed
     ///
+    /// @param completion A nullable completion routine to be invoked when the card is detached
     /// @note This interrupt service routine runs in a gated context.
     /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
     ///             This function is invoked by the polling thread when a SD card has been removed from the USB card reader.
     ///
-    void onSDCardRemovedGated();
+    void onSDCardRemovedGated(IOSDCard::Completion* completion = nullptr);
     
     //
     // MARK: - Startup Routines

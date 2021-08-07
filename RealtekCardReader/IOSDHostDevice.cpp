@@ -49,13 +49,14 @@ IOReturn IOSDHostDevice::postprocessRequest(RealtekSDRequest& request)
 ///
 /// [UPCALL] Notify the host device when a SD card is inserted
 ///
+/// @param completion A nullable completion routine to be invoked when the card is attached
 /// @note This callback function runs in a gated context provided by the underlying card reader controller.
 ///       The host device should implement this function without any blocking operations.
 ///       A default implementation that notifies the host driver is provided.
 ///
-void IOSDHostDevice::onSDCardInsertedGated()
+void IOSDHostDevice::onSDCardInsertedGated(IOSDCard::Completion* completion)
 {
-    this->driver->onSDCardInsertedGated();
+    this->driver->onSDCardInsertedGated(completion);
     
     this->setProperty("Card Present", true);
 }
@@ -63,13 +64,14 @@ void IOSDHostDevice::onSDCardInsertedGated()
 ///
 /// [UPCALL] Notify the host device when a SD card is removed
 ///
+/// @param completion A nullable completion routine to be invoked when the card is attached
 /// @note This callback function runs in a gated context provided by the underlying card reader controller.
 ///       The host device should implement this function without any blocking operations.
 ///       A default implementation that notifies the host driver is provided.
 ///
-void IOSDHostDevice::onSDCardRemovedGated()
+void IOSDHostDevice::onSDCardRemovedGated(IOSDCard::Completion* completion)
 {
-    this->driver->onSDCardRemovedGated();
+    this->driver->onSDCardRemovedGated(completion);
     
     this->setProperty("Card Present", false);
 }

@@ -2026,10 +2026,11 @@ void IOSDHostDriver::detachCard()
 ///
 /// [UPCALL] Notify the host driver when a SD card is inserted
 ///
+/// @param completion A nullable completion routine to be invoked when the card is attached
 /// @note This callback function runs in a gated context provided by the underlying card reader controller.
 ///       The host device should implement this function without any blocking operations.
 ///
-void IOSDHostDriver::onSDCardInsertedGated()
+void IOSDHostDriver::onSDCardInsertedGated(IOSDCard::Completion* completion)
 {
     // Make sure that the detach event source is disabled
     this->detachCardEventSource->disable();
@@ -2044,10 +2045,11 @@ void IOSDHostDriver::onSDCardInsertedGated()
 ///
 /// [UPCALL] Notify the host driver when a SD card is removed
 ///
+/// @param completion A nullable completion routine to be invoked when the card is detached
 /// @note This callback function runs in a gated context provided by the underlying card reader controller.
 ///       The host device should implement this function without any blocking operations.
 ///
-void IOSDHostDriver::onSDCardRemovedGated()
+void IOSDHostDriver::onSDCardRemovedGated(IOSDCard::Completion* completion)
 {
     // Disable the queue event source so that the processor work loop will stop processing requests
     this->queueEventSource->disable();

@@ -11,6 +11,7 @@
 #include "IOSDBusConfig.hpp"
 #include "ClosedRange.hpp"
 #include "BitOptions.hpp"
+#include "IOSDCard.hpp"
 
 // FIXME: Should be generic
 /// Forward declaration
@@ -360,20 +361,22 @@ public:
     ///
     /// [UPCALL] Notify the host device when a SD card is inserted
     ///
+    /// @param completion A nullable completion routine to be invoked when the card is attached
     /// @note This callback function runs in a gated context provided by the underlying card reader controller.
     ///       The host device should implement this function without any blocking operations.
     ///       A default implementation that notifies the host driver is provided.
     ///
-    virtual void onSDCardInsertedGated();
+    virtual void onSDCardInsertedGated(IOSDCard::Completion* completion = nullptr);
     
     ///
     /// [UPCALL] Notify the host device when a SD card is removed
     ///
+    /// @param completion A nullable completion routine to be invoked when the card is detached
     /// @note This callback function runs in a gated context provided by the underlying card reader controller.
     ///       The host device should implement this function without any blocking operations.
     ///       A default implementation that notifies the host driver is provided.
     ///
-    virtual void onSDCardRemovedGated();
+    virtual void onSDCardRemovedGated(IOSDCard::Completion* completion = nullptr);
     
     //
     // MARK: - Power Management
