@@ -1468,6 +1468,11 @@ public:
         ///
         /// Default constructor
         ///
+        Completion() = default;
+        
+        ///
+        /// Create a completion routine
+        ///
         Completion(void* target, CompletionAction action, void* parameter = nullptr) :
             target(target), action(action), parameter(parameter) {}
         
@@ -1475,10 +1480,30 @@ public:
         /// Invoke the completion routine
         ///
         /// @param success Pass `true` if the card event has been processed without errors, `false` otherwise.
+        /// @warning This function prints a warning message if the action routine is null.
         ///
         inline void invoke(bool success)
         {
-            (*this->action)(this->target, this->parameter, success);
+            if (this->action != nullptr)
+            {
+                (*this->action)(this->target, this->parameter, success);
+            }
+            else
+            {
+                pwarning("The action routine is null.");
+            }
+        }
+        
+        ///
+        /// Reset the completion routine
+        ///
+        inline void reset()
+        {
+            this->target = nullptr;
+            
+            this->action = nullptr;
+            
+            this->parameter = nullptr;
         }
         
         ///

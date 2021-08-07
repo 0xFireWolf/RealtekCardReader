@@ -51,6 +51,31 @@ bool IOSDCardEventSource::checkForWork()
 }
 
 ///
+/// Enable the event source
+///
+/// @param completion A nullable completion routine to be invoked when the card event has been processed
+///
+void IOSDCardEventSource::enable(IOSDCard::Completion* completion)
+{
+    super::enable();
+    
+    if (completion != nullptr)
+    {
+        this->completion = *completion;
+    }
+}
+
+///
+/// Disable the event source
+///
+void IOSDCardEventSource::disable()
+{
+    super::disable();
+    
+    this->completion.reset();
+}
+
+///
 /// Create a card event source with the given action
 ///
 /// @param owner Owner of the returned instance; the first parameter of the action routine

@@ -9,6 +9,7 @@
 #define IOSDCardEventSource_hpp
 
 #include <IOKit/IOEventSource.h>
+#include "IOSDCard.hpp"
 
 /// An event source to signal the workloop to process the card insertion or removal event
 class IOSDCardEventSource: public IOEventSource
@@ -18,6 +19,9 @@ class IOSDCardEventSource: public IOEventSource
     
     using super = IOEventSource;
     
+    /// The completion routine
+    IOSDCard::Completion completion;
+    
     ///
     /// Check whether an action needs to perform to handle the card event
     ///
@@ -26,6 +30,18 @@ class IOSDCardEventSource: public IOEventSource
     bool checkForWork() override;
     
 public:
+    ///
+    /// Enable the event source
+    ///
+    /// @param completion A nullable completion routine to be invoked when the card event has been processed
+    ///
+    void enable(IOSDCard::Completion* completion);
+
+    ///
+    /// Disable the event source
+    ///
+    void disable() override;
+    
     ///
     /// Create a card event source with the given action
     ///
