@@ -390,6 +390,9 @@ class RealtekPCICardReaderController: public RealtekCardReaderController
     /// An event source that delivers the hardware interrupt
     IOFilterInterruptEventSource* interruptEventSource;
     
+    /// A timer that delays the initialization of the card
+    IOTimerEventSource* cardSetupTimer;
+    
     //
     // MARK: - Host Command & Data Buffer
     //
@@ -1711,6 +1714,20 @@ private:
     ///
     bool createCardSlot();
     
+    ///
+    /// Create the timer that delays the initialization of a card
+    ///
+    /// @return `true` on success, `false` otherwise.
+    ///
+    bool setupCardInitTimer();
+    
+    ///
+    /// Setup the card if it is present when the driver starts
+    ///
+    /// @param sender The timer event source that sends the event.
+    ///
+    void setupCardIfPresent(IOTimerEventSource* sender);
+    
     //
     // MARK: - Teardown Routines
     //
@@ -1735,6 +1752,11 @@ private:
     /// Destroy the card slot
     ///
     void destroyCardSlot();
+    
+    ///
+    /// Destory the timer that delays the initialization of a card
+    ///
+    void destroyCardInitTimer();
     
     //
     // MARK: - IOService Implementations

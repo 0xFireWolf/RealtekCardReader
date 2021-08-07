@@ -190,6 +190,14 @@ namespace BootArgs
             return Optional<T>::nullopt();
         }
     }
+    
+    template <typename T>
+    T get(const char* name, T fallback)
+    {
+        T value = {};
+        
+        return PE_parse_boot_argn(name, &value, sizeof(T)) ? value : fallback;
+    }
 }
 
 /// Align the given numeric value to the next `boundary` bytes boundary

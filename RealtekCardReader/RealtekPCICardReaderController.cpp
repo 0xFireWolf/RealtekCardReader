@@ -7,6 +7,7 @@
 
 #include "RealtekPCICardReaderController.hpp"
 #include "RealtekPCISDXCSlot.hpp"
+#include "RealtekUserConfigs.hpp"
 #include "BitOptions.hpp"
 #include "IOPCIeDevice.hpp"
 
@@ -2996,6 +2997,62 @@ bool RealtekPCICardReaderController::createCardSlot()
     return true;
 }
 
+///
+/// Create the timer that delays the initialization of a card
+///
+/// @return `true` on success, `false` otherwise.
+///
+bool RealtekPCICardReaderController::setupCardInitTimer()
+{
+    pinfo("Setting up the card initialization timer...");
+    
+    auto handler = OSMemberFunctionCast(IOTimerEventSource::Action, this, &RealtekPCICardReaderController::setupCardIfPresent);
+    
+    this->cardSetupTimer = IOTimerEventSource::timerEventSource(this, handler);
+    
+    if (this->cardSetupTimer == nullptr)
+    {
+        perr("Failed to create the timer. Users should insert their cards after the system boots.");
+        
+        return false;
+    }
+    
+    if (this->workLoop->addEventSource(this->cardSetupTimer) != kIOReturnSuccess)
+    {
+        perr("Failed to add the timer to the workloop. Users should insert their cards after the system boots.");
+        
+        OSSafeReleaseNULL(this->cardSetupTimer);
+        
+        return false;
+    }
+    
+    pinfo("The card initialization timer has been created.");
+    
+    return true;
+}
+
+///
+/// Setup the card if it is present when the driver starts
+///
+/// @param sender The timer event source that sends the event.
+///
+void RealtekPCICardReaderController::setupCardIfPresent(IOTimerEventSource* sender)
+{
+    // If the card is already inserted when the driver starts,
+    // there will be no card interrupt, so we check whether the card exists here.
+    if (this->isCardPresent())
+    {
+        // Notify the host device
+        pinfo("Detected a card when the driver starts. Will notify the host device.");
+        
+        this->onSDCardInsertedGated();
+    }
+    else
+    {
+        pinfo("The card is not present when the driver starts.");
+    }
+}
+
 //
 // MARK: - Teardown Routines
 //
@@ -3090,6 +3147,21 @@ void RealtekPCICardReaderController::destroyCardSlot()
     }
 }
 
+///
+/// Destory the timer that delays the initialization of a card
+///
+void RealtekPCICardReaderController::destroyCardInitTimer()
+{
+    if (this->cardSetupTimer != nullptr)
+    {
+        this->workLoop->removeEventSource(this->cardSetupTimer);
+        
+        this->cardSetupTimer->release();
+        
+        this->cardSetupTimer = nullptr;
+    }
+}
+
 //
 // MARK: - IOService Implementations
 //
@@ -3116,6 +3188,8 @@ bool RealtekPCICardReaderController::init(OSDictionary* dictionary)
     this->deviceMemoryDescriptor = nullptr;
     
     this->interruptEventSource = nullptr;
+    
+    this->cardSetupTimer = nullptr;
     
     this->hostBufferDMACommand = nullptr;
     
@@ -3250,18 +3324,12 @@ bool RealtekPCICardReaderController::start(IOService* provider)
         goto error4;
     }
     
-    // If the card is already inserted when the driver starts,
-    // there will be no card interrupt, so we check whether the card exists here.
-    if (this->isCardPresent())
+    // Setup the card if it is present when the driver starts
+    if (this->setupCardInitTimer())
     {
-        pinfo("Detected a card when the driver starts. Will notify the host device.");
+        pinfo("User requests to delay %u ms to initialize the card found during the system boots.", RealtekUserConfigs::PCR::DelayCardInitAtBoot);
         
-        // Notify the host device
-        this->onSDCardInsertedGated();
-    }
-    else
-    {
-        pinfo("The card is not present when the driver starts.");
+        this->cardSetupTimer->setTimeoutMS(RealtekUserConfigs::PCR::DelayCardInitAtBoot);
     }
     
     this->registerService();
@@ -3304,6 +3372,8 @@ error1:
 ///
 void RealtekPCICardReaderController::stop(IOService* provider)
 {
+    this->destroyCardInitTimer();
+    
     this->destroyCardSlot();
     
     this->tearDownHostBuffer();

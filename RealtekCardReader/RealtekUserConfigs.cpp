@@ -1,28 +1,23 @@
 //
-//  RealtekUserConfigs.hpp
+//  RealtekUserConfigs.cpp
 //  RealtekCardReader
 //
-//  Created by FireWolf on 7/25/21.
+//  Created by FireWolf on 8/6/21.
 //
 
-#ifndef RealtekUserConfigs_hpp
-#define RealtekUserConfigs_hpp
-
-#include "Utilities.hpp"
+#include "RealtekUserConfigs.hpp"
 
 /// Boot arguments that customize the PCIe-based card reader controller
 namespace RealtekUserConfigs::PCR
 {
     /// The amount of time in milliseconds to delay the card initialization
     /// if the card is present when the driver starts
-    extern UInt32 DelayCardInitAtBoot;
+    UInt32 DelayCardInitAtBoot = BootArgs::get("rtsxdcib", 100);
 }
 
 /// Boot arguments that customize the card initialization
 namespace RealtekUserConfigs::Card
 {
     /// `True` if the card should be initialized at 3.3V
-    extern bool InitAt3v3;
+    bool InitAt3v3 = BootArgs::contains("-rtsx3v3");
 }
-
-#endif /* RealtekUserConfigs_hpp */

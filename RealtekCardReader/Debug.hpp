@@ -13,35 +13,9 @@
 
 #include <IOKit/IOLib.h>
 #include <stdarg.h>
-
-//static void OSLog(const char* format, ...)
-//{
-//    char buffer[1024];
-//
-//    buffer[0] = '\0';
-//
-//    va_list args;
-//
-//    va_start(args, format);
-//
-//    vsnprintf(buffer, sizeof(buffer), format, args);
-//
-//    va_end(args);
-//
-//    if (ml_get_interrupts_enabled())
-//    {
-//        IOLog("%s", buffer);
-//
-//        //IOSleep(10);
-//    }
-//}
+#include <IOKit/IODMACommand.h>
 
 #define OSLog IOLog
-
-#include <os/log.h>
-
-//#define OSLog(fmt, ...) \
-//os_log(OS_LOG_DEFAULT, fmt, ##__VA_ARGS__);
 
 #define MODULE "RTSX: "
 
@@ -100,6 +74,7 @@
     panic(MODULE "%s Fatal Error: " fmt "\n", __PRETTY_FUNCTION__, ##__VA_ARGS__); \
 };
 
+#ifdef DEBUG
 static inline void pbufcol(const void* buffer, size_t length)
 {
     for (auto index = 0; index < length; index += 1)
@@ -141,8 +116,6 @@ static inline void pbuf(const void* buffer, size_t length, size_t column = 8)
     }
 }
 
-#include <IOKit/IODMACommand.h>
-
 static inline void pdma(IODMACommand* dma, IOByteCount length, IOByteCount column)
 {
     auto buffer = IOMallocZero(length);
@@ -153,5 +126,11 @@ static inline void pdma(IODMACommand* dma, IOByteCount length, IOByteCount colum
     
     IOFree(buffer, length);
 }
+#else
+static inline void pbufcol(const void* buffer, size_t length) {}
+static inline void pbufrow(const void* buffer, size_t length) {}
+static inline void pbuf(const void* buffer, size_t length, size_t column = 8) {}
+static inline void pdma(IODMACommand* dma, IOByteCount length, IOByteCount column) {}
+#endif
 
 #endif /* Debug_h */
