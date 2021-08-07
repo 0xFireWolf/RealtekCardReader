@@ -31,6 +31,15 @@ class IOSDCardEventSource: public IOEventSource
     
 public:
     ///
+    /// Type of the function that processes a card event
+    ///
+    /// @param owner The owner of the event source
+    /// @return `true` if the card event has been processed without errors, `false` otherwise.
+    /// @note For example, the action routine may return `true` if the card has been initialized and attached successfully.
+    ///
+    using Action = bool (*)(OSObject* owner);
+    
+    ///
     /// Enable the event source
     ///
     /// @param completion A nullable completion routine to be invoked when the card event has been processed

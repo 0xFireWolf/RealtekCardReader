@@ -43,7 +43,7 @@ bool IOSDCardEventSource::checkForWork()
     
     pinfo("Processing the card event...");
     
-    (*this->action)(this->owner);
+    IOSDCard::complete(&this->completion, (*reinterpret_cast<Action>(this->action))(this->owner));
     
     pinfo("The card event has been processed.");
     
@@ -82,7 +82,7 @@ void IOSDCardEventSource::disable()
 /// @param action A non-null action to process the card insertion or removal event
 /// @return A non-null event source on success, `nullptr` otherwise.
 ///
-IOSDCardEventSource* IOSDCardEventSource::createWithAction(OSObject* owner, IOEventSource::Action action)
+IOSDCardEventSource* IOSDCardEventSource::createWithAction(OSObject* owner, Action action)
 {
     if (action == nullptr)
     {
@@ -98,7 +98,7 @@ IOSDCardEventSource* IOSDCardEventSource::createWithAction(OSObject* owner, IOEv
         return nullptr;
     }
     
-    if (!instance->init(owner, action))
+    if (!instance->init(owner, reinterpret_cast<IOEventSource::Action>(action)))
     {
         instance->release();
         
