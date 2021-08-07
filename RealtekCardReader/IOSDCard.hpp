@@ -1439,6 +1439,69 @@ public:
     /// @return A non-null card instance on success, `nullptr` otherwise.
     ///
     static IOSDCard* createWithOCR(IOSDHostDriver* driver, UInt32 ocr);
+    
+    ///
+    /// Type of a completion routine that is called once an asynchronous card event is processed by the host driver
+    ///
+    /// @param target An opaque client-supplied pointer (or the instance pointer for a C++ callback)
+    /// @param parameter An opaque client-supplied parameter pointer
+    /// @param success `true` if the card event has been processed without errors, `false` otherwise.
+    ///
+    using CompletionAction = void (*)(void* target, void* parameter, bool success);
+    
+    ///
+    /// Describe the completion routine to be called when the host driver has processed an asynchronous card event
+    ///
+    struct Completion
+    {
+        /// An opaque client-supplied pointer (or the instance pointer for a C++ callback)
+        void* target;
+        
+        /// A non-null completion routine
+        CompletionAction action;
+        
+        /// An opaque client-supplied parameter pointer
+        void* parameter;
+        
+        ///
+        /// Create a completion routine from the given member function
+        ///
+        /// @param self The instance pointer for the given C++ callback function
+        /// @param function A C++ callback function
+        /// @param parameter An optional opaque parameter pointer
+        /// @return The completion routine.
+        ///
+        template <typename Function>
+        static Completion fromMemberFunction(OSObject* self, Function function, void* parameter = nullptr)
+        {
+            return { self, OSMemberFunctionCast(CompletionAction, self, function), parameter };
+        }
+        
+        ///
+        /// Invoke the completion routine
+        ///
+        /// @param success Pass `true` if the card event has been processed without errors, `false` otherwise.
+        ///
+        inline void invoke(bool success)
+        {
+            (*this->action)(this->target, this->parameter, success);
+        }
+    };
+    
+    ///
+    /// Invoke the given completion routine
+    ///
+    /// @param completion A nullable completion routine
+    /// @param success Pass `true` if the card event has been processed without errors, `false` otherwise.
+    /// @note This function is a noop if the given completion is null.
+    ///
+    static inline void complete(Completion* completion, bool success)
+    {
+        if (completion != nullptr)
+        {
+            completion->invoke(success);
+        }
+    }
 };
 
 #endif /* IOSDCard_hpp */
