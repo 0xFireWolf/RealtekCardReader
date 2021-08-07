@@ -1454,6 +1454,7 @@ public:
     ///
     struct Completion
     {
+    private:
         /// An opaque client-supplied pointer (or the instance pointer for a C++ callback)
         void* target;
         
@@ -1462,6 +1463,23 @@ public:
         
         /// An opaque client-supplied parameter pointer
         void* parameter;
+        
+    public:
+        ///
+        /// Default constructor
+        ///
+        Completion(void* target, CompletionAction action, void* parameter = nullptr) :
+            target(target), action(action), parameter(parameter) {}
+        
+        ///
+        /// Invoke the completion routine
+        ///
+        /// @param success Pass `true` if the card event has been processed without errors, `false` otherwise.
+        ///
+        inline void invoke(bool success)
+        {
+            (*this->action)(this->target, this->parameter, success);
+        }
         
         ///
         /// Create a completion routine from the given member function
@@ -1475,16 +1493,6 @@ public:
         static Completion fromMemberFunction(OSObject* self, Function function, void* parameter = nullptr)
         {
             return { self, OSMemberFunctionCast(CompletionAction, self, function), parameter };
-        }
-        
-        ///
-        /// Invoke the completion routine
-        ///
-        /// @param success Pass `true` if the card event has been processed without errors, `false` otherwise.
-        ///
-        inline void invoke(bool success)
-        {
-            (*this->action)(this->target, this->parameter, success);
         }
     };
     
