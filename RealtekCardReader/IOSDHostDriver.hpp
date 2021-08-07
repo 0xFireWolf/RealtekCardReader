@@ -936,7 +936,7 @@ public:
     /// @note This function is invoked by `IOSDHostDriver::attachCard()`,
     ///       so it runs synchronously with respect to the processor workloop.
     ///
-    bool attachCard(UInt32 frequency);
+    bool attachCardAtFrequency(UInt32 frequency);
     
     ///
     /// [Helper] Publish the block storage device
@@ -962,16 +962,18 @@ public:
     ///
     /// Attach the SD card
     ///
+    /// @return `true` if the card has been initialized and attached successfully.
     /// @note This function is invoked on the processor workloop thread when a SD card is inserted.
     ///
-    void attachCard();
+    bool attachCard();
     
     ///
     /// Detach the SD card
     ///
+    /// @return `true` if the card has been removed from the system successfully.
     /// @note This function is invoked on the processor workloop thread when a SD card is removed.
     ///
-    void detachCard();
+    bool detachCard();
     
     //
     // MARK: - Card Events Callbacks

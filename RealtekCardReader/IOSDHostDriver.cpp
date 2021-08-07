@@ -1709,7 +1709,7 @@ IOReturn IOSDHostDriver::ACMD51(UInt32 rca, SCR& scr)
 /// @note This function is invoked by `IOSDHostDriver::attachCard()`,
 ///       so it runs synchronously with respect to the processor workloop.
 ///
-bool IOSDHostDriver::attachCard(UInt32 frequency)
+bool IOSDHostDriver::attachCardAtFrequency(UInt32 frequency)
 {
     // Start to attach the card
     pinfo("Trying to initialize the card at %u Hz.", frequency);
@@ -1918,9 +1918,10 @@ void IOSDHostDriver::removeCardCharacteristics()
 ///
 /// Attach the SD card
 ///
+/// @return `true` if the card has been initialized and attached successfully.
 /// @note This function is invoked on the processor workloop thread when a SD card is inserted.
 ///
-void IOSDHostDriver::attachCard()
+bool IOSDHostDriver::attachCard()
 {
     /// Initial card frequencies in Hz
     static constexpr UInt32 frequencies[] = { KHz2Hz(400), KHz2Hz(300), KHz2Hz(200), KHz2Hz(100) };
@@ -1943,7 +1944,7 @@ void IOSDHostDriver::attachCard()
         }
         
         // Guard: Attempt to initialize the card
-        if (!this->attachCard(frequency))
+        if (!this->attachCardAtFrequency(frequency))
         {
             perr("Failed to initialize the card at %u Hz.", frequency);
             
@@ -1955,21 +1956,24 @@ void IOSDHostDriver::attachCard()
         
         psoftassert(this->publishBlockStorageDevice(), "Failed to publish the block storage device");
         
-        pinfo("The SD card has been attached.");
+        pinfo("The SD card has been attached successfully.");
         
-        return;
+        return true;
     }
     
     // The default frequencies are not suitable for the host
     perr("Failed to initialize the card at the default frequencies.");
+    
+    return false;
 }
 
 ///
 /// Detach the SD card
 ///
+/// @return `true` if the card has been removed from the system successfully.
 /// @note This function is invoked on the processor workloop thread when a SD card is removed.
 ///
-void IOSDHostDriver::detachCard()
+bool IOSDHostDriver::detachCard()
 {
     pinfo("Detaching the SD card...");
     
@@ -2017,6 +2021,8 @@ void IOSDHostDriver::detachCard()
     psoftassert(this->powerOff() == kIOReturnSuccess, "Failed to power off the bus.");
     
     pinfo("The SD card has been detached.");
+    
+    return true;
 }
 
 //
@@ -2709,7 +2715,9 @@ bool IOSDHostDriver::setupCardEventSources()
     // Card Insertion Event
     pinfo("Creating the card insertion event source...");
     
-    this->attachCardEventSource = IOSDCardEventSource::createWithAction(this, OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::attachCard));
+    auto attacher = OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::attachCard);
+    
+    this->attachCardEventSource = IOSDCardEventSource::createWithAction(this, attacher);
     
     if (this->attachCardEventSource == nullptr)
     {
@@ -2727,7 +2735,9 @@ bool IOSDHostDriver::setupCardEventSources()
     // Card Removal Event
     pinfo("Creating the card removal event source...");
     
-    this->detachCardEventSource = IOSDCardEventSource::createWithAction(this, OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::detachCard));
+    auto detacher = OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::detachCard);
+    
+    this->detachCardEventSource = IOSDCardEventSource::createWithAction(this, detacher);
     
     if (this->detachCardEventSource == nullptr)
     {
