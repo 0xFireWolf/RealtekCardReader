@@ -1725,8 +1725,9 @@ private:
     /// Setup the card if it is present when the driver starts
     ///
     /// @param sender The timer event source that sends the event.
+    /// @note The setup routine runs in a gated context.
     ///
-    void setupCardIfPresent(IOTimerEventSource* sender);
+    void setupCardIfPresentGated(IOTimerEventSource* sender);
     
     //
     // MARK: - Teardown Routines

@@ -3006,7 +3006,7 @@ bool RealtekPCICardReaderController::setupCardInitTimer()
 {
     pinfo("Setting up the card initialization timer...");
     
-    auto handler = OSMemberFunctionCast(IOTimerEventSource::Action, this, &RealtekPCICardReaderController::setupCardIfPresent);
+    auto handler = OSMemberFunctionCast(IOTimerEventSource::Action, this, &RealtekPCICardReaderController::setupCardIfPresentGated);
     
     this->cardSetupTimer = IOTimerEventSource::timerEventSource(this, handler);
     
@@ -3035,8 +3035,9 @@ bool RealtekPCICardReaderController::setupCardInitTimer()
 /// Setup the card if it is present when the driver starts
 ///
 /// @param sender The timer event source that sends the event.
+/// @note The setup routine runs in a gated context.
 ///
-void RealtekPCICardReaderController::setupCardIfPresent(IOTimerEventSource* sender)
+void RealtekPCICardReaderController::setupCardIfPresentGated(IOTimerEventSource* sender)
 {
     // If the card is already inserted when the driver starts,
     // there will be no card interrupt, so we check whether the card exists here.
