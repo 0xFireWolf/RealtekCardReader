@@ -33,13 +33,13 @@ void RealtekCardReaderController::dumpChipRegisters(ClosedRange<UInt16> range)
     
     for (auto address = range.lowerBound; address <= range.upperBound; address += 1)
     {
-        if (this->readChipRegister(address, value) != kIOReturnSuccess)
+        if (this->readChipRegister(address, value) == kIOReturnSuccess)
         {
-            pinfo("[0x%04d] 0x%02x", address, value);
+            pinfo("[0x%04x] 0x%02x", address, value);
         }
         else
         {
-            pinfo("[0x%04d] ERROR", address);
+            pinfo("[0x%04x] ERROR!", address);
         }
     }
 }
