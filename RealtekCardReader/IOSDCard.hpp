@@ -1507,7 +1507,7 @@ public:
         }
         
         ///
-        /// Create a completion routine from the given member function
+        /// Create a completion descriptor with the given member function
         ///
         /// @param self The instance pointer for the given C++ callback function
         /// @param function A C++ callback function
@@ -1515,7 +1515,7 @@ public:
         /// @return The completion routine.
         ///
         template <typename Function>
-        static Completion fromMemberFunction(OSObject* self, Function function, void* parameter = nullptr)
+        static Completion withMemberFunction(OSObject* self, Function function, void* parameter = nullptr)
         {
             return { self, OSMemberFunctionCast(CompletionAction, self, function), parameter };
         }

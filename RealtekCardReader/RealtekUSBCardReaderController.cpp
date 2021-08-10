@@ -1800,6 +1800,23 @@ void RealtekUSBCardReaderController::setDeviceProperties()
 //
 
 ///
+/// Invoked when the card event has been processed
+///
+/// @param parameters Unused parameters
+/// @param success Result of the card event
+///
+void RealtekUSBCardReaderController::onCardEventProcessedGated(void* parameters, bool success)
+{
+    pinfo("The card event has been processed. Result = %s.", success ? "Success" : "Failed");
+    
+    // Reset the event status
+    this->cardEventLock = 0;
+    
+    // Resume polling the device status
+    this->timer->setTimeoutMS(kPollingInterval);
+}
+
+///
 /// Fetch the device status periodically
 ///
 /// @param sender The timer event source
@@ -1828,13 +1845,17 @@ void RealtekUSBCardReaderController::fetchDeviceStatusGated(IOTimerEventSource* 
     if (this->isCardPresentBefore ^ isCardPresentNow)
     {
         // Process the card event
+        this->cardEventLock = 1;
+        
+        auto completion = IOSDCard::Completion::withMemberFunction(this, &RealtekUSBCardReaderController::onCardEventProcessedGated);
+        
         if (isCardPresentNow)
         {
-            this->onSDCardInsertedGated();
+            this->onSDCardInsertedGated(&completion);
         }
         else
         {
-            this->onSDCardRemovedGated();
+            this->onSDCardRemovedGated(&completion);
         }
         
         // Update the cached status
@@ -1845,6 +1866,14 @@ void RealtekUSBCardReaderController::fetchDeviceStatusGated(IOTimerEventSource* 
     if (this->isInactive())
     {
         pinfo("The controller is inactive. Will stop polling the device status.");
+        
+        return;
+    }
+    
+    // Check whether a card event is being processed
+    if (this->cardEventLock != 0)
+    {
+        pinfo("A card event is being processed. Will pause polling the device status.");
         
         return;
     }
@@ -2248,6 +2277,8 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
     this->isRTS5179 = false;
     
     this->revision = 0;
+    
+    this->cardEventLock = 0;
     
     return true;
 }

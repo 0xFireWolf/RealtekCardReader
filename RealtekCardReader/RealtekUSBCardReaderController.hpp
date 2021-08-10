@@ -418,6 +418,9 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// Chip revision
     UInt8 revision;
     
+    /// Non-zero if a card event is being processed thus the polling function should pause
+    UInt32 cardEventLock;
+    
     //
     // MARK: - Access Chip Registers (Common, Final)
     //
@@ -1045,6 +1048,14 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     //
     // MARK: - Polling Device Status
     //
+    
+    ///
+    /// Invoked when the card event has been processed
+    ///
+    /// @param parameters Unused parameters
+    /// @param success Result of the card event
+    ///
+    void onCardEventProcessedGated(void* parameters, bool success);
     
     ///
     /// Fetch the device status periodically
