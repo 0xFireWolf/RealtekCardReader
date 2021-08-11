@@ -1,0 +1,45 @@
+name: RealtekCardReader-CI
+
+# Controls when the workflow will run
+on:
+    # Trigger the workflow on push or pull request events 
+    push:
+    pull_request:
+    # Allow to run this workflow manually from the Actions tab
+    workflow_dispatch:
+    # Run the workflow for published releases
+    release:
+        types: [published]
+
+jobs:
+    # Build the kext
+    build:
+        name: Build
+        runs-on: macos-latest
+        steps:
+            # Checkout the card reader repo
+            - uses: actions/checkout@v2
+            # Checkout the MacKernelSDK repo
+            - uses: actions/checkout@v2
+              with:
+                repository: acidanthera/MacKernelSDK
+                path: MacKernelSDK
+            # Build the driver
+            - run: xcodebuild -jobs 1 -configuration Debug
+            - run: xcodebuild -jobs 1 -configuration Release
+
+    # Analyze the kext
+    analyze:
+        name: Analyze
+        runs-on: macos-latest
+        steps:
+            # Checkout the card reader repo
+            - uses: actions/checkout@v2
+            # Checkout the MacKernelSDK repo
+            - uses: actions/checkout@v2
+              with:
+                repository: acidanthera/MacKernelSDK
+                path: MacKernelSDK
+            # Analyze the driver
+            - run: xcodebuild analyze -quiet -scheme RealtekCardReader -configuration Debug CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
+            - run: xcodebuild analyze -quiet -scheme RealtekCardReader -configuration Release CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
