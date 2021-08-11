@@ -27,6 +27,12 @@ jobs:
             # Build the driver
             - run: xcodebuild -jobs 1 -configuration Debug
             - run: xcodebuild -jobs 1 -configuration Release
+            # Upload the driver
+            - name: Upload to Artifacts
+              uses: actions/upload-artifact@v2
+              with:
+                name: Artifacts
+                path: build/*/*.zip
 
     # Analyze the kext
     analyze:
