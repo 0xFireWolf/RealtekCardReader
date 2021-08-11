@@ -23,6 +23,12 @@ namespace RealtekUserConfigs::Card
 {
     /// `True` if the card should be initialized at 3.3V
     extern bool InitAt3v3;
+    
+    /// `True` if the card should be initialized at the default speed mode
+    extern bool InitAtDefaultSpeed;
+    
+    /// `True` if the card should be initialized at the high speed mode
+    extern bool InitAtHighSpeed;
 }
 
 #endif /* RealtekUserConfigs_hpp */

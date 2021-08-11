@@ -20,4 +20,10 @@ namespace RealtekUserConfigs::Card
 {
     /// `True` if the card should be initialized at 3.3V
     bool InitAt3v3 = BootArgs::contains("-rtsx3v3");
+    
+    /// `True` if the card should be initialized at the default speed mode
+    bool InitAtDefaultSpeed = BootArgs::contains("-rtsxdsm");
+    
+    /// `True` if the card should be initialized at the high speed mode
+    bool InitAtHighSpeed = BootArgs::contains("-rtsxhsm");
 }

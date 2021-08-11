@@ -1725,7 +1725,7 @@ IOReturn RealtekUSBCardReaderController::initHardware()
         return retVal;
     }
     
-    pinfo("HWVER = 0x%08x.", this->revision);
+    pinfo("HWVER = 0x%02x.", this->revision);
     
     this->revision &= HWVER::kMask;
     

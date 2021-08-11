@@ -265,13 +265,28 @@ bool IOSDCard::init(IOSDHostDriver* driver, UInt32 ocr)
         return this->initDefaultSpeedMode();
     }
     
+    // Guard: Check whether the user requests to initialize the card at the default speed mode
+    if (RealtekUserConfigs::Card::InitAtDefaultSpeed)
+    {
+        pinfo("User requests to initialize the card at the default speed mode.");
+        
+        return this->initDefaultSpeedMode();
+    }
+    
     // Guard: Check whether the card supports the UHS-I mode
-    if (BitOptions(rocr).contains(OCR::kAccepted1d8V) &&
-        this->driver->hostSupportsUltraHighSpeedMode())
+    if (BitOptions(rocr).contains(OCR::kAccepted1d8V) && this->driver->hostSupportsUltraHighSpeedMode())
     {
         pinfo("Both the host and the card support the ultra high speed mode.");
 
-        return this->initUltraHighSpeedMode();
+        // Guard: Check whether the user requests to initialize the card at the high speed mode
+        if (!RealtekUserConfigs::Card::InitAtHighSpeed)
+        {
+            return this->initUltraHighSpeedMode();
+        }
+        else
+        {
+            pinfo("User requests to initialize the card at the high speed mode.");
+        }
     }
     
     // Guard: Tell the card to switch to the high speed mode
@@ -315,6 +330,8 @@ bool IOSDCard::initDefaultSpeedMode()
     // Guard: Set the bus speed
     UInt32 clock = min(UINT32_MAX, this->csd.maxDataTransferRate);
     
+    pinfo("Setting the bus clock to %u Hz.", clock);
+    
     if (this->driver->setBusClock(clock) != kIOReturnSuccess)
     {
         perr("Failed to set the bus clock to %u Hz.", clock);
@@ -343,6 +360,8 @@ bool IOSDCard::initDefaultSpeedMode()
     if (!this->enable4BitWideBus())
     {
         perr("Failed to enable the 4-bit wide bus.");
+        
+        return false; // TODO: REMOVE THIS???
     }
     else
     {
@@ -414,6 +433,8 @@ bool IOSDCard::initHighSpeedMode()
     if (!this->enable4BitWideBus())
     {
         perr("Failed to enable the 4-bit wide bus.");
+        
+        return false; // TODO: REMOVE THIS???
     }
     else
     {
