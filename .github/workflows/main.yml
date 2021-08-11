@@ -25,8 +25,8 @@ jobs:
                 repository: acidanthera/MacKernelSDK
                 path: MacKernelSDK
             # Build the driver
-            - run: xcodebuild -jobs 1 -configuration Debug
-            - run: xcodebuild -jobs 1 -configuration Release
+            - run: xcodebuild -jobs 3 -configuration Debug
+            - run: xcodebuild -jobs 3 -configuration Release
             # Upload the driver
             - name: Upload to Artifacts
               uses: actions/upload-artifact@v2
