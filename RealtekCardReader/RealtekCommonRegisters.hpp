@@ -231,7 +231,7 @@ namespace RTSX::NAMESPACE::Chip::SD
         RTSXDeclareChipRegisterValue(kSD20Tx14Ahead, 0x10);
         RTSXDeclareChipRegisterValue(kSD20TxSelMask, 0x10);
         
-        RTSXDeclareChipRegisterValue(kSSDRVarSDClockPolSwap, 0x01);
+        RTSXDeclareChipRegisterValue(kDDRVarSDClockPolSwap, 0x01);
     }
     
     RTSXDeclareChipRegister(rCMD0, 0xFDA9);
