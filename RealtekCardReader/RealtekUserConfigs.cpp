@@ -26,4 +26,7 @@ namespace RealtekUserConfigs::Card
     
     /// `True` if the card should be initialized at the high speed mode
     bool InitAtHighSpeed = BootArgs::contains("-rtsxhsm");
+    
+    /// Specify the maximum number of attempts to retry an application command
+    UInt32 ACMDMaxNumAttempts = max(BootArgs::get("rtsxamna", 2), 1);
 }

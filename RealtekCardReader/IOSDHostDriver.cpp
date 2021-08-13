@@ -14,6 +14,7 @@
 #include <IOKit/storage/IOBlockStorageDriver.h>
 #include <i386/param.h>
 #include "RealtekSDRequest.hpp"
+#include "RealtekUserConfigs.hpp"
 
 //
 // MARK: - Meta Class Definitions
@@ -903,11 +904,9 @@ IOReturn IOSDHostDriver::waitForRequest(RealtekSDRequest& request)
 ///
 IOReturn IOSDHostDriver::waitForAppRequest(RealtekSDRequest& request, UInt32 rca)
 {
-    static constexpr int kMaxAttempts = 10;
-    
     IOReturn retVal = kIOReturnSuccess;
     
-    for (int attempt = 0; attempt < kMaxAttempts; attempt += 1)
+    for (int attempt = 0; attempt < RealtekUserConfigs::Card::ACMDMaxNumAttempts; attempt += 1)
     {
         pinfo("[%02d] Sending the application command...", attempt);
         

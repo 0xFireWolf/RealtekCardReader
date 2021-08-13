@@ -1463,6 +1463,8 @@ IOReturn RealtekUSBCardReaderController::performBulkTransfer(IOUSBHostPipe* pipe
             return kIOReturnError;
         }
         
+        pinfo("[%02d] the bulk transfer completed successfully.", retry);
+        
         return kIOReturnSuccess;
     }
     

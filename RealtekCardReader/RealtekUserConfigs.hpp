@@ -29,6 +29,9 @@ namespace RealtekUserConfigs::Card
     
     /// `True` if the card should be initialized at the high speed mode
     extern bool InitAtHighSpeed;
+    
+    /// Specify the maximum number of attempts to retry an application command
+    extern UInt32 ACMDMaxNumAttempts;
 }
 
 #endif /* RealtekUserConfigs_hpp */
