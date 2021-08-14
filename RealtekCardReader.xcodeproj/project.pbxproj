@@ -617,7 +617,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Get the latest hash\ncd \"$(PROJECT_DIR)\"\nHASH=`git log --pretty=format:'%h' -n 1`\n\n# Archive the kext\ncd \"${TARGET_BUILD_DIR}\"\narchive=\"${PRODUCT_NAME}_${MODULE_VERSION}_${HASH}_$(echo $CONFIGURATION | tr /a-z/ /A-Z/).zip\"\nzip \"${archive}\" -r \"$FULL_PRODUCT_NAME\"\n";
+			shellScript = "# Get the latest hash\ncd \"$(PROJECT_DIR)\"\nHASH=`git log --pretty=format:'%h' -n 1`\n\n# Archive the kext\ncd \"${TARGET_BUILD_DIR}\"\nrm -rf *.zip\narchive=\"${PRODUCT_NAME}_${MODULE_VERSION}_${HASH}_$(echo $CONFIGURATION | tr /a-z/ /A-Z/).zip\"\nzip \"${archive}\" -r \"$FULL_PRODUCT_NAME\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
