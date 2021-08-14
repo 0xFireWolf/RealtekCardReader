@@ -55,7 +55,7 @@ IOReturn RealtekUSBSDXCSlot::executeTuning(const IOSDBusConfig& config)
     // Execute tuning for UHS-I SDR50 only
     if (config.busTiming != IOSDBusConfig::BusTiming::kUHSDDR50)
     {
-        pinfo("No need to execute tuning for modes other than UHS-I SDR50.");
+        pinfo("No need to execute tuning for modes other than UHS-I DDR50.");
         
         return kIOReturnSuccess;
     }
