@@ -956,23 +956,18 @@ IOReturn RealtekUSBCardReaderController::switchOutputVoltage(OutputVoltage outpu
     
     ChipRegValuePair pairs[] =
     {
-        { SD::rBUSSTAT, SD::BUSSTAT::kClockToggleEnable | SD::BUSSTAT::kClockForceStop, SD::BUSSTAT::kClockForceStop },
         { SD::rPADCTL, SD::PADCTL::kUse1d8V, SD::PADCTL::kUse1d8V },
         { LDO::rPWRCFG, LDO::PWRCFG::kMask, LDO::PWRCFG::k1V8 },
     };
     
-    if (outputVoltage == OutputVoltage::k1d8V)
+    if (outputVoltage == OutputVoltage::k3d3V)
     {
-        return this->transferWriteRegisterCommands(SimpleRegValuePairs(pairs), 100, Packet::Flags::kC);
-    }
-    else
-    {
-        pairs[1].value = SD::PADCTL::kUse3d3V;
+        pairs[0].value = SD::PADCTL::kUse3d3V;
         
-        pairs[2].value = LDO::PWRCFG::k3V3;
-        
-        return this->transferWriteRegisterCommands(SimpleRegValuePairs(&pairs[1], 2), 100, Packet::Flags::kC);
+        pairs[1].value = LDO::PWRCFG::k3V3;
     }
+    
+    return this->transferWriteRegisterCommands(SimpleRegValuePairs(pairs), 100, Packet::Flags::kC);
 }
 
 //
