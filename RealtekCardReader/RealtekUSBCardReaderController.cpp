@@ -1847,15 +1847,13 @@ void RealtekUSBCardReaderController::fetchDeviceStatusGated(IOTimerEventSource* 
         // Process the card event
         this->cardEventLock = 1;
         
-        auto completion = IOSDCard::Completion::withMemberFunction(this, &RealtekUSBCardReaderController::onCardEventProcessedGated);
-        
         if (isCardPresentNow)
         {
-            this->onSDCardInsertedGated(&completion);
+            this->onSDCardInsertedGated(&this->completion);
         }
         else
         {
-            this->onSDCardRemovedGated(&completion);
+            this->onSDCardRemovedGated(&this->completion);
         }
         
         // Update the cached status
@@ -2279,6 +2277,8 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
     this->revision = 0;
     
     this->cardEventLock = 0;
+    
+    this->completion = IOSDCard::Completion::withMemberFunction(this, &RealtekUSBCardReaderController::onCardEventProcessedGated);
     
     return true;
 }

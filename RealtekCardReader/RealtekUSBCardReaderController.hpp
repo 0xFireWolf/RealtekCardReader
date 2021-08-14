@@ -421,6 +421,9 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// Non-zero if a card event is being processed thus the polling function should pause
     UInt32 cardEventLock;
     
+    /// The completion descriptor that defines the callback routine when the card event is processed
+    IOSDCard::Completion completion;
+    
     //
     // MARK: - Access Chip Registers (Common, Final)
     //
