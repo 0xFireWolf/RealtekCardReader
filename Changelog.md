@@ -9,6 +9,10 @@
 - Added an option to delay the initialization of the card found during the system boots.
 - Corrected the address of the USB-based card reader register that controls the SSC depth.
 - Fixed an issue that System Information does not list the USB-based card reader properly.
+- Resolved an issue that commands are timed out after the driver switches the bus clock of the card reader.
+- Resolved an issue that USB-based card readers fail to initialize UHS-I cards properly.
+- Pause the polling thread of the USB-based card reader when the host driver is processing a card event.
+- Skip setting the bus power mode if the card reader is already operating at the requested mode.
 
 #### v0.9.5 Beta
 - Rebranded the project.
