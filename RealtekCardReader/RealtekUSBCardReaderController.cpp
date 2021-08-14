@@ -516,7 +516,7 @@ IOReturn RealtekUSBCardReaderController::enqueueCommandGated(const Command& comm
     }
     
     // Retrieve and write the command value
-    IOByteCount offset = + Offset::kHostCmdOff + this->hostCommandCounter.total * sizeof(Command);
+    IOByteCount offset = Offset::kHostCmdOff + this->hostCommandCounter.total * sizeof(Command);
     
     UInt32 value = OSSwapHostToBigInt32(command.getValue());
     
@@ -1108,7 +1108,8 @@ IOReturn RealtekUSBCardReaderController::switchCardClock(UInt8 depth, UInt8 n, U
     }
     
     // Wait until the SSC clock becomes stable
-    IODelay(RealtekUSBCardReaderController::kWaitStableSSCClock);
+    //IODelay(RealtekUSBCardReaderController::kWaitStableSSCClock);
+    IOSleep(10);
     
     return this->writeChipRegister(CLK::rDIV, CLK::DIV::kChangeClock, 0);
 }
@@ -1426,6 +1427,8 @@ IOReturn RealtekUSBCardReaderController::performBulkTransfer(IOUSBHostPipe* pipe
     IOByteCount32 bufferLength = static_cast<IOByteCount32>(length);
     
     IOByteCount32 actualLength = 0;
+    
+    timeout = max(timeout, 600);
     
     IOReturn retVal = kIOReturnSuccess;
     
