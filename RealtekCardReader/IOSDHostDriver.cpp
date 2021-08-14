@@ -10,9 +10,6 @@
 #include "Debug.hpp"
 #include "IOSDBlockStorageDevice.hpp"
 #include <IOKit/IOBufferMemoryDescriptor.h>
-#include <IOKit/IOSubMemoryDescriptor.h>
-#include <IOKit/storage/IOBlockStorageDriver.h>
-#include <i386/param.h>
 #include "RealtekSDRequest.hpp"
 #include "RealtekUserConfigs.hpp"
 

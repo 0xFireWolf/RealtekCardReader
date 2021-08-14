@@ -21,6 +21,7 @@
 #include "IOSDCardEventSource.hpp"
 #include "SD.hpp"
 #include "Utilities.hpp"
+#include "IOEnhancedCommandPool.hpp"
 
 /// Forward declaration (Client of the SD host driver)
 class IOSDBlockStorageDevice;
