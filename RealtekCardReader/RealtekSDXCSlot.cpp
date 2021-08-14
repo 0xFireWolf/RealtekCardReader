@@ -318,8 +318,11 @@ IOReturn RealtekSDXCSlot::runSDCommand(RealtekSDSimpleCommandRequest& request)
     // Guard: Run the command
     retVal = this->runSDCommand(request.command);
     
-    psoftassert(this->controller->writeChipRegister(SD::rBUSSTAT, SD::BUSSTAT::kClockToggleEnable | SD::BUSSTAT::kClockForceStop, 0) == kIOReturnSuccess,
-                "Failed to stop the clock.");
+    if (retVal != kIOReturnSuccess)
+    {
+        psoftassert(this->controller->writeChipRegister(SD::rBUSSTAT, SD::BUSSTAT::kClockToggleEnable | SD::BUSSTAT::kClockForceStop, 0) == kIOReturnSuccess,
+                    "Failed to stop the clock.");
+    }
     
     return retVal;
 }
