@@ -48,9 +48,11 @@ class IOSDHostDriver: public IOService
     IODMACommand* pDMACommands[kDefaultPoolSize];
     
     /// Preallocated simple SD block requests
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     IOSDSimpleBlockRequest* pSimpleBlockRequests[kDefaultPoolSize];
     
     /// Preallocated complex SD block requests
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     IOSDComplexBlockRequest* pComplexBlockRequests[kDefaultPoolSize];
     
     /// The SD host device (provider)
@@ -66,9 +68,11 @@ class IOSDHostDriver: public IOService
     IOCommandPool* dmaCommandPool;
     
     /// A request pool that contains preallocated simple SD block requests
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     IOCommandPool* simpleBlockRequestPool;
     
     /// A request pool that contains preallocated complex SD block requests
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     IOCommandPool* complexBlockRequestPool;
     
     /// A list of pending requests (a subclass of `IOCommandPool` with convenient methods)
@@ -138,6 +142,7 @@ public:
     ///
     /// @return A non-null simple block request.
     ///
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     inline IOSDSimpleBlockRequest* allocateSimpleBlockRequestFromPool()
     {
         return OSDynamicCast(IOSDSimpleBlockRequest, this->simpleBlockRequestPool->getCommand());
@@ -148,6 +153,7 @@ public:
     ///
     /// @param request The request returned by `IOSDHostDriver::allocateBlockRequestFromPool()`
     ///
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     inline void releaseSimpleBlockRequestToPool(IOSDSimpleBlockRequest* request)
     {
         this->simpleBlockRequestPool->returnCommand(request);
@@ -158,6 +164,7 @@ public:
     ///
     /// @return A non-null complex block request.
     ///
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     inline IOSDComplexBlockRequest* allocateComplexBlockRequestFromPool()
     {
         return OSDynamicCast(IOSDComplexBlockRequest, this->complexBlockRequestPool->getCommand());
@@ -168,6 +175,7 @@ public:
     ///
     /// @param request The request returned by `IOSDHostDriver::allocateBlockRequestFromPool()`
     ///
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     inline void releaseComplexBlockRequestToPool(IOSDComplexBlockRequest* request)
     {
         this->complexBlockRequestPool->returnCommand(request);
@@ -1133,12 +1141,14 @@ public:
     ///
     bool setupPreallocatedDMACommands();
     
+    // TODO: REMVOE THIS
     ///
     /// Setup the array of preallocated SD block requests
     ///
     /// @return `true` on success, `false` otherwise.
     /// @note Upon an unsuccessful return, all resources allocated by this function are released.
     ///
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     bool setupPreallocatedBlockRequests();
     
     ///
@@ -1163,6 +1173,7 @@ public:
     /// @return `true` on success, `false` otherwise.
     /// @note Upon an unsuccessful return, all resources allocated by this function are released.
     ///
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     bool setupBlockRequestPool();
     
     ///
@@ -1211,9 +1222,11 @@ public:
     ///
     void tearDownPreallocatedDMACommands();
     
+    // TODO: REMVOE THIS
     ///
     /// Tear down the array of preallocated SD block requests
     ///
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     void tearDownPreallocatedBlockRequests();
     
     ///
@@ -1229,6 +1242,7 @@ public:
     ///
     /// Tear down the SD block request pool
     ///
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     void tearDownBlockRequestPool();
     
     ///
