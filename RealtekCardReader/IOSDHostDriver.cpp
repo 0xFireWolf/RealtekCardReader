@@ -55,11 +55,11 @@ IOReturn IOSDHostDriver::submitBlockRequest(IOSDBlockRequest::Processor processo
 
     if (nblocks <= this->host->getDMALimits().maxRequestNumBlocks())
     {
-        request = this->simpleBlockRequestPoolV2->getCommand();
+        request = this->simpleBlockRequestPool->getCommand();
     }
     else
     {
-        request = this->complexBlockRequestPoolV2->getCommand();
+        request = this->complexBlockRequestPool->getCommand();
     }
     
     passert(request != nullptr, "The block request should not be null at this moment.");
@@ -2564,24 +2564,24 @@ bool IOSDHostDriver::setupBlockRequestPool()
 //        this->releaseComplexBlockRequestToPool(this->pComplexBlockRequests[index]);
 //    }
     
-    this->simpleBlockRequestPoolV2 = IOSDSimpleBlockRequestPool::createWithCapacity(this->sharedWorkLoop, IOSDHostDriver::kDefaultPoolSize);
+    this->simpleBlockRequestPool = IOSDSimpleBlockRequestPool::createWithCapacity(this->sharedWorkLoop, IOSDHostDriver::kDefaultPoolSize);
     
-    if (this->simpleBlockRequestPoolV2 == nullptr)
+    if (this->simpleBlockRequestPool == nullptr)
     {
         perr("Failed to create the simple block request pool.")
         
         return false;
     }
     
-    this->complexBlockRequestPoolV2 = IOSDComplexBlockRequestPool::createWithCapacity(this->sharedWorkLoop, IOSDHostDriver::kDefaultPoolSize);
+    this->complexBlockRequestPool = IOSDComplexBlockRequestPool::createWithCapacity(this->sharedWorkLoop, IOSDHostDriver::kDefaultPoolSize);
     
-    if (this->complexBlockRequestPoolV2 == nullptr)
+    if (this->complexBlockRequestPool == nullptr)
     {
         perr("Failed to create the complex block request pool.");
         
-        IOSDSimpleBlockRequestPool::destory(this->simpleBlockRequestPoolV2);
+        IOSDSimpleBlockRequestPool::destory(this->simpleBlockRequestPool);
         
-        this->simpleBlockRequestPoolV2 = nullptr;
+        this->simpleBlockRequestPool = nullptr;
         
         return false;
     }
@@ -2798,9 +2798,9 @@ void IOSDHostDriver::tearDownBlockRequestPool()
 //
 //    OSSafeReleaseNULL(this->complexBlockRequestPool);
     
-    IOSDSimpleBlockRequestPool::safeDestory(this->simpleBlockRequestPoolV2);
+    IOSDSimpleBlockRequestPool::safeDestory(this->simpleBlockRequestPool);
     
-    IOSDComplexBlockRequestPool::safeDestory(this->complexBlockRequestPoolV2);
+    IOSDComplexBlockRequestPool::safeDestory(this->complexBlockRequestPool);
 }
 
 ///
@@ -2910,6 +2910,8 @@ bool IOSDHostDriver::start(IOService* provider)
     }
     
     this->host->retain();
+    
+    // TODO: Adjust the error label # after `setupPreallocatedDMACommands` is removed.
     
     // Setup the power managememt
     if (!this->setupPowerManagement())

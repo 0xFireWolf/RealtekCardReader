@@ -70,10 +70,10 @@ class IOSDHostDriver: public IOService
     IOCommandPool* dmaCommandPool;
     
     /// A request pool that contains preallocated simple SD block requests
-    IOSDSimpleBlockRequestPool* simpleBlockRequestPoolV2;
+    IOSDSimpleBlockRequestPool* simpleBlockRequestPool;
     
     /// A request pool that contains preallocated complex SD block requests
-    IOSDComplexBlockRequestPool* complexBlockRequestPoolV2;
+    IOSDComplexBlockRequestPool* complexBlockRequestPool;
     
     /// A list of pending requests (a subclass of `IOCommandPool` with convenient methods)
     IOSDBlockRequestQueue* pendingRequests;
@@ -148,7 +148,7 @@ public:
         
         if (creq != nullptr)
         {
-            this->complexBlockRequestPoolV2->returnCommand(creq);
+            this->complexBlockRequestPool->returnCommand(creq);
             
             return;
         }
@@ -157,7 +157,7 @@ public:
         
         if (sreq != nullptr)
         {
-            this->simpleBlockRequestPoolV2->returnCommand(sreq);
+            this->simpleBlockRequestPool->returnCommand(sreq);
             
             return;
         }
