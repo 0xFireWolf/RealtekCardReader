@@ -1509,7 +1509,7 @@ IOReturn RealtekPCICardReaderController::switchCardClock(UInt8 depth, UInt8 n, U
     }
     
     // Wait until the SSC clock becomes stable
-    IODelay(RealtekPCICardReaderController::kWaitStableSSCClock);
+    IOSleep(RealtekUserConfigs::COM::DelayStableSSCClock);
     
     return this->writeChipRegister(CLK::rCTL, CLK::CTL::kLowFrequency, 0);
 }

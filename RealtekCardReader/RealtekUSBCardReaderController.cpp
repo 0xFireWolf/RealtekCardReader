@@ -8,6 +8,7 @@
 #include "RealtekUSBCardReaderController.hpp"
 #include "RealtekUSBRegisters.hpp"
 #include "RealtekUSBSDXCSlot.hpp"
+#include "RealtekUserConfigs.hpp"
 #include "BitOptions.hpp"
 
 //
@@ -1108,8 +1109,7 @@ IOReturn RealtekUSBCardReaderController::switchCardClock(UInt8 depth, UInt8 n, U
     }
     
     // Wait until the SSC clock becomes stable
-    //IODelay(RealtekUSBCardReaderController::kWaitStableSSCClock);
-    IOSleep(10);
+    IOSleep(RealtekUserConfigs::COM::DelayStableSSCClock);
     
     return this->writeChipRegister(CLK::rDIV, CLK::DIV::kChangeClock, 0);
 }

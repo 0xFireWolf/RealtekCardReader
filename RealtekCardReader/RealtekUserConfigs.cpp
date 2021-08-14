@@ -7,6 +7,14 @@
 
 #include "RealtekUserConfigs.hpp"
 
+/// Boot arguments that customize the PCIe/USB-based card reader controller
+namespace RealtekUserConfigs::COM
+{
+    /// The amount of time in milliseconds to wait until the SSC clock becomes stable
+    /// If the value is too small, ACMD6 may timeout after the driver switches the clock
+    UInt32 DelayStableSSCClock = BootArgs::get("rtsxdssc", 10);
+}
+
 /// Boot arguments that customize the PCIe-based card reader controller
 namespace RealtekUserConfigs::PCR
 {
