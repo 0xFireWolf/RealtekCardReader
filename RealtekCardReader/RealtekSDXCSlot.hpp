@@ -79,6 +79,9 @@ class RealtekSDXCSlot: public WolfsSDXCSlot
     /// `True` if the card clock should be doubled
     bool doubleClock;
     
+    /// The current bus power mode
+    IOSDBusConfig::PowerMode powerMode;
+    
     //
     // MARK: - SD Commander
     //

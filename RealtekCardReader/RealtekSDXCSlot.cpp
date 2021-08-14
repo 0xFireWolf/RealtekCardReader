@@ -1338,14 +1338,23 @@ IOReturn RealtekSDXCSlot::powerOff()
 ///
 IOReturn RealtekSDXCSlot::setPowerMode(IOSDBusConfig::PowerMode mode)
 {
-    if (mode == IOSDBusConfig::PowerMode::kPowerOff)
+    // Guard: Check the current bus power mode
+    if (this->powerMode == mode)
     {
-        return this->powerOff();
+        pinfo("The current bus power mode is the same as the requested one.");
+        
+        return kIOReturnSuccess;
     }
-    else
+    
+    // Set the power mode
+    IOReturn retVal = mode == IOSDBusConfig::PowerMode::kPowerOff ? this->powerOff() : this->powerOn();
+    
+    if (retVal == kIOReturnSuccess)
     {
-        return this->powerOn();
+        this->powerMode = mode;
     }
+    
+    return retVal;
 }
 
 ///
@@ -1508,9 +1517,6 @@ IOReturn RealtekSDXCSlot::setBusConfig(const IOSDBusConfig& config)
     this->initialMode = config.clock <= MHz2Hz(1);
     
     this->cardClock = config.clock;
-    
-    pinfo("Switching the clock to %d Hz with SSC depth = %d; Initial Mode = %d; Use Double Clock = %d; Use VPCLK = %d...",
-          this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
     
     retVal = this->controller->switchCardClock(this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
     
@@ -2248,6 +2254,20 @@ bool RealtekSDXCSlot::init(OSDictionary* dictionary)
                          Capability::kOptimizeChipSelect;
     
     this->dmaLimits = { 256, 65536, 524288 };
+    
+    this->controller = nullptr;
+    
+    this->cardClock = 0;
+    
+    this->sscDepth = SSCDepth::k512K;
+    
+    this->initialMode = true;
+    
+    this->vpclock = false;
+    
+    this->doubleClock = true;
+    
+    this->powerMode = IOSDBusConfig::PowerMode::kPowerUndefined;
     
     return true;
 }
