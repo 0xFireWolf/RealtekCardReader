@@ -55,16 +55,10 @@ IOReturn IOSDHostDriver::submitBlockRequest(IOSDBlockRequest::Processor processo
 
     if (nblocks <= this->host->getDMALimits().maxRequestNumBlocks())
     {
-        // TODO: REMOVE THIS
-        //request = this->allocateSimpleBlockRequestFromPool();
-        
         request = this->simpleBlockRequestPoolV2->getCommand();
     }
     else
     {
-        // TODO: REMOVE THIS
-        //request = this->allocateComplexBlockRequestFromPool();
-        
         request = this->complexBlockRequestPoolV2->getCommand();
     }
     
@@ -2474,43 +2468,6 @@ bool IOSDHostDriver::setupPreallocatedDMACommands()
     return true;
 }
 
-// TODO: REMOVE THIS
-/////
-///// Setup the array of preallocated SD block requests
-/////
-///// @return `true` on success, `false` otherwise.
-///// @note Upon an unsuccessful return, all resources allocated by this function are released.
-/////
-//bool IOSDHostDriver::setupPreallocatedBlockRequests()
-//{
-//    pinfo("Preallocating an array of block requests...");
-//
-//    bzero(this->pSimpleBlockRequests, sizeof(this->pSimpleBlockRequests));
-//
-//    bzero(this->pComplexBlockRequests, sizeof(this->pComplexBlockRequests));
-//
-//    for (auto index = 0; index < IOSDHostDriver::kDefaultPoolSize; index += 1)
-//    {
-//        this->pSimpleBlockRequests[index] = OSTypeAlloc(IOSDSimpleBlockRequest);
-//
-//        this->pComplexBlockRequests[index] = OSTypeAlloc(IOSDComplexBlockRequest);
-//
-//        if (this->pSimpleBlockRequests[index] == nullptr ||
-//            this->pComplexBlockRequests[index] == nullptr)
-//        {
-//            perr("[%02d] Failed to preallocate the block request.", index);
-//
-//            this->tearDownPreallocatedBlockRequests();
-//
-//            return false;
-//        }
-//    }
-//
-//    pinfo("Preallocated %u SD block requests successfully.", IOSDHostDriver::kDefaultPoolSize);
-//
-//    return true;
-//}
-
 ///
 /// Setup the shared work loop to protect the pool and the queue
 ///
@@ -2814,20 +2771,6 @@ void IOSDHostDriver::tearDownPreallocatedDMACommands()
     }
 }
 
-// TODO: REMOVE THIS
-/////
-///// Tear down the array of preallocated SD block requests
-/////
-//void IOSDHostDriver::tearDownPreallocatedBlockRequests()
-//{
-//    for (auto index = 0; index < IOSDHostDriver::kDefaultPoolSize; index += 1)
-//    {
-//        OSSafeReleaseNULL(this->pSimpleBlockRequests[index]);
-//
-//        OSSafeReleaseNULL(this->pComplexBlockRequests[index]);
-//    }
-//}
-
 ///
 /// Tear down the shared workloop
 ///
@@ -2980,13 +2923,6 @@ bool IOSDHostDriver::start(IOService* provider)
         goto error2;
     }
     
-    // TODO: REMOVE THIS
-    // Preallocate SD block requests
-//    if (!this->setupPreallocatedBlockRequests())
-//    {
-//        goto error3;
-//    }
-    
     // Setup the shared work loop
     if (!this->setupSharedWorkLoop())
     {
@@ -3054,8 +2990,6 @@ error5:
     this->tearDownSharedWorkLoop();
     
 error4:
-    // TODO: REMOVE THIS
-    //this->tearDownPreallocatedBlockRequests();
     
 error3:
     this->tearDownPreallocatedDMACommands();
@@ -3093,9 +3027,6 @@ void IOSDHostDriver::stop(IOService* provider)
     this->tearDownDMACommandPool();
     
     this->tearDownSharedWorkLoop();
-    
-    // TODO: REMOVE THIS
-    //this->tearDownPreallocatedBlockRequests();
     
     this->tearDownPreallocatedDMACommands();
     
