@@ -38,6 +38,16 @@ class IOSDHostDriver: public IOService
     using super = IOService;
     
     //
+    // MARK: - Type Definitions
+    //
+    
+    /// Type of the pool of simple block requests
+    using IOSDSimpleBlockRequestPool = IOEnhancedCommandPool<IOSDSimpleBlockRequest>;
+    
+    /// Type of the pool of complex block requests
+    using IOSDComplexBlockRequestPool = IOEnhancedCommandPool<IOSDComplexBlockRequest>;
+    
+    //
     // MARK: - Private Properties
     //
 
@@ -69,11 +79,17 @@ class IOSDHostDriver: public IOService
     
     /// A request pool that contains preallocated simple SD block requests
     DEPRECATE("Replaced by IOEnhancedCommandPool.")
+    // TODO: REMOVE THIS
     IOCommandPool* simpleBlockRequestPool;
+    
+    IOSDSimpleBlockRequestPool* simpleBlockRequestPoolV2;
     
     /// A request pool that contains preallocated complex SD block requests
     DEPRECATE("Replaced by IOEnhancedCommandPool.")
+    // TODO: REMOVE THIS
     IOCommandPool* complexBlockRequestPool;
+    
+    IOSDComplexBlockRequestPool* complexBlockRequestPoolV2;
     
     /// A list of pending requests (a subclass of `IOCommandPool` with convenient methods)
     IOSDBlockRequestQueue* pendingRequests;
@@ -1142,14 +1158,14 @@ public:
     bool setupPreallocatedDMACommands();
     
     // TODO: REMVOE THIS
-    ///
-    /// Setup the array of preallocated SD block requests
-    ///
-    /// @return `true` on success, `false` otherwise.
-    /// @note Upon an unsuccessful return, all resources allocated by this function are released.
-    ///
-    DEPRECATE("Replaced by IOEnhancedCommandPool.")
-    bool setupPreallocatedBlockRequests();
+//    ///
+//    /// Setup the array of preallocated SD block requests
+//    ///
+//    /// @return `true` on success, `false` otherwise.
+//    /// @note Upon an unsuccessful return, all resources allocated by this function are released.
+//    ///
+//    DEPRECATE("Replaced by IOEnhancedCommandPool.")
+//    bool setupPreallocatedBlockRequests();
     
     ///
     /// Setup the shared work loop to protect the pool and the queue
@@ -1223,11 +1239,11 @@ public:
     void tearDownPreallocatedDMACommands();
     
     // TODO: REMVOE THIS
-    ///
-    /// Tear down the array of preallocated SD block requests
-    ///
-    DEPRECATE("Replaced by IOEnhancedCommandPool.")
-    void tearDownPreallocatedBlockRequests();
+//    ///
+//    /// Tear down the array of preallocated SD block requests
+//    ///
+//    DEPRECATE("Replaced by IOEnhancedCommandPool.")
+//    void tearDownPreallocatedBlockRequests();
     
     ///
     /// Tear down the shared workloop
