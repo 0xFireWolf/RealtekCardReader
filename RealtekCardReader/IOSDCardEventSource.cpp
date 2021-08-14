@@ -39,7 +39,7 @@ bool IOSDCardEventSource::checkForWork()
     }
     
     // Acknowledge the card event
-    this->disable();
+    super::disable();
     
     pinfo("Processing the card event...");
     
