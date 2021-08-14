@@ -55,11 +55,17 @@ IOReturn IOSDHostDriver::submitBlockRequest(IOSDBlockRequest::Processor processo
 
     if (nblocks <= this->host->getDMALimits().maxRequestNumBlocks())
     {
-        request = this->allocateSimpleBlockRequestFromPool();
+        // TODO: REMOVE THIS
+        //request = this->allocateSimpleBlockRequestFromPool();
+        
+        request = this->simpleBlockRequestPoolV2->getCommand();
     }
     else
     {
-        request = this->allocateComplexBlockRequestFromPool();
+        // TODO: REMOVE THIS
+        //request = this->allocateComplexBlockRequestFromPool();
+        
+        request = this->complexBlockRequestPoolV2->getCommand();
     }
     
     passert(request != nullptr, "The block request should not be null at this moment.");

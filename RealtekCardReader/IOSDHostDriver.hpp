@@ -153,49 +153,50 @@ public:
         this->dmaCommandPool->returnCommand(command);
     }
     
-    ///
-    /// Allocate a simple block request from the pool
-    ///
-    /// @return A non-null simple block request.
-    ///
-    DEPRECATE("Replaced by IOEnhancedCommandPool.")
-    inline IOSDSimpleBlockRequest* allocateSimpleBlockRequestFromPool()
-    {
-        return OSDynamicCast(IOSDSimpleBlockRequest, this->simpleBlockRequestPool->getCommand());
-    }
-    
-    ///
-    /// Return the given simple block request to the pool
-    ///
-    /// @param request The request returned by `IOSDHostDriver::allocateBlockRequestFromPool()`
-    ///
-    DEPRECATE("Replaced by IOEnhancedCommandPool.")
-    inline void releaseSimpleBlockRequestToPool(IOSDSimpleBlockRequest* request)
-    {
-        this->simpleBlockRequestPool->returnCommand(request);
-    }
-    
-    ///
-    /// Allocate a complex block request from the pool
-    ///
-    /// @return A non-null complex block request.
-    ///
-    DEPRECATE("Replaced by IOEnhancedCommandPool.")
-    inline IOSDComplexBlockRequest* allocateComplexBlockRequestFromPool()
-    {
-        return OSDynamicCast(IOSDComplexBlockRequest, this->complexBlockRequestPool->getCommand());
-    }
-    
-    ///
-    /// Return the given simple block request to the pool
-    ///
-    /// @param request The request returned by `IOSDHostDriver::allocateBlockRequestFromPool()`
-    ///
-    DEPRECATE("Replaced by IOEnhancedCommandPool.")
-    inline void releaseComplexBlockRequestToPool(IOSDComplexBlockRequest* request)
-    {
-        this->complexBlockRequestPool->returnCommand(request);
-    }
+    // TODO: REMOVE THIS
+//    ///
+//    /// Allocate a simple block request from the pool
+//    ///
+//    /// @return A non-null simple block request.
+//    ///
+//    DEPRECATE("Replaced by IOEnhancedCommandPool.")
+//    inline IOSDSimpleBlockRequest* allocateSimpleBlockRequestFromPool()
+//    {
+//        return OSDynamicCast(IOSDSimpleBlockRequest, this->simpleBlockRequestPool->getCommand());
+//    }
+//
+//    ///
+//    /// Return the given simple block request to the pool
+//    ///
+//    /// @param request The request returned by `IOSDHostDriver::allocateBlockRequestFromPool()`
+//    ///
+//    DEPRECATE("Replaced by IOEnhancedCommandPool.")
+//    inline void releaseSimpleBlockRequestToPool(IOSDSimpleBlockRequest* request)
+//    {
+//        this->simpleBlockRequestPool->returnCommand(request);
+//    }
+//
+//    ///
+//    /// Allocate a complex block request from the pool
+//    ///
+//    /// @return A non-null complex block request.
+//    ///
+//    DEPRECATE("Replaced by IOEnhancedCommandPool.")
+//    inline IOSDComplexBlockRequest* allocateComplexBlockRequestFromPool()
+//    {
+//        return OSDynamicCast(IOSDComplexBlockRequest, this->complexBlockRequestPool->getCommand());
+//    }
+//
+//    ///
+//    /// Return the given simple block request to the pool
+//    ///
+//    /// @param request The request returned by `IOSDHostDriver::allocateBlockRequestFromPool()`
+//    ///
+//    DEPRECATE("Replaced by IOEnhancedCommandPool.")
+//    inline void releaseComplexBlockRequestToPool(IOSDComplexBlockRequest* request)
+//    {
+//        this->complexBlockRequestPool->returnCommand(request);
+//    }
     
     ///
     /// Return the given block request to the pool where it belongs
@@ -208,7 +209,10 @@ public:
         
         if (creq != nullptr)
         {
-            this->releaseComplexBlockRequestToPool(creq);
+            // TODO: REMOVE THIS
+            //this->releaseComplexBlockRequestToPool(creq);
+            
+            this->complexBlockRequestPoolV2->returnCommand(creq);
             
             return;
         }
@@ -217,7 +221,10 @@ public:
         
         if (sreq != nullptr)
         {
-            this->releaseSimpleBlockRequestToPool(sreq);
+            // TODO: REMOVE THIS
+            //this->releaseSimpleBlockRequestToPool(sreq);
+            
+            this->simpleBlockRequestPoolV2->returnCommand(sreq);
             
             return;
         }
@@ -1189,7 +1196,6 @@ public:
     /// @return `true` on success, `false` otherwise.
     /// @note Upon an unsuccessful return, all resources allocated by this function are released.
     ///
-    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     bool setupBlockRequestPool();
     
     ///
@@ -1258,7 +1264,6 @@ public:
     ///
     /// Tear down the SD block request pool
     ///
-    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     void tearDownBlockRequestPool();
     
     ///
