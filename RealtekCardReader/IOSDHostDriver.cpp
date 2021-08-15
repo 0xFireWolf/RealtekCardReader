@@ -2533,37 +2533,6 @@ bool IOSDHostDriver::setupBlockRequestPool()
 {
     pinfo("Creating the block request pool...");
     
-//    this->simpleBlockRequestPool = IOCommandPool::withWorkLoop(this->sharedWorkLoop);
-//
-//    if (this->simpleBlockRequestPool == nullptr)
-//    {
-//        perr("Failed to create the simple block request pool.");
-//
-//        return false;
-//    }
-//
-//    this->complexBlockRequestPool = IOCommandPool::withWorkLoop(this->sharedWorkLoop);
-//
-//    if (this->complexBlockRequestPool == nullptr)
-//    {
-//        perr("Failed to create the complex block request pool.");
-//
-//        this->simpleBlockRequestPool->release();
-//
-//        this->simpleBlockRequestPool = nullptr;
-//
-//        return false;
-//    }
-//
-//    pinfo("Populating the pool with preallocated block requests...");
-//
-//    for (auto index = 0; index < IOSDHostDriver::kDefaultPoolSize; index += 1)
-//    {
-//        this->releaseSimpleBlockRequestToPool(this->pSimpleBlockRequests[index]);
-//
-//        this->releaseComplexBlockRequestToPool(this->pComplexBlockRequests[index]);
-//    }
-    
     this->simpleBlockRequestPool = IOSDSimpleBlockRequestPool::createWithCapacity(this->sharedWorkLoop, IOSDHostDriver::kDefaultPoolSize);
     
     if (this->simpleBlockRequestPool == nullptr)
@@ -2793,11 +2762,6 @@ void IOSDHostDriver::tearDownDMACommandPool()
 ///
 void IOSDHostDriver::tearDownBlockRequestPool()
 {
-    // Block requests are released by `IOSDHostDriver::tearDownPreallocatedBlockRequests()`
-//    OSSafeReleaseNULL(this->simpleBlockRequestPool);
-//
-//    OSSafeReleaseNULL(this->complexBlockRequestPool);
-    
     IOSDSimpleBlockRequestPool::safeDestory(this->simpleBlockRequestPool);
     
     IOSDComplexBlockRequestPool::safeDestory(this->complexBlockRequestPool);
