@@ -10,6 +10,7 @@
 #include "RealtekUSBSDXCSlot.hpp"
 #include "RealtekUserConfigs.hpp"
 #include "BitOptions.hpp"
+#include "IOMemoryDescriptor.hpp"
 
 //
 // MARK: - Meta Class Definitions
@@ -349,6 +350,74 @@ IOReturn RealtekUSBCardReaderController::writeChipRegistersSequentially(UInt16 a
     };
     
     return this->commandGate->runAction(action, &address, &count, const_cast<void*>(reinterpret_cast<const void*>(source)));
+}
+
+///
+/// Read from a contiguous sequence of chip registers
+///
+/// @param address The starting register address
+/// @param count The number of registers to read
+/// @param destination A non-null buffer that stores the registers value on return
+/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out.
+/// @note Port: This function replaces `rtsx_usb_seq_read_register()` defined in `rtsx_usb.c`.
+///
+IOReturn RealtekUSBCardReaderController::readChipRegistersSequentially(UInt16 address, UInt16 count, IOMemoryDescriptor* destination)
+{
+    // The transfer routine will run in a gated context
+    auto action = [&]() -> IOReturn
+    {
+        // Create the packet for reading registers sequentially and write it to the host buffer
+        this->writePacketToHostBufferGated(Packet::forSeqReadCommand(count));
+        
+        // Set the starting register address in the host buffer
+        this->writeHostBufferValueGated(Offset::kHostCmdOff, OSSwapHostToBigInt16(address));
+        
+        // Initiate the outbound bulk transfer to send the command
+        IOReturn retVal = this->performOutboundBulkTransfer(this->hostBufferDescriptor, Offset::kSeqRegsVal, 100);
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to complete the outbound bulk transfer. Error = 0x%x.", retVal);
+            
+            return retVal;
+        }
+        
+        // Load the response from the card
+        return this->performInboundBulkTransfer(destination, count, 100);
+    };
+    
+    return IOCommandGateRunAction(this->commandGate, action);
+}
+
+///
+/// Write to a contiguous sequence of chip registers
+///
+/// @param address The starting register address
+/// @param count The number of registers to write
+/// @param source A non-null buffer that contains the registers value
+/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out.
+/// @note Port: This function replaces `rtsx_usb_seq_read_register()` defined in `rtsx_usb.c`.
+///
+IOReturn RealtekUSBCardReaderController::writeChipRegistersSequentially(UInt16 address, UInt16 count, IOMemoryDescriptor* source)
+{
+    // Check if the controller can avoid unnecessary buffer copies
+    auto bufferDescriptor = OSDynamicCast(IOBufferMemoryDescriptor, source);
+    
+    if (bufferDescriptor != nullptr)
+    {
+        pinfo("Optimization: The given destination buffer is a buffer memory descriptor.");
+        
+        return this->writeChipRegistersSequentially(address, count, reinterpret_cast<UInt8*>(bufferDescriptor->getBytesNoCopy()));
+    }
+    
+    // The controller must use an intermediate buffer
+    // Memory Descriptor -> Intermediate Buffer -> USB Endpoint
+    auto action = [&](const UInt8* buffer) -> IOReturn
+    {
+        return this->writeChipRegistersSequentially(address, count, buffer);
+    };
+    
+    return IOMemoryDescriptorWithIntermediateSourceBuffer(source, 0, count, action);
 }
 
 ///
@@ -1394,6 +1463,56 @@ IOReturn RealtekUSBCardReaderController::writePingPongBuffer(const UInt8* source
     if (source == nullptr)
     {
         perr("The source buffer cannot be NULL.");
+        
+        return kIOReturnBadArgument;
+    }
+    
+    return this->writeChipRegistersSequentially(PPBUF::rBASE2, static_cast<UInt16>(length), source);
+}
+
+///
+/// Read from the ping pong buffer
+///
+/// @param destination The buffer to store bytes
+/// @param length The number of bytes to read (cannot exceed 512 bytes)
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `rtsx_usb_read_ppbuf()` defined in `rtsx_usb.c`.
+///
+IOReturn RealtekUSBCardReaderController::readPingPongBuffer(IOMemoryDescriptor* destination, IOByteCount length)
+{
+    using namespace RTSX::UCR::Chip;
+    
+    pinfo("Request to read %llu bytes from the ping pong buffer.", length);
+    
+    // Guard: The ping pong buffer is 512 bytes long
+    if (length > 512)
+    {
+        perr("The number of bytes requested to read should not exceed 512.");
+        
+        return kIOReturnBadArgument;
+    }
+    
+    return this->readChipRegistersSequentially(PPBUF::rBASE2, static_cast<UInt16>(length), destination);
+}
+
+///
+/// Write to the ping pong buffer
+///
+/// @param source The buffer to write
+/// @param length The number of bytes to write (cannot exceed 512 bytes)
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `rtsx_usb_write_ppbuf()` defined in `rtsx_usb.c`.
+///
+IOReturn RealtekUSBCardReaderController::writePingPongBuffer(IOMemoryDescriptor* source, IOByteCount length)
+{
+    using namespace RTSX::UCR::Chip;
+    
+    pinfo("Request to write %llu bytes from the ping pong buffer.", length);
+    
+    // Guard: The ping pong buffer is 512 bytes long
+    if (length > 512)
+    {
+        perr("The number of bytes requested to read should not exceed 512.");
         
         return kIOReturnBadArgument;
     }

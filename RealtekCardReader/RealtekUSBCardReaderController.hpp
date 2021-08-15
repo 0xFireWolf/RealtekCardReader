@@ -472,6 +472,28 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     IOReturn writeChipRegistersSequentially(UInt16 address, UInt16 count, const UInt8* source);
     
     ///
+    /// Read from a contiguous sequence of chip registers
+    ///
+    /// @param address The starting register address
+    /// @param count The number of registers to read
+    /// @param destination A non-null buffer that stores the registers value on return
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out.
+    /// @note Port: This function replaces `rtsx_usb_seq_read_register()` defined in `rtsx_usb.c`.
+    ///
+    IOReturn readChipRegistersSequentially(UInt16 address, UInt16 count, IOMemoryDescriptor* destination);
+    
+    ///
+    /// Write to a contiguous sequence of chip registers
+    ///
+    /// @param address The starting register address
+    /// @param count The number of registers to write
+    /// @param source A non-null buffer that contains the registers value
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out.
+    /// @note Port: This function replaces `rtsx_usb_seq_read_register()` defined in `rtsx_usb.c`.
+    ///
+    IOReturn writeChipRegistersSequentially(UInt16 address, UInt16 count, IOMemoryDescriptor* source);
+    
+    ///
     /// Read a byte from the chip register at the given address via the control endpoint
     ///
     /// @param address The register address
@@ -923,6 +945,26 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// @note Port: This function replaces `rtsx_usb_write_ppbuf()` defined in `rtsx_usb.c`.
     ///
     IOReturn writePingPongBuffer(const UInt8* source, IOByteCount length) override final;
+    
+    ///
+    /// Read from the ping pong buffer
+    ///
+    /// @param destination The buffer to store bytes
+    /// @param length The number of bytes to read (cannot exceed 512 bytes)
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `rtsx_usb_read_ppbuf()` defined in `rtsx_usb.c`.
+    ///
+    IOReturn readPingPongBuffer(IOMemoryDescriptor* destination, IOByteCount length) override final;
+    
+    ///
+    /// Write to the ping pong buffer
+    ///
+    /// @param source The buffer to write
+    /// @param length The number of bytes to write (cannot exceed 512 bytes)
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `rtsx_usb_write_ppbuf()` defined in `rtsx_usb.c`.
+    ///
+    IOReturn writePingPongBuffer(IOMemoryDescriptor* source, IOByteCount length) override final;
     
     //
     // MARK: - USB Bulk Transfer
