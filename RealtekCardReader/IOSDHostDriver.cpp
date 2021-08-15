@@ -844,7 +844,7 @@ void IOSDHostDriver::releaseDMABuffer(IODMACommand* command)
     // because its free method checks whether it is wired and if so `completes` it.
     // @see https://opensource.apple.com/source/xnu/xnu-7195.101.1/iokit/Kernel/IOMemoryDescriptor.cpp.auto.html
     psoftassert(command->clearMemoryDescriptor() == kIOReturnSuccess,
-                "Failed to deassociate the memory descriptor with the given DMA command.");
+                "Failed to dissociate the memory descriptor from the given DMA command.");
 
     // Return the command back to the pool
     this->releaseDMACommandToPool(command);
@@ -1216,10 +1216,10 @@ IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, IOMemoryDe
         perr("Failed to issue the CMD6. Error = 0x%x.", retVal);
     }
 
-    // Deassociate the given response buffer with the DMA command
+    // Dissociate the given response buffer from the DMA command
     // Note that the DMA command is completed automatically
     psoftassert(dma->clearMemoryDescriptor() == kIOReturnSuccess,
-                "Failed to deassociate the given response with the DMA command.");
+                "Failed to dissociate the given response from the DMA command.");
 
     // Return the DMA command back
     this->releaseDMACommandToPool(dma);

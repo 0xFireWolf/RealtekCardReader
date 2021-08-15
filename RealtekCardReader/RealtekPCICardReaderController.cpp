@@ -3237,13 +3237,13 @@ void RealtekPCICardReaderController::tearDownHostBuffer()
     }
     
     // R5: Complete the DMA transaction (auto complete is set to true)
-    // R4: Deassociate with the buffer descriptor
+    // R4: Dissociate the buffer descriptor from the DMA command
     // R2: Release the DMA command
     // TODO: Return the DMA command back to the pool
     if (this->hostBufferDMACommand != nullptr)
     {
         psoftassert(this->hostBufferDMACommand->clearMemoryDescriptor() == kIOReturnSuccess,
-                    "Failed to deassociate the buffer descriptor with the DMA command and stop the transaction.");
+                    "Failed to dissociate the buffer descriptor from the DMA command and stop the transaction.");
         
         this->hostBufferDMACommand->release();
         

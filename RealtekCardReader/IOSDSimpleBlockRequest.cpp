@@ -200,13 +200,13 @@ IOReturn IOSDSimpleBlockRequest::prepare()
 ///
 void IOSDSimpleBlockRequest::complete(IOReturn retVal)
 {
-    // Deassociate the transfer buffer with the DMA command
+    // Dissociate the transfer buffer from the DMA command
     pinfo("Completing the request...");
     
     if (this->command != nullptr)
     {
         psoftassert(this->command->clearMemoryDescriptor() == kIOReturnSuccess,
-                    "Failed to deassociate the transfer buffer with the DMA command.");
+                    "Failed to dissociate the transfer buffer from the DMA command.");
         
         psoftassert(this->buffer->complete() == kIOReturnSuccess,
                     "Failed to complete the transfer buffer.");
