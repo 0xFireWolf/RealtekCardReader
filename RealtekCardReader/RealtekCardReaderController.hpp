@@ -993,6 +993,7 @@ public:
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
+    DEPRECATE("Use performDMARead(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
     virtual IOReturn performDMARead(IODMACommand* command, UInt32 timeout) = 0;
     
     ///
@@ -1002,7 +1003,26 @@ public:
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
+    DEPRECATE("Use performDMARead(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
     virtual IOReturn performDMAWrite(IODMACommand* command, UInt32 timeout) = 0;
+    
+    ///
+    /// Perform a DMA read operation
+    ///
+    /// @param descriptor A non-null, perpared memory descriptor
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    ///
+    virtual IOReturn performDMARead(IOMemoryDescriptor* descriptor, UInt32 timeout) = 0;
+    
+    ///
+    /// Perform a DMA write operation
+    ///
+    /// @param descriptor A non-null, perpared memory descriptor
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    ///
+    virtual IOReturn performDMAWrite(IOMemoryDescriptor* descriptor, UInt32 timeout) = 0;
     
     //
     // MARK: - Clear Error
@@ -1389,6 +1409,7 @@ public:
     /// @param length The number of bytes to read (cannot exceed 512 bytes)
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     ///
+    DEPRECATE("Use readPingPongBuffer(IOIOMemoryDescriptor*, IOByteCount) to avoid unnecessary buffer copies.")
     virtual IOReturn readPingPongBuffer(UInt8* destination, IOByteCount length) = 0;
     
     ///
@@ -1398,6 +1419,7 @@ public:
     /// @param length The number of bytes to write (cannot exceed 512 bytes)
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     ///
+    DEPRECATE("Use readPingPongBuffer(IOIOMemoryDescriptor*, IOByteCount) to avoid unnecessary buffer copies.")
     virtual IOReturn writePingPongBuffer(const UInt8* source, IOByteCount length) = 0;
     
     ///
