@@ -870,9 +870,9 @@ IOReturn RealtekSDXCSlot::runSDCommandWithInboundDMATransfer(RealtekSDCommandWit
         
         this->controller->clearError();
         
-        this->controller->dumpChipRegisters({ 0xFDA0, 0xFDB3 });
+        //this->controller->dumpChipRegisters({ 0xFDA0, 0xFDB3 });
         
-        this->controller->dumpChipRegisters({ 0xFD52, 0xFD69 });
+        //this->controller->dumpChipRegisters({ 0xFD52, 0xFD69 });
         
         return retVal;
     }
