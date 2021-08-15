@@ -839,6 +839,20 @@ protected:
     ///
     IOReturn performDMATransfer(IODMACommand* command, UInt32 timeout, UInt32 control);
     
+    ///
+    /// [Helper] Perform a DMA transfer
+    ///
+    /// @param descriptor A non-null, perpared memory descriptor
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @param control Specify the value that will be written to the register `HDBCTLR` to customize the DMA transfer
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    /// @note Port: This function replaces `rtsx_pci_dma_transfer()` defined in `rtsx_psr.c`.
+    /// @note This helper function is invoked by both `performDMARead()` and `performDMAWrite()`.
+    ///       The caller should avoid calling this function directly.
+    /// @warning The caller must ensure that the given memory descriptor is prepared.
+    ///
+    IOReturn performDMATransfer(IOMemoryDescriptor* descriptor, UInt32 timeout, UInt32 control);
+    
 public:
     ///
     /// Perform a DMA read operation
@@ -847,6 +861,7 @@ public:
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
+    DEPRECATE("Use performDMARead(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
     IOReturn performDMARead(IODMACommand* command, UInt32 timeout) override final;
     
     ///
@@ -856,7 +871,26 @@ public:
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
+    DEPRECATE("Use performDMAWrite(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
     IOReturn performDMAWrite(IODMACommand* command, UInt32 timeout) override final;
+    
+    ///
+    /// Perform a DMA read operation
+    ///
+    /// @param descriptor A non-null, perpared memory descriptor
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    ///
+    IOReturn performDMARead(IOMemoryDescriptor* descriptor, UInt32 timeout) override final;
+    
+    ///
+    /// Perform a DMA write operation
+    ///
+    /// @param descriptor A non-null, perpared memory descriptor
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    ///
+    IOReturn performDMAWrite(IOMemoryDescriptor* descriptor, UInt32 timeout) override final;
     
     //
     // MARK: - Clear Error

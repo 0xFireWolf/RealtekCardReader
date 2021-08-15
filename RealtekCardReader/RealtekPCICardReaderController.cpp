@@ -11,6 +11,7 @@
 #include "BitOptions.hpp"
 #include "IOPCIeDevice.hpp"
 #include "IOMemoryDescriptor.hpp"
+#include "IODMACommand.hpp"
 
 //
 // MARK: - Meta Class Definitions
@@ -1021,6 +1022,41 @@ IOReturn RealtekPCICardReaderController::performDMATransfer(IODMACommand* comman
 }
 
 ///
+/// [Helper] Perform a DMA transfer
+///
+/// @param descriptor A non-null, perpared memory descriptor
+/// @param timeout Specify the amount of time in milliseconds
+/// @param control Specify the value that will be written to the register `HDBCTLR` to customize the DMA transfer
+/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+/// @note Port: This function replaces `rtsx_pci_dma_transfer()` defined in `rtsx_psr.c`.
+/// @note This helper function is invoked by both `performDMARead()` and `performDMAWrite()`.
+///       The caller should avoid calling this function directly.
+/// @warning The caller must ensure that the given memory descriptor is prepared.
+///
+IOReturn RealtekPCICardReaderController::performDMATransfer(IOMemoryDescriptor* descriptor, UInt32 timeout, UInt32 control)
+{
+    // The action that manipulates a prepared DMA command
+    auto commandAction = [&](IODMACommand* command) -> IOReturn
+    {
+        return this->performDMATransfer(command, timeout, control);
+    };
+    
+    // The action that manipulates a DMA command allocated from the pool
+    auto poolAction = [&](IODMACommand* command) -> IOReturn
+    {
+        return IODMACommandRunActionWithPreparedMemoryDescriptor(command, descriptor, commandAction);
+    };
+    
+    // Control Flow:                                              Handled By:
+    // 1) Allocate a DMA command from the pool.                   IOEnhancedCommandPool::withCommand()
+    // 2) Associate the memory descriptor with the DMA command.   IODMACommand::runActionWithPreparedMemoryDescriptor()
+    // 3) Perform the DMA transfer.                               RealtekPCICardReaderController::performDMATransfer()
+    // 4) Dissociate the memory descriptor from the DMA command.  IODMACommand::runActionWithPreparedMemoryDescriptor()
+    // 5) Return the DMA command to the pool.                     IOEnhancedCommandPool::withCommand()
+    return this->dmaCommandPool->withCommand(poolAction);
+}
+
+///
 /// Perform a DMA read operation
 ///
 /// @param command A non-null, perpared DMA command
@@ -1050,6 +1086,38 @@ IOReturn RealtekPCICardReaderController::performDMAWrite(IODMACommand* command, 
     pinfo("The host device requests a DMA write operation.");
     
     return this->performDMATransfer(command, timeout, HDBCTLR::kStartDMA | HDBCTLR::kUseADMA);
+}
+
+///
+/// Perform a DMA read operation
+///
+/// @param descriptor A non-null, perpared memory descriptor
+/// @param timeout Specify the amount of time in milliseconds
+/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+///
+IOReturn RealtekPCICardReaderController::performDMARead(IOMemoryDescriptor* descriptor, UInt32 timeout)
+{
+    using namespace RTSX::MMIO;
+    
+    pinfo("The host device requests a DMA read operation.");
+    
+    return this->performDMATransfer(descriptor, timeout, HDBCTLR::kDMARead | HDBCTLR::kStartDMA | HDBCTLR::kUseADMA);
+}
+
+///
+/// Perform a DMA write operation
+///
+/// @param descriptor A non-null, perpared memory descriptor
+/// @param timeout Specify the amount of time in milliseconds
+/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+///
+IOReturn RealtekPCICardReaderController::performDMAWrite(IOMemoryDescriptor* descriptor, UInt32 timeout)
+{
+    using namespace RTSX::MMIO;
+    
+    pinfo("The host device requests a DMA write operation.");
+    
+    return this->performDMATransfer(descriptor, timeout, HDBCTLR::kStartDMA | HDBCTLR::kUseADMA);
 }
 
 //
