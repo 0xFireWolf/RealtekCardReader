@@ -9,6 +9,7 @@
 #define IOEnhancedCommandPool_hpp
 
 #include <IOKit/IOCommandPool.h>
+#include <IOKit/IODMACommand.h>
 #include "Utilities.hpp"
 
 /// The default creator that allocates a command
@@ -27,6 +28,36 @@ struct IOCommandDeleter
     void operator()(IOCommand* command)
     {
         OSSafeReleaseNULL(command);
+    }
+};
+
+///
+/// The default creator that creates an `IODMACommand` that produces 32-bit bus addresses encoded in host endianness
+///
+/// @tparam MaxSegmentSize Specify the maximum segment size to be passed to `IODMACommand`'s factory method
+///                        By default, the limit is 0, specifying an unlimited segment size.
+///
+template <UInt64 MaxSegmentSize = 0>
+struct IODMACommandCreator32
+{
+    IODMACommand* operator()()
+    {
+        return IODMACommand::withSpecification(kIODMACommandOutputHost32, 32, MaxSegmentSize);
+    }
+};
+
+///
+/// The default creator that creates an `IODMACommand` that produces 64-bit bus addresses encoded in host endianness
+///
+/// @tparam MaxSegmentSize Specify the maximum segment size to be passed to `IODMACommand`'s factory method
+///                        By default, the limit is 0, specifying an unlimited segment size.
+///
+template <UInt64 MaxSegmentSize = 0>
+struct IODMACommandCreator64
+{
+    IODMACommand* operator()()
+    {
+        return IODMACommand::withSpecification(kIODMACommandOutputHost64, 0, MaxSegmentSize);
     }
 };
 
