@@ -612,6 +612,7 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
+    DEPRECATE("Use performDMARead(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
     IOReturn performDMARead(IODMACommand* command, UInt32 timeout) override;
     
     ///
@@ -621,7 +622,26 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
+    DEPRECATE("Use performDMAWrite(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
     IOReturn performDMAWrite(IODMACommand* command, UInt32 timeout) override;
+    
+    ///
+    /// Perform a DMA read operation
+    ///
+    /// @param descriptor A non-null, perpared memory descriptor
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    ///
+    IOReturn performDMARead(IOMemoryDescriptor* descriptor, UInt32 timeout) override final;
+    
+    ///
+    /// Perform a DMA write operation
+    ///
+    /// @param descriptor A non-null, perpared memory descriptor
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    ///
+    IOReturn performDMAWrite(IOMemoryDescriptor* descriptor, UInt32 timeout) override final;
     
     //
     // MARK: - Clear Error

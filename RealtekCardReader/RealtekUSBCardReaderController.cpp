@@ -717,6 +717,30 @@ IOReturn RealtekUSBCardReaderController::performDMAWrite(IODMACommand* command, 
     return this->performOutboundBulkTransfer(const_cast<IOMemoryDescriptor*>(buffer), buffer->getLength(), timeout);
 }
 
+///
+/// Perform a DMA read operation
+///
+/// @param descriptor A non-null, perpared memory descriptor
+/// @param timeout Specify the amount of time in milliseconds
+/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+///
+IOReturn RealtekUSBCardReaderController::performDMARead(IOMemoryDescriptor* descriptor, UInt32 timeout)
+{
+    return this->performInboundBulkTransfer(descriptor, descriptor->getLength(), timeout);
+}
+
+///
+/// Perform a DMA write operation
+///
+/// @param descriptor A non-null, perpared memory descriptor
+/// @param timeout Specify the amount of time in milliseconds
+/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+///
+IOReturn RealtekUSBCardReaderController::performDMAWrite(IOMemoryDescriptor* descriptor, UInt32 timeout)
+{
+    return this->performOutboundBulkTransfer(descriptor, descriptor->getLength(), timeout);
+}
+
 //
 // MARK: - Clear Error
 //
