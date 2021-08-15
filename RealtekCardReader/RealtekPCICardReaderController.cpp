@@ -10,6 +10,7 @@
 #include "RealtekUserConfigs.hpp"
 #include "BitOptions.hpp"
 #include "IOPCIeDevice.hpp"
+#include "IOMemoryDescriptor.hpp"
 
 //
 // MARK: - Meta Class Definitions
@@ -2053,6 +2054,66 @@ IOReturn RealtekPCICardReaderController::writePingPongBuffer(const UInt8* source
     pinfo("%llu bytes have been written to the ping pong buffer.", length);
     
     return kIOReturnSuccess;
+}
+
+///
+/// Read from the ping pong buffer
+///
+/// @param destination The buffer to store bytes
+/// @param length The number of bytes to read (cannot exceed 512 bytes)
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `rtsx_pci_read_ppbuf()` defined in `rtsx_psr.c`.
+///
+IOReturn RealtekPCICardReaderController::readPingPongBuffer(IOMemoryDescriptor* destination, IOByteCount length)
+{
+    // Check if the controller can avoid unnecessary buffer copies
+    auto bufferDescriptor = OSDynamicCast(IOBufferMemoryDescriptor, destination);
+    
+    if (bufferDescriptor != nullptr)
+    {
+        pinfo("Optimization: The given destination buffer is a buffer memory descriptor.");
+        
+        return this->readPingPongBuffer(reinterpret_cast<UInt8*>(bufferDescriptor->getBytesNoCopy()), length);
+    }
+    
+    // The controller must use an intermediate buffer
+    // Ping Pong Buffer -> Intermediate Buffer -> Memory Descriptor
+    auto action = [&](UInt8* buffer) -> IOReturn
+    {
+        return this->readPingPongBuffer(buffer, length);
+    };
+    
+    return IOMemoryDescriptorWithIntermediateDestinationBuffer(destination, 0, length, action);
+}
+
+///
+/// Write to the ping pong buffer
+///
+/// @param source The buffer to write
+/// @param length The number of bytes to write (cannot exceed 512 bytes)
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `rtsx_pci_write_ppbuf()` defined in `rtsx_psr.c`.
+///
+IOReturn RealtekPCICardReaderController::writePingPongBuffer(IOMemoryDescriptor* source, IOByteCount length)
+{
+    // Check if the controller can avoid unnecessary buffer copies
+    auto bufferDescriptor = OSDynamicCast(IOBufferMemoryDescriptor, source);
+    
+    if (bufferDescriptor != nullptr)
+    {
+        pinfo("Optimization: The given destination buffer is a buffer memory descriptor.");
+        
+        return this->writePingPongBuffer(reinterpret_cast<UInt8*>(bufferDescriptor->getBytesNoCopy()), length);
+    }
+    
+    // The controller must use an intermediate buffer
+    // Memory Descriptor -> Intermediate Buffer -> Ping Pong Buffer
+    auto action = [&](const UInt8* buffer) -> IOReturn
+    {
+        return this->writePingPongBuffer(buffer, length);
+    };
+    
+    return IOMemoryDescriptorWithIntermediateSourceBuffer(source, 0, length, action);
 }
 
 //

@@ -1306,6 +1306,26 @@ public:
     ///
     IOReturn writePingPongBuffer(const UInt8* source, IOByteCount length) override final;
     
+    ///
+    /// Read from the ping pong buffer
+    ///
+    /// @param destination The buffer to store bytes
+    /// @param length The number of bytes to read (cannot exceed 512 bytes)
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `rtsx_pci_read_ppbuf()` defined in `rtsx_psr.c`.
+    ///
+    IOReturn readPingPongBuffer(IOMemoryDescriptor* destination, IOByteCount length) override final;
+    
+    ///
+    /// Write to the ping pong buffer
+    ///
+    /// @param source The buffer to write
+    /// @param length The number of bytes to write (cannot exceed 512 bytes)
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `rtsx_pci_write_ppbuf()` defined in `rtsx_psr.c`.
+    ///
+    IOReturn writePingPongBuffer(IOMemoryDescriptor* source, IOByteCount length) override final;
+    
     //
     // MARK: - Rx/Tx Phases
     //
