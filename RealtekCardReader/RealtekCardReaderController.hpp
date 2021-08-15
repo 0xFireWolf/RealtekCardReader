@@ -1003,7 +1003,7 @@ public:
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
-    DEPRECATE("Use performDMARead(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
+    DEPRECATE("Use performDMAWrite(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
     virtual IOReturn performDMAWrite(IODMACommand* command, UInt32 timeout) = 0;
     
     ///
