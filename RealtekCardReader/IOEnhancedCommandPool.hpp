@@ -301,6 +301,29 @@ public:
     {
         this->pool->returnCommand(command);
     }
+    
+    ///
+    /// Run the given action with a command from the pool
+    ///
+    /// @param blockForCommand Pass `true` if the caller should be blocked waiting for a command
+    /// @param action A callable action that takes a command from the pool and returns an `IOReturn` code;
+    ///               Whether the command is null or not depends on the `blockForCommand` specified by the caller.
+    /// @return The value returned by the given action.
+    /// @note This function returns the command passed to the action routine to the pool automatically.
+    ///       The caller should not use the command after the action routine returns.
+    /// @note Signature of the action routine: `IOReturn operator()(Command*)` while `Command` is the actual command type.
+    ///
+    template <typename Action>
+    IOReturn withCommand(Action action, bool blockForCommand = true)
+    {
+        Command* command = this->getCommand(blockForCommand);
+        
+        IOReturn retVal = action(command);
+        
+        this->returnCommand(command);
+        
+        return retVal;
+    }
 };
 
 #endif /* IOEnhancedCommandPool_hpp */
