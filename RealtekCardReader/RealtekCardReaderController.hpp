@@ -10,7 +10,7 @@
 
 #include <IOKit/IOBufferMemoryDescriptor.h>
 #include <IOKit/IOWorkLoop.h>
-#include <IOKit/IOCommandGate.h>
+#include "IOCommandGate.hpp"
 #include "WolfsSDXC.hpp"
 #include "IOSDCard.hpp"
 #include "ClosedRange.hpp"
@@ -1399,6 +1399,24 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     ///
     virtual IOReturn writePingPongBuffer(const UInt8* source, IOByteCount length) = 0;
+    
+    ///
+    /// Read from the ping pong buffer
+    ///
+    /// @param destination The buffer to store bytes
+    /// @param length The number of bytes to read (cannot exceed 512 bytes)
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    ///
+    virtual IOReturn readPingPongBuffer(IOMemoryDescriptor* destination, IOByteCount length) = 0;
+    
+    ///
+    /// Write to the ping pong buffer
+    ///
+    /// @param source The buffer to write
+    /// @param length The number of bytes to write (cannot exceed 512 bytes)
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    ///
+    virtual IOReturn writePingPongBuffer(IOMemoryDescriptor* source, IOByteCount length) = 0;
     
     //
     // MARK: - Active State Power Management
