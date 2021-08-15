@@ -2859,6 +2859,16 @@ bool RealtekPCICardReaderController::setupHostBuffer()
     
     UInt32 numSegments = 1;
     
+    // Guard: 0. Create a pool of DMA commands
+    this->dmaCommandPool = IODMACommandPool::createWithCapacity(this->workLoop, kDefaultPoolSize);
+    
+    if (this->dmaCommandPool == nullptr)
+    {
+        perr("Failed to create a pool of DMA commands.");
+        
+        return false;
+    }
+    
     // Guard: 1. Allocate memory for the host command and data buffer
     this->hostBufferDescriptor = IOBufferMemoryDescriptor::withCapacity(kHostBufferSize, kIODirectionInOut, true);
     
@@ -2870,6 +2880,7 @@ bool RealtekPCICardReaderController::setupHostBuffer()
     }
     
     // Guard: 2. Setup the DMA command
+    // TODO: Retrieve a command from the pool
     this->hostBufferDMACommand = IODMACommand::withSpecification(kIODMACommandOutputHost32, 32, 0, IODMACommand::kMapped, 0, 1);
     
     if (this->hostBufferDMACommand == nullptr)
@@ -2956,6 +2967,8 @@ error2:
     this->hostBufferDescriptor = nullptr;
     
 error1:
+    IODMACommandPool::safeDestory(this->dmaCommandPool);
+    
     return false;
 }
 
@@ -3158,6 +3171,7 @@ void RealtekPCICardReaderController::tearDownHostBuffer()
     // R5: Complete the DMA transaction (auto complete is set to true)
     // R4: Deassociate with the buffer descriptor
     // R2: Release the DMA command
+    // TODO: Return the DMA command back to the pool
     if (this->hostBufferDMACommand != nullptr)
     {
         psoftassert(this->hostBufferDMACommand->clearMemoryDescriptor() == kIOReturnSuccess,
@@ -3178,6 +3192,9 @@ void RealtekPCICardReaderController::tearDownHostBuffer()
         
         this->hostBufferDescriptor = nullptr;
     }
+    
+    // R0: Destroy the DMA command pool
+    IODMACommandPool::safeDestory(this->dmaCommandPool);
 }
 
 ///
@@ -3252,6 +3269,8 @@ bool RealtekPCICardReaderController::init(OSDictionary* dictionary)
     this->interruptEventSource = nullptr;
     
     this->cardSetupTimer = nullptr;
+    
+    this->dmaCommandPool = nullptr;
     
     this->hostBufferDMACommand = nullptr;
     

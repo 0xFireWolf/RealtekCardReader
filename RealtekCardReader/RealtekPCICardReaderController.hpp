@@ -17,6 +17,7 @@
 #include <IOKit/IOInterruptEventSource.h>
 #include <IOKit/IOFilterInterruptEventSource.h>
 #include <IOKit/IOTimerEventSource.h>
+#include "IOEnhancedCommandPool.hpp"
 #include "RealtekCardReaderController.hpp"
 #include "RealtekPCIRegisters.hpp"
 #include "Utilities.hpp"
@@ -414,8 +415,20 @@ class RealtekPCICardReaderController: public RealtekCardReaderController
     /// The maximum number of DMA segments supported by the card reader
     static constexpr IOItemCount kMaxNumSegments = 256;
     
+    /// The maximum segment size supported by the card reader
+    static constexpr IOItemCount kMaxSegmentSize = 65535;
+    
     /// The maximum number of DMA transfer failures until the host should reduce the card clock
     static constexpr IOItemCount kMaxDMATransferFailures = 8;
+    
+    /// The default capacity of the DMA command pool
+    static constexpr IOItemCount kDefaultPoolSize = 32;
+    
+    /// Type of pool of DMA commands
+    using IODMACommandPool = IOEnhancedCommandPool<IODMACommand, IODMACommandCreator32<kMaxSegmentSize>>;
+    
+    /// A pool of DMA commands needed to perform DMA transfers to/from the card
+    IODMACommandPool* dmaCommandPool;
     
     ///
     /// Translate the host buffer address to I/O bus address
