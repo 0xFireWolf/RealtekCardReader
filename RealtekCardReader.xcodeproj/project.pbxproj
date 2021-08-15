@@ -61,6 +61,7 @@
 		D5BDBCC126C87F33002467CA /* IOSDHostRequest.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5BDBCBF26C87F33002467CA /* IOSDHostRequest.hpp */; };
 		D5BDBCC526C8E4A4002467CA /* IOCommandGate.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5BDBCC326C8E4A4002467CA /* IOCommandGate.hpp */; };
 		D5BDBCC926C8F8E9002467CA /* IOMemoryDescriptor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5BDBCC726C8F8E9002467CA /* IOMemoryDescriptor.hpp */; };
+		D5BDBCCD26C9BCE5002467CA /* IODMACommand.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5BDBCCB26C9BCE5002467CA /* IODMACommand.hpp */; };
 		D5D2EE2E25DE0212004B5310 /* libkmod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D5D2EE2D25DE01FD004B5310 /* libkmod.a */; };
 		D5D2EE3625DE0358004B5310 /* RealtekRTS525AController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5D2EE3425DE0358004B5310 /* RealtekRTS525AController.cpp */; };
 		D5D2EE3725DE0358004B5310 /* RealtekRTS525AController.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5D2EE3525DE0358004B5310 /* RealtekRTS525AController.hpp */; };
@@ -155,6 +156,7 @@
 		D5BDBCBF26C87F33002467CA /* IOSDHostRequest.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDHostRequest.hpp; sourceTree = "<group>"; };
 		D5BDBCC326C8E4A4002467CA /* IOCommandGate.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOCommandGate.hpp; sourceTree = "<group>"; };
 		D5BDBCC726C8F8E9002467CA /* IOMemoryDescriptor.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOMemoryDescriptor.hpp; sourceTree = "<group>"; };
+		D5BDBCCB26C9BCE5002467CA /* IODMACommand.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IODMACommand.hpp; sourceTree = "<group>"; };
 		D5D2EE1925DE007E004B5310 /* RealtekCardReader.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealtekCardReader.kext; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5D2EE2025DE007E004B5310 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D5D2EE2D25DE01FD004B5310 /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkmod.a; path = MacKernelSDK/Library/x86_64/libkmod.a; sourceTree = "<group>"; };
@@ -307,6 +309,7 @@
 				D5BDBCBB26C85EB2002467CA /* IOEnhancedCommandPool.hpp */,
 				D5BDBCC326C8E4A4002467CA /* IOCommandGate.hpp */,
 				D5BDBCC726C8F8E9002467CA /* IOMemoryDescriptor.hpp */,
+				D5BDBCCB26C9BCE5002467CA /* IODMACommand.hpp */,
 			);
 			name = "IOKit Extensions";
 			sourceTree = "<group>";
@@ -533,6 +536,7 @@
 				D5E8E0C7267FF24B00703407 /* RealtekRTS8411SeriesController.hpp in Headers */,
 				D5E8E0D726803DC400703407 /* RealtekRTS5227SeriesController.hpp in Headers */,
 				D5BDBCC526C8E4A4002467CA /* IOCommandGate.hpp in Headers */,
+				D5BDBCCD26C9BCE5002467CA /* IODMACommand.hpp in Headers */,
 				D57FA69C267B0BB00023097C /* IOSDSimpleBlockRequest.hpp in Headers */,
 				D5FF5654267225D800B0143E /* WolfsSDXC.hpp in Headers */,
 				D5096F0B26A132C00065BE70 /* RealtekRTS5260Controller.hpp in Headers */,
