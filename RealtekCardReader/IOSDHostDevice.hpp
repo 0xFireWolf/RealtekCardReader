@@ -8,6 +8,7 @@
 #ifndef IOSDHostDevice_hpp
 #define IOSDHostDevice_hpp
 
+#include "IOSDHostRequest.hpp"
 #include "IOSDBusConfig.hpp"
 #include "ClosedRange.hpp"
 #include "BitOptions.hpp"
@@ -164,6 +165,9 @@ protected:
     
     /// Host DMA limitations
     DMALimits dmaLimits;
+    
+    /// A factory that creates host requests
+    IOSDHostRequestFactory factory;
     
 public:
     //
@@ -352,6 +356,16 @@ public:
     inline DMALimits getDMALimits()
     {
         return this->dmaLimits;
+    }
+    
+    ///
+    /// Get the factory that creates host requests
+    ///
+    /// @return The host request factory.
+    ///
+    inline const IOSDHostRequestFactory& getRequestFactory()
+    {
+        return this->factory;
     }
     
     //
