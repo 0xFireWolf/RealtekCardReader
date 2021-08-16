@@ -1935,7 +1935,7 @@ IOReturn RealtekSDXCSlot::processSDCommandWithOutboundDataTransferRequest(IOSDDa
 /// @note This function serves as the processor routine that handles command requests that read a single block from the card.
 /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::readSingleBlockProcessor`.
 ///
-IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransfer(IOSDSingleBlockRequest& request)
+IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferRequest(IOSDSingleBlockRequest& request)
 {
     using namespace RTSX::COM::Chip;
     
@@ -2097,7 +2097,7 @@ IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransfer(IOSD
 /// @note This function serves as the processor routine that handles command requests that write a single block to the card.
 /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeSingleBlockProcessor`.
 ///
-IOReturn RealtekSDXCSlot::runSDCommandWithOutboundSingleBlockDMATransfer(IOSDSingleBlockRequest& request)
+IOReturn RealtekSDXCSlot::processSDCommandWithOutboundSingleBlockDMATransferRequest(IOSDSingleBlockRequest& request)
 {
     using namespace RTSX::COM::Chip;
     
@@ -2253,9 +2253,9 @@ IOReturn RealtekSDXCSlot::runSDCommandWithOutboundSingleBlockDMATransfer(IOSDSin
 /// @note This function serves as the processor routine that handles command requests that read multiple blocks from the card.
 /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::readMultiBlocksProcessor`.
 ///
-IOReturn RealtekSDXCSlot::runSDCommandWithInboundMultiBlocksDMATransfer(IOSDMultiBlocksRequest& request)
+IOReturn RealtekSDXCSlot::processSDCommandWithInboundMultiBlocksDMATransferRequest(IOSDMultiBlocksRequest& request)
 {
-    IOReturn retVal = this->processSDCommandWithInboundSingleBlockDMATransfer(request);
+    IOReturn retVal = this->processSDCommandWithInboundSingleBlockDMATransferRequest(request);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -2277,9 +2277,9 @@ IOReturn RealtekSDXCSlot::runSDCommandWithInboundMultiBlocksDMATransfer(IOSDMult
 /// @note This function serves as the processor routine that handles command requests that write multiple blocks to the card.
 /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeMultiBlocksProcessor`.
 ///
-IOReturn RealtekSDXCSlot::runSDCommandWithOutboundMultiBlocksDMATransfer(IOSDMultiBlocksRequest& request)
+IOReturn RealtekSDXCSlot::processSDCommandWithOutboundMultiBlocksDMATransferRequest(IOSDMultiBlocksRequest& request)
 {
-    IOReturn retVal = this->runSDCommandWithOutboundSingleBlockDMATransfer(request);
+    IOReturn retVal = this->processSDCommandWithOutboundSingleBlockDMATransferRequest(request);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -3180,7 +3180,9 @@ IOReturn RealtekSDXCSlot::tuningRxCommand(UInt8 samplePoint)
     }
     
     // Send the tuning command CMD19
-    retVal = this->runSDCommandAndReadData(RealtekSDCommand::CMD19(), nullptr, 0x40, 100);
+    auto command = IOSDHostCommand::CMD19();
+    
+    retVal = this->runSDCommandAndReadData(command, nullptr, 0x40, 100);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -3534,16 +3536,16 @@ bool RealtekSDXCSlot::init(OSDictionary* dictionary)
         OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithOutboundDataTransferRequest),
         
         // Inbound single block request processor
-        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransfer),
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferRequest),
         
         // Outbound single block request processor
-        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::runSDCommandWithOutboundSingleBlockDMATransfer),
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithOutboundSingleBlockDMATransferRequest),
         
         // Inbound multiple blocks request processor
-        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::runSDCommandWithInboundMultiBlocksDMATransfer),
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithInboundMultiBlocksDMATransferRequest),
         
         // Outbound multiple blocks request processor
-        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::runSDCommandWithOutboundMultiBlocksDMATransfer),
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithOutboundMultiBlocksDMATransferRequest),
     };
     
     this->controller = nullptr;

@@ -319,7 +319,7 @@ public:
     /// @note This function serves as the processor routine that handles command requests that read a single block from the card.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::readSingleBlockProcessor`.
     ///
-    IOReturn processSDCommandWithInboundSingleBlockDMATransfer(IOSDSingleBlockRequest& request);
+    IOReturn processSDCommandWithInboundSingleBlockDMATransferRequest(IOSDSingleBlockRequest& request);
     
     ///
     /// [Case 3] Send a SD command along with an outbound DMA transfer
@@ -331,7 +331,7 @@ public:
     /// @note This function serves as the processor routine that handles command requests that write a single block to the card.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeSingleBlockProcessor`.
     ///
-    IOReturn runSDCommandWithOutboundSingleBlockDMATransfer(IOSDSingleBlockRequest& request);
+    IOReturn processSDCommandWithOutboundSingleBlockDMATransferRequest(IOSDSingleBlockRequest& request);
     
     ///
     /// [Case 3] Send a SD command along with an inbound DMA transfer
@@ -343,7 +343,7 @@ public:
     /// @note This function serves as the processor routine that handles command requests that read multiple blocks from the card.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::readMultiBlocksProcessor`.
     ///
-    IOReturn runSDCommandWithInboundMultiBlocksDMATransfer(IOSDMultiBlocksRequest& request);
+    IOReturn processSDCommandWithInboundMultiBlocksDMATransferRequest(IOSDMultiBlocksRequest& request);
     
     ///
     /// [Case 3] Send a SD command along with an outbound DMA transfer
@@ -355,7 +355,7 @@ public:
     /// @note This function serves as the processor routine that handles command requests that write multiple blocks to the card.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeMultiBlocksProcessor`.
     ///
-    IOReturn runSDCommandWithOutboundMultiBlocksDMATransfer(IOSDMultiBlocksRequest& request);
+    IOReturn processSDCommandWithOutboundMultiBlocksDMATransferRequest(IOSDMultiBlocksRequest& request);
     
     ///
     /// Process the given SD command request
