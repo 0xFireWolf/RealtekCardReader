@@ -117,7 +117,7 @@ static inline void pbuf(const void* buffer, size_t length, size_t column = 8)
     }
 }
 
-static inline void pbuf(const IOMemoryDescriptor* descriptor, size_t length, size_t column = 8)
+static inline void pbuf(IOMemoryDescriptor* descriptor, size_t length, size_t column = 8)
 {
     auto buffer = IOMallocZero(length);
     
