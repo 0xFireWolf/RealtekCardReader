@@ -607,20 +607,19 @@ public:
         return this->CMD6(mode, group, value, response, N);
     }
     
-//    ///
-//    /// CMD6: Check switchable function or switch the card function
-//    ///
-//    /// @param mode Pass 0 to check switchable function or 1 to switch the card function
-//    /// @param group The function group
-//    /// @param value The function value
-//    /// @param response A non-null and prepared memory descriptor that stores the response on return
-//    /// @return `kIOReturnSuccess` on success, other values otherwise.
-//    /// @note Port: This function replaces `mmc_sd_switch()` defined in `sd_ops.c`.
-//    /// @note This function uses the given response buffer to initiate a DMA read operation.
-//    ///       The caller is responsbile for managing the life cycle of the given buffer.
-//    ///
-//    DEPRECATE("Use other CMD6 methods")
-//    IOReturn CMD6(UInt32 mode, UInt32 group, UInt8 value, IOMemoryDescriptor* response);
+    ///
+    /// CMD6: Check switchable function or switch the card function
+    ///
+    /// @param mode Pass 0 to check switchable function or 1 to switch the card function
+    /// @param group The function group
+    /// @param value The function value
+    /// @param response A non-null and prepared memory descriptor that stores the response on return
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `mmc_sd_switch()` defined in `sd_ops.c`.
+    /// @note This function uses the given response buffer to initiate a DMA read operation.
+    ///       The caller is responsbile for managing the life cycle of the given buffer.
+    ///
+    IOReturn CMD6(UInt32 mode, UInt32 group, UInt8 value, IOMemoryDescriptor* response);
     
     ///
     /// CMD7: Select a card

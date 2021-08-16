@@ -1117,15 +1117,6 @@ IOReturn IOSDHostDriver::CMD3(UInt32& rca)
 ///
 IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, UInt8* response, IOByteCount length)
 {
-    // Sanitize the given `mode` and `value`
-    pinfo("CMD6: [ORG] Mode = %d; Group = %d; Value = %d.", mode, group, value);
-
-    mode = !!mode;
-
-    value &= 0x0F;
-
-    pinfo("CMD6: [SAN] Mode = %d; Group = %d; Value = %d.", mode, group, value);
-
     // Allocate a buffer
     IOMemoryDescriptor* buffer = IOMemoryDescriptorAllocateWiredBuffer(64);
     
@@ -1137,98 +1128,51 @@ IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, UInt8* res
     }
 
     // Send the command
-    // TODO: SET DATA TIMEOUT????
-    auto request = this->host->getRequestFactory().CMD6(mode, group, value, buffer);
-
-    IOReturn retVal = this->waitForRequest(request);
-
-    if (retVal != kIOReturnSuccess)
+    IOReturn retVal = this->CMD6(mode, group, value, buffer);
+    
+    if (retVal == kIOReturnSuccess)
     {
-        perr("Failed to issue the CMD6. Error = 0x%x.", retVal);
+        // Copy the SD status from the DMA buffer
+        length = min(length, 64);
 
-        IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
-
-        return retVal;
+        retVal = buffer->readBytes(0, response, length) == length ? kIOReturnSuccess : kIOReturnError;
     }
-
-    // Copy the SD status from the DMA buffer
-    length = min(length, 64);
-
-    retVal = buffer->readBytes(0, response, length) == length ? kIOReturnSuccess : kIOReturnError;
 
     IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
 
     return retVal;
 }
 
-/////
-///// CMD6: Check switchable function or switch the card function
-/////
-///// @param mode Pass 0 to check switchable function or 1 to switch the card function
-///// @param group The function group
-///// @param value The function value
-///// @param response A non-null and prepared memory descriptor that stores the response on return
-///// @return `kIOReturnSuccess` on success, other values otherwise.
-///// @note Port: This function replaces `mmc_sd_switch()` defined in `sd_ops.c`.
-///// @note This function uses the given response buffer to initiate a DMA read operation.
-/////       The caller is responsbile for managing the life cycle of the given buffer.
-/////
-//IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, IOMemoryDescriptor* response)
-//{
-//    // Guard: Verify the given response buffer
-//    if (response == nullptr)
-//    {
-//        perr("The given response buffer cannot be NULL.");
-//
-//        return kIOReturnBadArgument;
-//    }
-//
-//    // Sanitize the given `mode` and `value`
-//    pinfo("CMD6: [ORG] Mode = %d; Group = %d; Value = %d.", mode, group, value);
-//
-//    mode = !!mode;
-//
-//    value &= 0x0F;
-//
-//    pinfo("CMD6: [SAN] Mode = %d; Group = %d; Value = %d.", mode, group, value);
-//
-//    // Guard: Associate the given response buffer with the DMA command
-//    // Note that the DMA command is prepared automatically
-//    IODMACommand* dma = this->allocateDMACommandFromPool();
-//
-//    IOReturn retVal = dma->setMemoryDescriptor(response);
-//
-//    if (retVal != kIOReturnSuccess)
-//    {
-//        perr("Failed to associate the given response with the DMA command. Error = 0x%x.", retVal);
-//
-//        this->releaseDMACommandToPool(dma);
-//
-//        return retVal;
-//    }
-//
-//    // Generate the SD command request
-//    auto request = this->host->getRequestFactory().CMD6(mode, group, value, dma);
-//
-//    // TODO: Set the data timeout as Linux???
-//    // TODO: Realtek's driver seems to ignore the data timeout in the mmc_data struct
-//    retVal = this->waitForRequest(request);
-//
-//    if (retVal != kIOReturnSuccess)
-//    {
-//        perr("Failed to issue the CMD6. Error = 0x%x.", retVal);
-//    }
-//
-//    // Dissociate the given response buffer from the DMA command
-//    // Note that the DMA command is completed automatically
-//    psoftassert(dma->clearMemoryDescriptor() == kIOReturnSuccess,
-//                "Failed to dissociate the given response from the DMA command.");
-//
-//    // Return the DMA command back
-//    this->releaseDMACommandToPool(dma);
-//
-//    return retVal;
-//}
+///
+/// CMD6: Check switchable function or switch the card function
+///
+/// @param mode Pass 0 to check switchable function or 1 to switch the card function
+/// @param group The function group
+/// @param value The function value
+/// @param response A non-null and prepared memory descriptor that stores the response on return
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `mmc_sd_switch()` defined in `sd_ops.c`.
+/// @note This function uses the given response buffer to initiate a DMA read operation.
+///       The caller is responsbile for managing the life cycle of the given buffer.
+///
+IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, IOMemoryDescriptor* response)
+{
+    // Sanitize the given `mode` and `value`
+    pinfo("CMD6: [ORG] Mode = %d; Group = %d; Value = %d.", mode, group, value);
+
+    mode = !!mode;
+
+    value &= 0x0F;
+
+    pinfo("CMD6: [SAN] Mode = %d; Group = %d; Value = %d.", mode, group, value);
+
+    // Generate the SD command request
+    auto request = this->host->getRequestFactory().CMD6(mode, group, value, response);
+
+    // TODO: Set the data timeout as Linux???
+    // TODO: Realtek's driver seems to ignore the data timeout in the mmc_data struct
+    return this->waitForRequest(request);
+}
 
 ///
 /// CMD7: Select a card
