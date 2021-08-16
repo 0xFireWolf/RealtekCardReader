@@ -771,86 +771,6 @@ IOReturn IOSDHostDriver::powerCycle(UInt32 ocr)
 }
 
 //
-// MARK: - DMA Utility
-//
-
-///
-/// [Convenient] Allocate a DMA capable buffer
-///
-/// @param size The number of bytes
-/// @return A non-null IODMACommand instance on success, `nullptr` otherwise.
-/// @note The calling thread can be blocked.
-///
-IODMACommand* IOSDHostDriver::allocateDMABuffer(IOByteCount size)
-{
-    // Guard: Allocate a buffer of the given size
-    IOMemoryDescriptor* descriptor = IOBufferMemoryDescriptor::withCapacity(size, kIODirectionInOut);
-
-    if (descriptor == nullptr)
-    {
-        perr("Failed to allocate a %llu-byte buffer.", size);
-
-        return nullptr;
-    }
-
-    // Guard: Page in and wire down the buffer
-    if (descriptor->prepare() != kIOReturnSuccess)
-    {
-        perr("Failed to page in and wire down the buffer.");
-
-        descriptor->release();
-
-        return nullptr;
-    }
-
-    // Get a preallocated DMA command from the pool
-    // Note that the calling thread will be blocked until a command is available
-    IODMACommand* command = this->allocateDMACommandFromPool();
-
-    // Guard: Associate the memory descriptor with the DMA command
-    // Note that the DMA command is prepared automatically
-    if (command->setMemoryDescriptor(descriptor) != kIOReturnSuccess)
-    {
-        perr("Failed to associate the memory descriptor with the DMA command.");
-
-        this->releaseDMACommandToPool(command);
-
-        descriptor->complete();
-
-        descriptor->release();
-
-        return nullptr;
-    }
-
-    // Note that `IODMACommand::setMemoryDescriptor()` retains the memory descriptor
-    // We can release it here, so that the reference count becomes 1 again
-    descriptor->release();
-
-    return command;
-}
-
-///
-/// [Convenient] Release the given DMA capable buffer
-///
-/// @param command A non-null IODMACommand instance previously returned by `IOSDHostDriver::allocateDMABuffer()`.
-///
-void IOSDHostDriver::releaseDMABuffer(IODMACommand* command)
-{
-    // Clear the memory descriptor
-    // Note that the DMA command is completed automatically
-    // This method also releases the memory descriptor previously associated with the DMA command
-    // @see https://opensource.apple.com/source/xnu/xnu-7195.101.1/iokit/Kernel/IODMACommand.cpp.auto.html
-    // We do not need to `complete` the memory descriptor manually,
-    // because its free method checks whether it is wired and if so `completes` it.
-    // @see https://opensource.apple.com/source/xnu/xnu-7195.101.1/iokit/Kernel/IOMemoryDescriptor.cpp.auto.html
-    psoftassert(command->clearMemoryDescriptor() == kIOReturnSuccess,
-                "Failed to dissociate the memory descriptor from the given DMA command.");
-
-    // Return the command back to the pool
-    this->releaseDMACommandToPool(command);
-}
-
-//
 // MARK: - SD Request Center
 //
 
@@ -2517,41 +2437,6 @@ bool IOSDHostDriver::setupPowerManagement()
 }
 
 ///
-/// Setup the array of preallocated DMA commands
-///
-/// @return `true` on success, `false` otherwise.
-/// @note Upon an unsuccessful return, all resources allocated by this function are released.
-///
-bool IOSDHostDriver::setupPreallocatedDMACommands()
-{
-    pinfo("Preallocating an array of DMA commands...");
-    
-    bzero(this->pDMACommands, sizeof(this->pDMACommands));
-    
-    UInt64 maxSegmentSize = this->host->getDMALimits().maxSegmentSize;
-    
-    pinfo("Maximum segment size supported by the host device = %llu bytes.", maxSegmentSize);
-    
-    for (auto index = 0; index < IOSDHostDriver::kDefaultPoolSize; index += 1)
-    {
-        this->pDMACommands[index] = IODMACommand::withSpecification(kIODMACommandOutputHost32, 32, maxSegmentSize, IODMACommand::kMapped, 0, 1);
-        
-        if (this->pDMACommands[index] == nullptr)
-        {
-            perr("[%02d] Failed to preallocate the DMA command.", index);
-            
-            this->tearDownPreallocatedDMACommands();
-            
-            return false;
-        }
-    }
-    
-    pinfo("Preallocated %u DMA commands successfully.", IOSDHostDriver::kDefaultPoolSize);
-    
-    return true;
-}
-
-///
 /// Setup the shared work loop to protect the pool and the queue
 ///
 /// @return `true` on success, `false` otherwise.
@@ -2571,37 +2456,6 @@ bool IOSDHostDriver::setupSharedWorkLoop()
     }
     
     pinfo("The shared work loop has been created.");
-    
-    return true;
-}
-
-///
-/// Setup the DMA command pool
-///
-/// @return `true` on success, `false` otherwise.
-/// @note Upon an unsuccessful return, all resources allocated by this function are released.
-///
-bool IOSDHostDriver::setupDMACommandPool()
-{
-    pinfo("Creating the DMA command pool...");
-    
-    this->dmaCommandPool = IOCommandPool::withWorkLoop(this->sharedWorkLoop);
-    
-    if (this->dmaCommandPool == nullptr)
-    {
-        perr("Failed to create the DMA command pool.");
-        
-        return false;
-    }
-    
-    pinfo("Populating the pool with preallocated DMA commands...");
-    
-    for (auto index = 0; index < IOSDHostDriver::kDefaultPoolSize; index += 1)
-    {
-        this->releaseDMACommandToPool(this->pDMACommands[index]);
-    }
-    
-    pinfo("The DMA command pool has been created.");
     
     return true;
 }
@@ -2813,31 +2667,11 @@ void IOSDHostDriver::tearDownPowerManagement()
 }
 
 ///
-/// Tear down the array of preallocated DMA commands
-///
-void IOSDHostDriver::tearDownPreallocatedDMACommands()
-{
-    for (auto index = 0; index < IOSDHostDriver::kDefaultPoolSize; index += 1)
-    {
-        OSSafeReleaseNULL(this->pDMACommands[index]);
-    }
-}
-
-///
 /// Tear down the shared workloop
 ///
 void IOSDHostDriver::tearDownSharedWorkLoop()
 {
     OSSafeReleaseNULL(this->sharedWorkLoop);
-}
-
-///
-/// Tear down the DMA command pool
-///
-void IOSDHostDriver::tearDownDMACommandPool()
-{
-    // Commands are released by `IOSDHostDriver::tearDownPreallocatedDMACommands()`
-    OSSafeReleaseNULL(this->dmaCommandPool);
 }
 
 ///
@@ -2966,22 +2800,10 @@ bool IOSDHostDriver::start(IOService* provider)
         goto error1;
     }
     
-    // Preallocate DMA commands
-    if (!this->setupPreallocatedDMACommands())
-    {
-        goto error2;
-    }
-    
     // Setup the shared work loop
     if (!this->setupSharedWorkLoop())
     {
         goto error4;
-    }
-    
-    // Create the DMA command pool
-    if (!this->setupDMACommandPool())
-    {
-        goto error5;
     }
     
     // Create the block request pool
@@ -3033,7 +2855,6 @@ error7:
     this->tearDownBlockRequestPool();
     
 error6:
-    this->tearDownDMACommandPool();
     
 error5:
     this->tearDownSharedWorkLoop();
@@ -3041,7 +2862,6 @@ error5:
 error4:
     
 error3:
-    this->tearDownPreallocatedDMACommands();
     
 error2:
     this->tearDownPowerManagement();
@@ -3073,11 +2893,7 @@ void IOSDHostDriver::stop(IOService* provider)
     
     this->tearDownBlockRequestPool();
     
-    this->tearDownDMACommandPool();
-    
     this->tearDownSharedWorkLoop();
-    
-    this->tearDownPreallocatedDMACommands();
     
     this->tearDownPowerManagement();
     

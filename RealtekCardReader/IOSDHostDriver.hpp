@@ -53,12 +53,7 @@ class IOSDHostDriver: public IOService
     //
 
     /// The default pool size
-    DEPRECATE("Relocated to PCIe card reader controller.")
     static constexpr IOItemCount kDefaultPoolSize = 32;
-    
-    /// Preallocated DMA commands
-    DEPRECATE("Replaced by IOEnhancedCommandPool.")
-    IODMACommand* pDMACommands[kDefaultPoolSize];
     
     /// The SD host device (provider)
     IOSDHostDevice* host;
@@ -68,10 +63,6 @@ class IOSDHostDriver: public IOService
     
     /// A shared workloop that serializes the access to the pools and the queues
     IOWorkLoop* sharedWorkLoop;
-    
-    /// A command pool that contains preallocated DMA commands
-    DEPRECATE("Replaced by IOEnhancedCommandPool.")
-    IOCommandPool* dmaCommandPool;
     
     /// A request pool that contains preallocated simple SD block requests
     IOSDSimpleBlockRequestPool* simpleBlockRequestPool;
@@ -120,28 +111,6 @@ public:
     //
     // MARK: - Pool Management
     //
-    
-    ///
-    /// Allocate a DMA command from the pool
-    ///
-    /// @return A non-null DMA command.
-    ///
-    DEPRECATE("Relocated to PCIe card reader controller.")
-    inline IODMACommand* allocateDMACommandFromPool()
-    {
-        return OSDynamicCast(IODMACommand, this->dmaCommandPool->getCommand());
-    }
-    
-    ///
-    /// Return the given DMA command to the pool
-    ///
-    /// @param command The command returned by `IOSDHostDriver::allocateDMACommandFromPool()`
-    ///
-    DEPRECATE("Relocated to PCIe card reader controller.")
-    inline void releaseDMACommandToPool(IODMACommand* command)
-    {
-        this->dmaCommandPool->returnCommand(command);
-    }
     
     ///
     /// Return the given block request to the pool where it belongs
@@ -503,28 +472,6 @@ public:
     /// @note Port: This function replaces `mmc_power_cycle()` defined in `core.c`.
     ///
     IOReturn powerCycle(UInt32 ocr);
-    
-    //
-    // MARK: - DMA Utility
-    //
-    
-    ///
-    /// [Convenient] Allocate a DMA capable buffer
-    ///
-    /// @param size The number of bytes
-    /// @return A non-null IODMACommand instance on success, `nullptr` otherwise.
-    /// @note The calling thread can be blocked.
-    ///
-    DEPRECATE("Host driver should allocate a memory descriptor instead.")
-    IODMACommand* allocateDMABuffer(IOByteCount size);
-    
-    ///
-    /// [Convenient] Release the given DMA capable buffer
-    ///
-    /// @param command A non-null IODMACommand instance previously returned by `IOSDHostDriver::allocateDMABuffer()`.
-    ///
-    DEPRECATE("Host driver should release a memory descriptor instead.")
-    void releaseDMABuffer(IODMACommand* command);
     
     //
     // MARK: - SD Request Center
@@ -1119,28 +1066,12 @@ public:
     bool setupPowerManagement();
     
     ///
-    /// Setup the array of preallocated DMA commands
-    ///
-    /// @return `true` on success, `false` otherwise.
-    /// @note Upon an unsuccessful return, all resources allocated by this function are released.
-    ///
-    bool setupPreallocatedDMACommands();
-    
-    ///
     /// Setup the shared work loop to protect the pool and the queue
     ///
     /// @return `true` on success, `false` otherwise.
     /// @note Upon an unsuccessful return, all resources allocated by this function are released.
     ///
     bool setupSharedWorkLoop();
-    
-    ///
-    /// Setup the DMA command pool
-    ///
-    /// @return `true` on success, `false` otherwise.
-    /// @note Upon an unsuccessful return, all resources allocated by this function are released.
-    ///
-    bool setupDMACommandPool();
     
     ///
     /// Setup the SD block request pool
@@ -1192,19 +1123,9 @@ public:
     void tearDownPowerManagement();
     
     ///
-    /// Tear down the array of preallocated DMA commands
-    ///
-    void tearDownPreallocatedDMACommands();
-    
-    ///
     /// Tear down the shared workloop
     ///
     void tearDownSharedWorkLoop();
-    
-    ///
-    /// Tear down the DMA command pool
-    ///
-    void tearDownDMACommandPool();
     
     ///
     /// Tear down the SD block request pool
