@@ -3493,6 +3493,10 @@ bool RealtekSDXCSlot::init(OSDictionary* dictionary)
         return false;
     }
     
+    this->driver = nullptr;
+    
+    this->busConfig = {};
+    
     this->maxCurrents = {400, 0, 800};
     
     this->clockRange = { KHz2Hz(25), MHz2Hz(208) };
@@ -3514,6 +3518,33 @@ bool RealtekSDXCSlot::init(OSDictionary* dictionary)
                          Capability::kOptimizeChipSelect;
     
     this->dmaLimits = { 256, 65536, 524288 };
+    
+    this->factory =
+    {
+        // Opaque target pointer
+        this,
+        
+        // Simple command request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandRequest),
+        
+        // Inbound data transfer request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithInboundDataTransferRequest),
+        
+        // Outbound data transfer request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithOutboundDataTransferRequest),
+        
+        // Inbound single block request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransfer),
+        
+        // Outbound single block request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::runSDCommandWithOutboundSingleBlockDMATransfer),
+        
+        // Inbound multiple blocks request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::runSDCommandWithInboundMultiBlocksDMATransfer),
+        
+        // Outbound multiple blocks request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::runSDCommandWithOutboundMultiBlocksDMATransfer),
+    };
     
     this->controller = nullptr;
     
