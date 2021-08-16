@@ -81,14 +81,14 @@ void IOSDComplexBlockRequest::service()
     // A buffer that describes a portion of data to be transfered in the current DMA transaction
     IOSubMemoryDescriptor* buffer = OSTypeAlloc(IOSubMemoryDescriptor);
     
-    if (buffer == nullptr)
+    this->buffer = buffer;
+    
+    if (this->buffer == nullptr)
     {
         retVal = kIOReturnNoMemory;
         
         goto out;
     }
-    
-    this->buffer = buffer;
     
     // `IOStorage::complete()` becomes a noop in each intermediate transaction
     this->completion.action = nullptr;
@@ -148,7 +148,7 @@ out:
     // Restore the original completion action
     this->completion.action = action;
     
-    OSSafeReleaseNULL(buffer);
+    OSSafeReleaseNULL(this->buffer);
     
     this->complete(retVal);
 }

@@ -228,7 +228,10 @@ void IOSDSimpleBlockRequest::complete(IOReturn retVal)
 //        this->command = nullptr;
 //    }
     
-    psoftassert(this->buffer->complete() == kIOReturnSuccess, "Failed to complete the transfer buffer.");
+    if (this->buffer != nullptr)
+    {
+        psoftassert(this->buffer->complete() == kIOReturnSuccess, "Failed to complete the transfer buffer.");
+    }
     
     UInt64 actualByteCount = retVal == kIOReturnSuccess ? this->nblocks * 512 : 0;
     
