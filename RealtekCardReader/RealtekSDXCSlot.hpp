@@ -310,6 +310,54 @@ public:
     IOReturn runSDCommandWithOutboundDataTransfer(IOSDDataTransferRequest& request);
     
     ///
+    /// [Case 3] Send a SD command along with an inbound DMA transfer
+    ///
+    /// @param request A block-oriented data transfer request to service
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sd_read_long_data()` defined in `rtsx_pci_sdmmc.c`.
+    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a DMA transfer.
+    /// @note This function serves as the processor routine that handles command requests that read a single block from the card.
+    /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::readSingleBlockProcessor`.
+    ///
+    IOReturn runSDCommandWithInboundDMATransfer(IOSDSingleBlockRequest& request);
+    
+    ///
+    /// [Case 3] Send a SD command along with an outbound DMA transfer
+    ///
+    /// @param request A block-oriented data transfer request to service
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sd_write_long_data()` defined in `rtsx_pci_sdmmc.c`.
+    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a DMA transfer.
+    /// @note This function serves as the processor routine that handles command requests that write a single block to the card.
+    /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeSingleBlockProcessor`.
+    ///
+    IOReturn runSDCommandWithOutboundDMATransfer(IOSDSingleBlockRequest& request);
+    
+    ///
+    /// [Case 3] Send a SD command along with an inbound DMA transfer
+    ///
+    /// @param request A block-oriented data transfer request to service
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sd_read_long_data()` defined in `rtsx_pci_sdmmc.c`.
+    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a DMA transfer.
+    /// @note This function serves as the processor routine that handles command requests that read multiple blocks from the card.
+    /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::readMultiBlocksProcessor`.
+    ///
+    IOReturn runSDCommandWithInboundDMATransfer(IOSDMultiBlocksRequest& request);
+    
+    ///
+    /// [Case 3] Send a SD command along with an outbound DMA transfer
+    ///
+    /// @param request A block-oriented data transfer request to service
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sd_write_long_data()` defined in `rtsx_pci_sdmmc.c`.
+    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a DMA transfer.
+    /// @note This function serves as the processor routine that handles command requests that write multiple blocks to the card.
+    /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeMultiBlocksProcessor`.
+    ///
+    IOReturn runSDCommandWithOutboundDMATransfer(IOSDMultiBlocksRequest& request);
+    
+    ///
     /// Process the given SD command request
     ///
     /// @param request A SD command request

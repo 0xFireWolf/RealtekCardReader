@@ -1034,7 +1034,7 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// @note This function returns an error if the actual number of bytes transferred is not identical to the given `length`.
     /// @note Port: This function in a sense replaces `rtsx_usb_transfer_data()` and `rtsx_usb_bulk_transfer_sglist()` defined in `rtsx_usb.c`.
     ///
-    inline IOReturn performInboundBulkTransfer(void* buffer, IOByteCount length, UInt32 timeout);
+    IOReturn performInboundBulkTransfer(void* buffer, IOByteCount length, UInt32 timeout);
     
     ///
     /// Perform an outbound transfer on the bulk endpoint

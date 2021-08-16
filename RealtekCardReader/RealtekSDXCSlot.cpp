@@ -1926,6 +1926,372 @@ IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDataTransfer(IOSDDataTransferR
 }
 
 ///
+/// [Case 3] Send a SD command along with an inbound DMA transfer
+///
+/// @param request A block-oriented data transfer request to service
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sd_read_long_data()` defined in `rtsx_pci_sdmmc.c`.
+/// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a DMA transfer.
+/// @note This function serves as the processor routine that handles command requests that read a single block from the card.
+/// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::readSingleBlockProcessor`.
+///
+IOReturn RealtekSDXCSlot::runSDCommandWithInboundDMATransfer(IOSDSingleBlockRequest& request)
+{
+    using namespace RTSX::COM::Chip;
+    
+    // Fetch the data length
+    UInt64 dataLength = request.data.getDataLength();
+    
+    psoftassert(dataLength <= UINT32_MAX, "The data length should not exceed UINT32_MAX.");
+    
+    pinfo("SDCMD = %d; Arg = 0x%08X; Data Length = %llu bytes.", request.command.getOpcode(), request.command.getArgument(), dataLength);
+    
+    // Fetch the SD_CFG2 register value
+    UInt8 cfg2 = RealtekSDHostCommand::wraps(request.command).getCFG2();
+
+    if (!this->isRunningInUltraHighSpeedMode())
+    {
+        cfg2 |= SD::CFG2::kNoCheckWaitCRCTo;
+    }
+    
+    // Start a command transfer session
+    IOReturn retVal = this->controller->beginCommandTransfer();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to initiate a new command transfer session. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Set the command index and the argument
+    pinfo("Setting the command opcode and the argument...");
+    
+    retVal = this->setSDCommandOpcodeAndArgument(request.command);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the command index and argument. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("The command opcode and the argument are set.");
+    
+    // Set the number of data blocks and the size of each block
+    pinfo("Setting the length of the data blocks associated with the command...");
+    
+    retVal = this->setSDCommandDataLength(request.data.getNumBlocks(), request.data.getBlockSize());
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the command data blocks and length. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("The data length has been set.");
+    
+    // Set the transfer property
+    pinfo("Setting the transfer properties...");
+    
+    retVal = this->controller->setupCardDMATransferProperties(static_cast<UInt32>(dataLength), kIODirectionIn);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the DMA transfer properties. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    retVal = this->controller->selectCardDataSourceToRingBuffer();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to select the card data source to be the ring buffer. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    const ChipRegValuePair pairs[] =
+    {
+        { SD::rCFG2, 0xFF, cfg2 },
+        { SD::rTRANSFER, 0xFF, SD::TRANSFER::kTransferStart | SD::TRANSFER::kTMAutoRead2 },
+    };
+    
+    retVal = this->controller->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs));
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the transfer property. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("Transfer properties are set.");
+    
+    // Once the transfer finishes, we need to check the end bit in the `SD_TRANSFER` register.
+    // Note that the Linux driver issues a CHECK REGISTER operation but ignores its return value.
+    // We will check the register value manually.
+//    retVal = this->controller->enqueueCheckRegisterCommand(SD::rTRANSFER, SD::TRANSFER::kTransferEnd, SD::TRANSFER::kTransferEnd);
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to enqueue a read operation to load the transfer status. Error = 0x%x.", retVal);
+//
+//        return retVal;
+//    }
+    
+    // Send the command
+    retVal = this->controller->endCommandTransfer(100, this->controller->getDataTransferFlags().commandWithInboundDMATransfer);
+
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to complete the command transfer session. Error = 0x%x.", retVal);
+
+        return retVal;
+    }
+  
+    //this->controller->endCommandTransferNoWait();
+    
+    // Verify the transfer status
+    //pinfo("Verifying the transfer result...");
+    
+//    BitOptions<UInt8> transferStatus = this->controller->peekHostBuffer<UInt8>(0);
+//
+//    pinfo("[BEFORE] Transfer status is 0x%02x.", transferStatus.flatten());
+//
+//    if (!transferStatus.contains(SD::TRANSFER::kTransferEnd))
+//    {
+//        pwarning("Failed to find the end and the idle bits in the transfer status (0x%02x).", transferStatus.flatten());
+//
+//        //return kIOReturnInvalid;
+//    }
+    
+    // Initiate the DMA transfer
+    pinfo("Initiating the DMA transfer...");
+    
+    retVal = this->controller->performDMARead(request.data.getMemoryDescriptor(), 10000);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to perform the DMA transfer. Error = 0x%x.", retVal);
+        
+        this->controller->clearError();
+        
+        return retVal;
+    }
+    
+    pinfo("DMA transfer completed successfully.");
+    
+    return kIOReturnSuccess;
+}
+
+///
+/// [Case 3] Send a SD command along with an outbound DMA transfer
+///
+/// @param request A block-oriented data transfer request to service
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sd_write_long_data()` defined in `rtsx_pci_sdmmc.c`.
+/// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a DMA transfer.
+/// @note This function serves as the processor routine that handles command requests that write a single block to the card.
+/// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeSingleBlockProcessor`.
+///
+IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDMATransfer(IOSDSingleBlockRequest& request)
+{
+    using namespace RTSX::COM::Chip;
+    
+    // Send the SD command
+    IOReturn retVal = this->runSDCommand(request.command);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to send the SD command. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Set up the SD_CFG2 register value
+    UInt8 cfg2 = SD::CFG2::kNoCalcCRC7 | SD::CFG2::kNoCheckCRC7 | SD::CFG2::kCheckCRC16 | SD::CFG2::kNoWaitBusyEnd | SD::CFG2::kResponseLength0;
+    
+    if (!this->isRunningInUltraHighSpeedMode())
+    {
+        cfg2 |= SD::CFG2::kNoCheckWaitCRCTo;
+    }
+    
+    // Fetch the data length
+    UInt64 dataLength = request.data.getDataLength();
+    
+    psoftassert(dataLength <= UINT32_MAX, "The data length should not exceed UINT32_MAX.");
+    
+    pinfo("SDCMD = %d; Arg = 0x%08X; Data Length = %llu bytes.", request.command.getOpcode(), request.command.getArgument(), dataLength);
+    
+    // Start a command transfer session
+    retVal = this->controller->beginCommandTransfer();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to initiate a new command transfer session. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Set the number of data blocks and the size of each block
+    pinfo("Setting the length of the data blocks associated with the command...");
+    
+    retVal = this->setSDCommandDataLength(request.data.getNumBlocks(), request.data.getBlockSize());
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the command data blocks and length. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("the data length has been set.");
+    
+    // Set the transfer property
+    pinfo("Setting the transfer properties...");
+    
+    retVal = this->controller->setupCardDMATransferProperties(static_cast<UInt32>(dataLength), kIODirectionOut);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the DMA transfer properties. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    retVal = this->controller->selectCardDataSourceToRingBuffer();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to select the card data source to be the ring buffer. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    const ChipRegValuePair pairs[] =
+    {
+        { SD::rCFG2, 0xFF, cfg2 },
+        { SD::rTRANSFER, 0xFF, SD::TRANSFER::kTransferStart | SD::TRANSFER::kTMAutoWrite3 },
+    };
+    
+    retVal = this->controller->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs));
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the transfer property. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("Transfer properties are set.");
+    
+    // Once the transfer finishes, we need to check the end bit in the `SD_TRANSFER` register.
+    // Note that the Linux driver issues a CHECK REGISTER operation but ignores its return value.
+    // We will check the register value manually.
+//    retVal = this->controller->enqueueCheckRegisterCommand(SD::rTRANSFER, SD::TRANSFER::kTransferEnd, SD::TRANSFER::kTransferEnd);
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to enqueue a read operation to load the transfer status. Error = 0x%x.", retVal);
+//
+//        return retVal;
+//    }
+    
+    // Send the command
+    retVal = this->controller->endCommandTransfer(100, this->controller->getDataTransferFlags().commandWithOutboundDMATransfer); // Linux uses NoWait().
+
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to complete the command transfer session. Error = 0x%x.", retVal);
+
+        return retVal;
+    }
+  
+    //this->controller->endCommandTransferNoWait();
+    
+    // Verify the transfer status
+//    pinfo("Verifying the transfer result...");
+//
+//    BitOptions<UInt8> transferStatus = this->controller->peekHostBuffer<UInt8>(0);
+//
+//    if (!transferStatus.contains(SD::TRANSFER::kTransferEnd))
+//    {
+//        perr("Failed to find the end and the idle bits in the transfer status (0x%02x).", transferStatus.flatten());
+//
+//        return kIOReturnInvalid;
+//    }
+    
+    // Initiate the DMA transfer
+    pinfo("Initiating the DMA transfer...");
+    
+    retVal = this->controller->performDMAWrite(request.data.getMemoryDescriptor(), 10000);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to perform the DMA transfer. Error = 0x%x.", retVal);
+        
+        this->controller->clearError();
+        
+        return retVal;
+    }
+    
+    pinfo("DMA transfer completed successfully.");
+    
+    return kIOReturnSuccess;
+}
+
+///
+/// [Case 3] Send a SD command along with an inbound DMA transfer
+///
+/// @param request A block-oriented data transfer request to service
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sd_read_long_data()` defined in `rtsx_pci_sdmmc.c`.
+/// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a DMA transfer.
+/// @note This function serves as the processor routine that handles command requests that read multiple blocks from the card.
+/// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::readMultiBlocksProcessor`.
+///
+IOReturn RealtekSDXCSlot::runSDCommandWithInboundDMATransfer(IOSDMultiBlocksRequest& request)
+{
+    IOReturn retVal = this->runSDCommandWithInboundDMATransfer(static_cast<IOSDSingleBlockRequest&>(request));
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to service the request that reads multiple blocks. Error = 0x%x.", retVal);
+    }
+    
+    psoftassert(this->runSDCommand(request.stopCommand), "Failed to send the STOP command.");
+    
+    return retVal;
+}
+
+///
+/// [Case 3] Send a SD command along with an outbound DMA transfer
+///
+/// @param request A block-oriented data transfer request to service
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sd_write_long_data()` defined in `rtsx_pci_sdmmc.c`.
+/// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a DMA transfer.
+/// @note This function serves as the processor routine that handles command requests that write multiple blocks to the card.
+/// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeMultiBlocksProcessor`.
+///
+IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDMATransfer(IOSDMultiBlocksRequest& request)
+{
+    IOReturn retVal = this->runSDCommandWithOutboundDMATransfer(static_cast<IOSDSingleBlockRequest&>(request));
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to service the request that writes multiple blocks. Error = 0x%x.", retVal);
+    }
+    
+    psoftassert(this->runSDCommand(request.stopCommand), "Failed to send the STOP command.");
+    
+    return retVal;
+}
+
+///
 /// Process the given SD command request
 ///
 /// @param request A SD command request
@@ -1934,7 +2300,72 @@ IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDataTransfer(IOSDDataTransferR
 ///
 IOReturn RealtekSDXCSlot::processRequest(IOSDHostRequest& request)
 {
-    // TODO: IMP THIS
+    // Guard: Check whether the card is still present
+    if (!this->controller->isCardPresent())
+    {
+        perr("The card is not present. Will abort the request.");
+        
+        return kIOReturnNoMedia;
+    }
+    
+    // Notify the card reader to enter the worker state
+    this->controller->enterWorkerState();
+    
+    pinfo("The host driver has sent a SD command request.");
+    
+    // Guard: Switch the clock
+    pinfo("Switching the clock...");
+    
+    IOReturn retVal = this->controller->switchCardClock(this->cardClock, this->sscDepth, this->initialMode, this->doubleClock, this->vpclock);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to switch the clock for the incoming request. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("The clock has been switched.");
+    
+    // Guard: Select the card
+    pinfo("Selecting the SD card...");
+    
+    auto action = [](void* context) -> IOReturn
+    {
+        auto self = reinterpret_cast<RealtekSDXCSlot*>(context);
+        
+        passert(self->controller->selectCard() == kIOReturnSuccess, "Failed to select the card.");
+        
+        passert(self->controller->configureCardShareMode() == kIOReturnSuccess, "Failed to configure the card share mode.");
+        
+        return kIOReturnSuccess;
+    };
+    
+    retVal = this->controller->withCustomCommandTransfer(action, this);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to select the SD card. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("The SD card has been selected.");
+    
+    // Guard: Dispatch the request
+    pinfo("Servicing the request...");
+    
+    retVal = request.process();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to service the request. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("The request has been serviced.");
+    
     return kIOReturnSuccess;
 }
 
