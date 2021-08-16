@@ -181,6 +181,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `sdmmc_pre_req()` defined in `rtsx_pci_sdmmc.c`.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     virtual IOReturn preprocessRequest(RealtekSDRequest& request);
     
     ///
@@ -190,6 +191,7 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `sdmmc_request()` defined in `rtsx_pci_sdmmc.c`.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     virtual IOReturn processRequest(RealtekSDRequest& request) = 0;
     
     ///
@@ -199,7 +201,35 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `sdmmc_post_req()` defined in `rtsx_pci_sdmmc.c`.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     virtual IOReturn postprocessRequest(RealtekSDRequest& request);
+    
+    ///
+    /// Preprocess the given SD command request
+    ///
+    /// @param request A SD command request
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sdmmc_pre_req()` defined in `rtsx_pci_sdmmc.c`.
+    ///
+    virtual IOReturn preprocessRequest(IOSDHostRequest& request);
+    
+    ///
+    /// Process the given SD command request
+    ///
+    /// @param request A SD command request
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sdmmc_request()` defined in `rtsx_pci_sdmmc.c`.
+    ///
+    virtual IOReturn processRequest(IOSDHostRequest& request) = 0;
+    
+    ///
+    /// Postprocess the given SD command request
+    ///
+    /// @param request A SD command request
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sdmmc_post_req()` defined in `rtsx_pci_sdmmc.c`.
+    ///
+    virtual IOReturn postprocessRequest(IOSDHostRequest& request);
     
     //
     // MARK: - SD Bus Configurator
