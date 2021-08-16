@@ -9,7 +9,7 @@
 #include "BitOptions.hpp"
 #include "Debug.hpp"
 #include "IOSDBlockStorageDevice.hpp"
-#include <IOKit/IOBufferMemoryDescriptor.h>
+#include "IOMemoryDescriptor.hpp"
 #include "RealtekSDRequest.hpp"
 #include "RealtekUserConfigs.hpp"
 
@@ -123,7 +123,7 @@ IOReturn IOSDHostDriver::processReadBlockRequest(IOSDBlockRequest* request)
 {
     pinfo("Processing the request that reads a single block...");
     
-    auto creq = RealtekSDRequestFactory::CMD17(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getDMACommand());
+    auto creq = this->host->getRequestFactory().CMD17(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getMemoryDescriptor());
     
     return this->waitForRequest(creq);
 }
@@ -140,7 +140,7 @@ IOReturn IOSDHostDriver::processReadBlocksRequest(IOSDBlockRequest* request)
 {
     pinfo("Processing the request that reads multiple blocks...");
     
-    auto creq = RealtekSDRequestFactory::CMD18(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getDMACommand(), request->getNumBlocks());
+    auto creq = this->host->getRequestFactory().CMD18(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getMemoryDescriptor(), request->getNumBlocks());
     
     return this->waitForRequest(creq);
 }
@@ -157,7 +157,7 @@ IOReturn IOSDHostDriver::processWriteBlockRequest(IOSDBlockRequest* request)
 {
     pinfo("Processing the request that writes a single block...");
     
-    auto creq = RealtekSDRequestFactory::CMD24(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getDMACommand());
+    auto creq = this->host->getRequestFactory().CMD24(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getMemoryDescriptor());
     
     return this->waitForRequest(creq);
 }
@@ -177,7 +177,7 @@ IOReturn IOSDHostDriver::processWriteBlocksRequest(IOSDBlockRequest* request)
     
     passert(request->getNumBlocks() <= ((1 << 23) - 1), "The number of blocks should be less than 2^23 - 1.");
     
-    auto preq = RealtekSDRequestFactory::ACMD23(static_cast<UInt32>(request->getNumBlocks()));
+    auto preq = this->host->getRequestFactory().ACMD23(static_cast<UInt32>(request->getNumBlocks()));
     
     IOReturn retVal = this->waitForAppRequest(preq, this->card->getRCA());
     
@@ -193,7 +193,7 @@ IOReturn IOSDHostDriver::processWriteBlocksRequest(IOSDBlockRequest* request)
     // Process the block request
     pinfo("Processing the request that writes multiple blocks...");
     
-    auto creq = RealtekSDRequestFactory::CMD25(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getDMACommand(), request->getNumBlocks());
+    auto creq = this->host->getRequestFactory().CMD25(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getMemoryDescriptor(), request->getNumBlocks());
     
     return this->waitForRequest(creq);
 }
@@ -1049,7 +1049,7 @@ IOReturn IOSDHostDriver::CMD0()
     // Issue the CMD0
     pinfo("Sending CMD0 to the card...");
     
-    auto request = RealtekSDRequestFactory::CMD0();
+    auto request = this->host->getRequestFactory().CMD0();
 
     retVal = this->waitForRequest(request);
 
@@ -1096,7 +1096,7 @@ IOReturn IOSDHostDriver::CMD0()
 ///
 IOReturn IOSDHostDriver::CMD2(UInt8* buffer, IOByteCount length)
 {
-    auto request = RealtekSDRequestFactory::CMD2();
+    auto request = this->host->getRequestFactory().CMD2();
 
     IOReturn retVal = this->waitForRequest(request);
 
@@ -1165,7 +1165,7 @@ IOReturn IOSDHostDriver::CMD2(CID& cid)
 ///
 IOReturn IOSDHostDriver::CMD3(UInt32& rca)
 {
-    auto request = RealtekSDRequestFactory::CMD3();
+    auto request = this->host->getRequestFactory().CMD3();
 
     IOReturn retVal = this->waitForRequest(request);
 
@@ -1206,19 +1206,19 @@ IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, UInt8* res
 
     pinfo("CMD6: [SAN] Mode = %d; Group = %d; Value = %d.", mode, group, value);
 
-    // Allocate a DMA buffer
-    IODMACommand* dma = this->allocateDMABuffer(64);
-
-    if (dma == nullptr)
+    // Allocate a buffer
+    IOMemoryDescriptor* buffer = IOMemoryDescriptorAllocateWiredBuffer(64);
+    
+    if (buffer == nullptr)
     {
-        perr("Failed to allocate a 64-byte DMA buffer.");
+        perr("Failed to allocate a 64-byte buffer.");
 
         return kIOReturnNoMemory;
     }
 
     // Send the command
     // TODO: SET DATA TIMEOUT????
-    auto request = RealtekSDRequestFactory::CMD6(mode, group, value, dma);
+    auto request = this->host->getRequestFactory().CMD6(mode, group, value, buffer);
 
     IOReturn retVal = this->waitForRequest(request);
 
@@ -1226,7 +1226,7 @@ IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, UInt8* res
     {
         perr("Failed to issue the CMD6. Error = 0x%x.", retVal);
 
-        this->releaseDMABuffer(dma);
+        IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
 
         return retVal;
     }
@@ -1234,81 +1234,81 @@ IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, UInt8* res
     // Copy the SD status from the DMA buffer
     length = min(length, 64);
 
-    retVal = dma->readBytes(0, response, length) == length ? kIOReturnSuccess : kIOReturnError;
+    retVal = buffer->readBytes(0, response, length) == length ? kIOReturnSuccess : kIOReturnError;
 
-    this->releaseDMABuffer(dma);
-
-    return retVal;
-}
-
-///
-/// CMD6: Check switchable function or switch the card function
-///
-/// @param mode Pass 0 to check switchable function or 1 to switch the card function
-/// @param group The function group
-/// @param value The function value
-/// @param response A non-null and prepared memory descriptor that stores the response on return
-/// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note Port: This function replaces `mmc_sd_switch()` defined in `sd_ops.c`.
-/// @note This function uses the given response buffer to initiate a DMA read operation.
-///       The caller is responsbile for managing the life cycle of the given buffer.
-///
-IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, IOMemoryDescriptor* response)
-{
-    // Guard: Verify the given response buffer
-    if (response == nullptr)
-    {
-        perr("The given response buffer cannot be NULL.");
-
-        return kIOReturnBadArgument;
-    }
-
-    // Sanitize the given `mode` and `value`
-    pinfo("CMD6: [ORG] Mode = %d; Group = %d; Value = %d.", mode, group, value);
-
-    mode = !!mode;
-
-    value &= 0x0F;
-
-    pinfo("CMD6: [SAN] Mode = %d; Group = %d; Value = %d.", mode, group, value);
-
-    // Guard: Associate the given response buffer with the DMA command
-    // Note that the DMA command is prepared automatically
-    IODMACommand* dma = this->allocateDMACommandFromPool();
-
-    IOReturn retVal = dma->setMemoryDescriptor(response);
-
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to associate the given response with the DMA command. Error = 0x%x.", retVal);
-
-        this->releaseDMACommandToPool(dma);
-        
-        return retVal;
-    }
-
-    // Generate the SD command request
-    auto request = RealtekSDRequestFactory::CMD6(mode, group, value, dma);
-
-    // TODO: Set the data timeout as Linux???
-    // TODO: Realtek's driver seems to ignore the data timeout in the mmc_data struct
-    retVal = this->waitForRequest(request);
-
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to issue the CMD6. Error = 0x%x.", retVal);
-    }
-
-    // Dissociate the given response buffer from the DMA command
-    // Note that the DMA command is completed automatically
-    psoftassert(dma->clearMemoryDescriptor() == kIOReturnSuccess,
-                "Failed to dissociate the given response from the DMA command.");
-
-    // Return the DMA command back
-    this->releaseDMACommandToPool(dma);
+    IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
 
     return retVal;
 }
+
+/////
+///// CMD6: Check switchable function or switch the card function
+/////
+///// @param mode Pass 0 to check switchable function or 1 to switch the card function
+///// @param group The function group
+///// @param value The function value
+///// @param response A non-null and prepared memory descriptor that stores the response on return
+///// @return `kIOReturnSuccess` on success, other values otherwise.
+///// @note Port: This function replaces `mmc_sd_switch()` defined in `sd_ops.c`.
+///// @note This function uses the given response buffer to initiate a DMA read operation.
+/////       The caller is responsbile for managing the life cycle of the given buffer.
+/////
+//IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, IOMemoryDescriptor* response)
+//{
+//    // Guard: Verify the given response buffer
+//    if (response == nullptr)
+//    {
+//        perr("The given response buffer cannot be NULL.");
+//
+//        return kIOReturnBadArgument;
+//    }
+//
+//    // Sanitize the given `mode` and `value`
+//    pinfo("CMD6: [ORG] Mode = %d; Group = %d; Value = %d.", mode, group, value);
+//
+//    mode = !!mode;
+//
+//    value &= 0x0F;
+//
+//    pinfo("CMD6: [SAN] Mode = %d; Group = %d; Value = %d.", mode, group, value);
+//
+//    // Guard: Associate the given response buffer with the DMA command
+//    // Note that the DMA command is prepared automatically
+//    IODMACommand* dma = this->allocateDMACommandFromPool();
+//
+//    IOReturn retVal = dma->setMemoryDescriptor(response);
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to associate the given response with the DMA command. Error = 0x%x.", retVal);
+//
+//        this->releaseDMACommandToPool(dma);
+//
+//        return retVal;
+//    }
+//
+//    // Generate the SD command request
+//    auto request = this->host->getRequestFactory().CMD6(mode, group, value, dma);
+//
+//    // TODO: Set the data timeout as Linux???
+//    // TODO: Realtek's driver seems to ignore the data timeout in the mmc_data struct
+//    retVal = this->waitForRequest(request);
+//
+//    if (retVal != kIOReturnSuccess)
+//    {
+//        perr("Failed to issue the CMD6. Error = 0x%x.", retVal);
+//    }
+//
+//    // Dissociate the given response buffer from the DMA command
+//    // Note that the DMA command is completed automatically
+//    psoftassert(dma->clearMemoryDescriptor() == kIOReturnSuccess,
+//                "Failed to dissociate the given response from the DMA command.");
+//
+//    // Return the DMA command back
+//    this->releaseDMACommandToPool(dma);
+//
+//    return retVal;
+//}
 
 ///
 /// CMD7: Select a card
@@ -1320,7 +1320,7 @@ IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, IOMemoryDe
 ///
 IOReturn IOSDHostDriver::CMD7(UInt32 rca)
 {
-    auto request = RealtekSDRequestFactory::CMD7(rca);
+    auto request = this->host->getRequestFactory().CMD7(rca);
 
     return this->waitForRequest(request);
 }
@@ -1340,7 +1340,7 @@ IOReturn IOSDHostDriver::CMD8(UInt8 vhs, SDResponse7& response)
     static constexpr UInt8 kCheckPattern = 0xAA;
 
     // Guard: Send the command
-    auto request = RealtekSDRequestFactory::CMD8(vhs, kCheckPattern);
+    auto request = this->host->getRequestFactory().CMD8(vhs, kCheckPattern);
 
     IOReturn retVal = this->waitForRequest(request);
 
@@ -1380,7 +1380,7 @@ IOReturn IOSDHostDriver::CMD8(UInt8 vhs, SDResponse7& response)
 ///
 IOReturn IOSDHostDriver::CMD9(UInt32 rca, UInt8* buffer, IOByteCount length)
 {
-    auto request = RealtekSDRequestFactory::CMD9(rca);
+    auto request = this->host->getRequestFactory().CMD9(rca);
 
     IOReturn retVal = this->waitForRequest(request);
 
@@ -1452,7 +1452,7 @@ IOReturn IOSDHostDriver::CMD9(UInt32 rca, CSD& csd)
 ///
 IOReturn IOSDHostDriver::CMD11()
 {
-    auto request = RealtekSDRequestFactory::CMD11();
+    auto request = this->host->getRequestFactory().CMD11();
 
     IOReturn retVal = this->waitForRequest(request);
 
@@ -1483,7 +1483,7 @@ IOReturn IOSDHostDriver::CMD11()
 ///
 IOReturn IOSDHostDriver::CMD13(UInt32 rca, UInt32& status)
 {
-    auto request = RealtekSDRequestFactory::CMD13(rca);
+    auto request = this->host->getRequestFactory().CMD13(rca);
 
     IOReturn retVal = this->waitForRequest(request);
 
@@ -1509,7 +1509,7 @@ IOReturn IOSDHostDriver::CMD13(UInt32 rca, UInt32& status)
 IOReturn IOSDHostDriver::CMD55(UInt32 rca)
 {
     // Send the command
-    auto request = RealtekSDRequestFactory::CMD55(rca);
+    auto request = this->host->getRequestFactory().CMD55(rca);
 
     IOReturn retVal = this->waitForRequest(request);
 
@@ -1572,7 +1572,7 @@ IOReturn IOSDHostDriver::ACMD6(UInt32 rca, IOSDBusConfig::BusWidth busWidth)
         }
     }
 
-    auto request = RealtekSDRequestFactory::ACMD6(busWidthValue);
+    auto request = this->host->getRequestFactory().ACMD6(busWidthValue);
 
     return this->waitForAppRequest(request, rca);
 }
@@ -1590,27 +1590,27 @@ IOReturn IOSDHostDriver::ACMD6(UInt32 rca, IOSDBusConfig::BusWidth busWidth)
 ///
 IOReturn IOSDHostDriver::ACMD13(UInt32 rca, UInt8* status, IOByteCount length)
 {
-    // Allocate a DMA buffer
-    IODMACommand* dma = this->allocateDMABuffer(64);
-
-    if (dma == nullptr)
+    // Allocate a buffer
+    IOMemoryDescriptor* buffer = IOMemoryDescriptorAllocateWiredBuffer(64);
+    
+    if (buffer == nullptr)
     {
-        perr("Failed to allocate a 64-byte DMA buffer.");
+        perr("Failed to allocate a 64-byte buffer.");
 
         return kIOReturnNoMemory;
     }
 
     // Send the command
     // TODO: SET DATA TIMEOUT????
-    auto request = RealtekSDRequestFactory::ACMD13(dma);
+    auto request = this->host->getRequestFactory().ACMD13(buffer);
 
     IOReturn retVal = this->waitForAppRequest(request, rca);
 
     if (retVal != kIOReturnSuccess)
     {
         perr("Failed to issue the ACMD13. Error = 0x%x.", retVal);
-
-        this->releaseDMABuffer(dma);
+        
+        IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
 
         return retVal;
     }
@@ -1618,9 +1618,9 @@ IOReturn IOSDHostDriver::ACMD13(UInt32 rca, UInt8* status, IOByteCount length)
     // Copy the SD status from the DMA buffer
     length = min(length, 64);
 
-    retVal = dma->readBytes(0, status, length) == length ? kIOReturnSuccess : kIOReturnError;
+    retVal = buffer->readBytes(0, status, length) == length ? kIOReturnSuccess : kIOReturnError;
 
-    this->releaseDMABuffer(dma);
+    IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
 
     return retVal;
 }
@@ -1634,7 +1634,7 @@ IOReturn IOSDHostDriver::ACMD13(UInt32 rca, UInt8* status, IOByteCount length)
 ///
 IOReturn IOSDHostDriver::ACMD41(UInt32& rocr)
 {
-    auto request = RealtekSDRequestFactory::ACMD41(0);
+    auto request = this->host->getRequestFactory().ACMD41(0);
 
     IOReturn retVal = this->waitForAppRequest(request, 0);
 
@@ -1660,7 +1660,7 @@ IOReturn IOSDHostDriver::ACMD41(UInt32& rocr)
 ///
 IOReturn IOSDHostDriver::ACMD41(UInt32 ocr, UInt32& rocr)
 {
-    auto request = RealtekSDRequestFactory::ACMD41(ocr);
+    auto request = this->host->getRequestFactory().ACMD41(ocr);
 
     for (int attempt = 0; attempt < 100; attempt += 1)
     {
@@ -1693,7 +1693,7 @@ IOReturn IOSDHostDriver::ACMD41(UInt32 ocr, UInt32& rocr)
 /// ACMD51: Ask the card to send the SD configuration register (SCR) value
 ///
 /// @param rca The card relative address
-/// @param buffer A non-null buffer that stores the **raw** SD configuration register value on return
+/// @param configuration A non-null buffer that stores the **raw** SD configuration register value on return
 /// @param length Specify the number of bytes read from the response (must not exceed 8 bytes)
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `mmc_app_send_scr()` defined in `sd_ops.c`.
@@ -1703,21 +1703,21 @@ IOReturn IOSDHostDriver::ACMD41(UInt32 ocr, UInt32& rocr)
 ///       The caller is responsible for dealing with the endianness and parsing the data.
 /// @note It is recommended to use `IOSDHostDriver::ACMD51(cid:)` to fetch and parse the data in one function call.
 ///
-IOReturn IOSDHostDriver::ACMD51(UInt32 rca, UInt8* buffer, IOByteCount length)
+IOReturn IOSDHostDriver::ACMD51(UInt32 rca, UInt8* configuration, IOByteCount length)
 {
-    // Allocate a DMA buffer
-    IODMACommand* dma = this->allocateDMABuffer(8);
-
-    if (dma == nullptr)
+    // Allocate a buffer
+    IOMemoryDescriptor* buffer = IOMemoryDescriptorAllocateWiredBuffer(8);
+    
+    if (buffer == nullptr)
     {
-        perr("Failed to allocate a 8-byte DMA buffer.");
+        perr("Failed to allocate a 64-byte buffer.");
 
         return kIOReturnNoMemory;
     }
 
     // Send the command
     // TODO: SET DATA TIMEOUT????
-    auto request = RealtekSDRequestFactory::ACMD51(dma);
+    auto request = this->host->getRequestFactory().ACMD51(buffer);
 
     IOReturn retVal = this->waitForAppRequest(request, rca);
 
@@ -1725,7 +1725,7 @@ IOReturn IOSDHostDriver::ACMD51(UInt32 rca, UInt8* buffer, IOByteCount length)
     {
         perr("Failed to issue the ACMD51. Error = 0x%x.", retVal);
 
-        this->releaseDMABuffer(dma);
+        IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
 
         return retVal;
     }
@@ -1733,9 +1733,9 @@ IOReturn IOSDHostDriver::ACMD51(UInt32 rca, UInt8* buffer, IOByteCount length)
     // Copy the SD status from the DMA buffer
     length = min(length, 8);
 
-    retVal = dma->readBytes(0, buffer, length) == length ? kIOReturnSuccess : kIOReturnError;
+    retVal = buffer->readBytes(0, configuration, length) == length ? kIOReturnSuccess : kIOReturnError;
 
-    this->releaseDMABuffer(dma);
+    IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
 
     return retVal;
 }

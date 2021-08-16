@@ -515,6 +515,7 @@ public:
     /// @return A non-null IODMACommand instance on success, `nullptr` otherwise.
     /// @note The calling thread can be blocked.
     ///
+    DEPRECATE("Host driver should allocate a memory descriptor instead.")
     IODMACommand* allocateDMABuffer(IOByteCount size);
     
     ///
@@ -522,6 +523,7 @@ public:
     ///
     /// @param command A non-null IODMACommand instance previously returned by `IOSDHostDriver::allocateDMABuffer()`.
     ///
+    DEPRECATE("Host driver should release a memory descriptor instead.")
     void releaseDMABuffer(IODMACommand* command);
     
     //
@@ -658,20 +660,20 @@ public:
         return this->CMD6(mode, group, value, response, N);
     }
     
-    ///
-    /// CMD6: Check switchable function or switch the card function
-    ///
-    /// @param mode Pass 0 to check switchable function or 1 to switch the card function
-    /// @param group The function group
-    /// @param value The function value
-    /// @param response A non-null and prepared memory descriptor that stores the response on return
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces `mmc_sd_switch()` defined in `sd_ops.c`.
-    /// @note This function uses the given response buffer to initiate a DMA read operation.
-    ///       The caller is responsbile for managing the life cycle of the given buffer.
-    ///
-    DEPRECATE("Use other CMD6 methods")
-    IOReturn CMD6(UInt32 mode, UInt32 group, UInt8 value, IOMemoryDescriptor* response);
+//    ///
+//    /// CMD6: Check switchable function or switch the card function
+//    ///
+//    /// @param mode Pass 0 to check switchable function or 1 to switch the card function
+//    /// @param group The function group
+//    /// @param value The function value
+//    /// @param response A non-null and prepared memory descriptor that stores the response on return
+//    /// @return `kIOReturnSuccess` on success, other values otherwise.
+//    /// @note Port: This function replaces `mmc_sd_switch()` defined in `sd_ops.c`.
+//    /// @note This function uses the given response buffer to initiate a DMA read operation.
+//    ///       The caller is responsbile for managing the life cycle of the given buffer.
+//    ///
+//    DEPRECATE("Use other CMD6 methods")
+//    IOReturn CMD6(UInt32 mode, UInt32 group, UInt8 value, IOMemoryDescriptor* response);
     
     ///
     /// CMD7: Select a card
@@ -872,7 +874,7 @@ public:
     /// ACMD51: Ask the card to send the SD configuration register (SCR) value
     ///
     /// @param rca The card relative address
-    /// @param buffer A non-null buffer that stores the **raw** SD configuration register value on return
+    /// @param configuration A non-null buffer that stores the **raw** SD configuration register value on return
     /// @param length Specify the number of bytes read from the response (must not exceed 8 bytes)
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `mmc_app_send_scr()` defined in `sd_ops.c`.
@@ -882,7 +884,7 @@ public:
     ///       The caller is responsible for dealing with the endianness and parsing the data.
     /// @note It is recommended to use `IOSDHostDriver::ACMD51(cid:)` to fetch and parse the data in one function call.
     ///
-    IOReturn ACMD51(UInt32 rca, UInt8* buffer, IOByteCount length);
+    IOReturn ACMD51(UInt32 rca, UInt8* configuration, IOByteCount length);
     
     ///
     /// ACMD51: Ask the card to send the SD configuration register (SCR) value
