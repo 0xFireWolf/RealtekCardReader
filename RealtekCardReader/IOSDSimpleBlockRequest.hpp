@@ -39,10 +39,6 @@ class IOSDSimpleBlockRequest: public IOSDBlockRequest
     /// The data transfer buffer
     IOMemoryDescriptor* buffer;
     
-    /// The DMA command associated with the transfer buffer
-    DEPRECATE("REMOVED")
-    IODMACommand* command;
-    
     /// The starting block number
     UInt64 block;
     
@@ -89,14 +85,6 @@ public:
     /// @note This function is invoked by the processor work loop to fully service the request.
     ///
     void service() override;
-    
-    ///
-    /// Get the DMA command for data transfer to service the request
-    ///
-    /// @note This function is invoked by the processor routine to service the request either fully or partially.
-    ///
-    DEPRECATE("Replaced by getMemoryDescriptor().")
-    IODMACommand* getDMACommand() override;
     
     ///
     /// Get the memory descriptor that contains data to service the request

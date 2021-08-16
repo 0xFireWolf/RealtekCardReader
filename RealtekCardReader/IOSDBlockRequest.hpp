@@ -62,14 +62,6 @@ public:
     virtual void service() = 0;
     
     ///
-    /// Get the DMA command for data transfer to service the request
-    ///
-    /// @note This function is invoked by the processor routine to service the request either fully or partially.
-    ///
-    DEPRECATE("Replaced by getMemoryDescriptor().")
-    virtual IODMACommand* getDMACommand() = 0;
-    
-    ///
     /// Get the memory descriptor that contains data to service the request
     ///
     /// @note This function is invoked by the processor routine to service the request either fully or partially.

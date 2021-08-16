@@ -8,8 +8,8 @@
 #ifndef IOSDHostDriver_hpp
 #define IOSDHostDriver_hpp
 
-#include <IOKit/IOCommandPool.h>
 #include <IOKit/IOCommandGate.h>
+#include "IOEnhancedCommandPool.hpp"
 #include "IOSDHostDevice.hpp"
 #include "IOSDHostRequest.hpp"
 #include "IOSDBusConfig.hpp"
@@ -20,9 +20,7 @@
 #include "IOSDBlockRequestEventSource.hpp"
 #include "IOSDCard.hpp"
 #include "IOSDCardEventSource.hpp"
-#include "SD.hpp"
 #include "Utilities.hpp"
-#include "IOEnhancedCommandPool.hpp"
 
 /// Forward declaration (Client of the SD host driver)
 class IOSDBlockStorageDevice;
@@ -483,27 +481,6 @@ public:
     /// @param request A SD command request
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     ///
-    DEPRECATE("Replaced by IOSDHostRequest.")
-    IOReturn waitForRequest(RealtekSDRequest& request);
-    
-    ///
-    /// [Helper] Send the given SD application command request and wait for the response
-    ///
-    /// @param request A SD application command request
-    /// @param rca The card relative address
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces `mmc_wait_for_app_cmd()` defined in `sd_ops.c`.
-    /// @note This function issues a CMD55 before sending the given request.
-    ///
-    DEPRECATE("Replaced by IOSDHostRequest.")
-    IOReturn waitForAppRequest(RealtekSDRequest& request, UInt32 rca);
-    
-    ///
-    /// [Helper] Send the given SD command request and wait for the response
-    ///
-    /// @param request A SD command request
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    ///
     IOReturn waitForRequest(IOSDHostRequest& request);
     
     ///
@@ -641,7 +618,7 @@ public:
     ///             the caller is responsbile for set the VHS value from the OCR register value.
     /// @seealso `IOSDHostDriver::CMD8(vhs:)` if the response can be ignored.
     ///
-    IOReturn CMD8(UInt8 vhs, SDResponse7& response);
+    IOReturn CMD8(UInt8 vhs, IOSDHostResponse7& response);
     
     ///
     /// CMD8: Send the interface condition and the voltage supply information
@@ -653,7 +630,7 @@ public:
     ///
     inline IOReturn CMD8(UInt8 vhs)
     {
-        SDResponse7 response;
+        IOSDHostResponse7 response;
         
         return this->CMD8(vhs, response);
     }

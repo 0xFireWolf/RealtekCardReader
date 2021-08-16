@@ -43,8 +43,6 @@ void IOSDSimpleBlockRequest::init(IOSDHostDriver* driver,
     
     this->buffer = buffer;
     
-    this->command = nullptr;
-    
     this->block = block;
     
     this->nblocks = nblocks;
@@ -69,8 +67,6 @@ void IOSDSimpleBlockRequest::deinit()
     
     this->buffer = nullptr;
     
-    this->command = nullptr;
-    
     this->block = 0;
     
     this->nblocks = 0;
@@ -82,16 +78,6 @@ void IOSDSimpleBlockRequest::deinit()
     this->completion.parameter = nullptr;
     
     this->completion.action = nullptr;
-}
-
-///
-/// Get the DMA command for data transfer to service the request
-///
-/// @note This function is invoked by the processor routine to service the request either fully or partially.
-///
-IODMACommand* IOSDSimpleBlockRequest::getDMACommand()
-{
-    return this->command;
 }
 
 ///
@@ -173,32 +159,6 @@ IOReturn IOSDSimpleBlockRequest::prepare()
         return retVal;
     }
     
-    // TODO: REMOVE THIS
-//    // Guard: Retrieve a preallocated DMA command
-//    pinfo("Allocating a DMA command from the pool.");
-//
-//    IODMACommand* command = this->driver->allocateDMACommandFromPool();
-//
-//    passert(command != nullptr, "The DMA command allocated from the pool should not be NULL.");
-//
-//    // Guard: Associate the transfer buffer with the DMA command
-//    // Note that the DMA command is prepared automatically
-//    retVal = command->setMemoryDescriptor(this->buffer);
-//
-//    if (retVal != kIOReturnSuccess)
-//    {
-//        perr("Failed to associate the transfer buffer with the DMA command. Error = 0x%x.", retVal);
-//
-//        this->driver->releaseDMACommandToPool(command);
-//
-//        return retVal;
-//    }
-//
-//    // All done
-//    this->command = command;
-//
-//    pinfo("The transfer buffer is now associated with the DMA command.");
-    
     return kIOReturnSuccess;
 }
 
@@ -213,20 +173,6 @@ void IOSDSimpleBlockRequest::complete(IOReturn retVal)
 {
     // Dissociate the transfer buffer from the DMA command
     pinfo("Completing the request...");
-    
-    // TODO: REMOVE THIS
-//    if (this->command != nullptr)
-//    {
-//        psoftassert(this->command->clearMemoryDescriptor() == kIOReturnSuccess,
-//                    "Failed to dissociate the transfer buffer from the DMA command.");
-//
-//        psoftassert(this->buffer->complete() == kIOReturnSuccess,
-//                    "Failed to complete the transfer buffer.");
-//
-//        this->driver->releaseDMACommandToPool(this->command);
-//
-//        this->command = nullptr;
-//    }
     
     if (this->buffer != nullptr)
     {

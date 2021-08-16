@@ -10,7 +10,6 @@
 #include "Debug.hpp"
 #include "IOSDBlockStorageDevice.hpp"
 #include "IOMemoryDescriptor.hpp"
-#include "RealtekSDRequest.hpp"
 #include "RealtekUserConfigs.hpp"
 
 //
@@ -780,89 +779,6 @@ IOReturn IOSDHostDriver::powerCycle(UInt32 ocr)
 /// @param request A SD command request
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 ///
-IOReturn IOSDHostDriver::waitForRequest(RealtekSDRequest& request)
-{
-    pinfo("Preprocessing the request...");
-    
-    IOReturn retVal = this->host->preprocessRequest(request);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to preprocess the request. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    pinfo("Processing the request...");
-    
-    retVal = this->host->processRequest(request);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to process the request. Error = 0x%x.", retVal);
-        
-        psoftassert(this->host->postprocessRequest(request) == kIOReturnSuccess,
-                    "Failed to postprocess the request.");
-        
-        return retVal;
-    }
-    
-    return this->host->postprocessRequest(request);
-}
-
-///
-/// [Helper] Send the given SD application command request and wait for the response
-///
-/// @param request A SD application command request
-/// @param rca The card relative address
-/// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note Port: This function replaces `mmc_wait_for_app_cmd()` defined in `sd_ops.c`.
-/// @note This function issues a CMD55 before sending the given request.
-///
-IOReturn IOSDHostDriver::waitForAppRequest(RealtekSDRequest& request, UInt32 rca)
-{
-    IOReturn retVal = kIOReturnSuccess;
-    
-    for (int attempt = 0; attempt < RealtekUserConfigs::Card::ACMDMaxNumAttempts; attempt += 1)
-    {
-        pinfo("[%02d] Sending the application command...", attempt);
-        
-        // Guard: Send the CMD55
-        retVal = this->CMD55(rca);
-
-        if (retVal != kIOReturnSuccess)
-        {
-            perr("Failed to issue a CMD55. Error = 0x%x.", retVal);
-
-            continue;
-        }
-
-        // Send the application command
-        retVal = this->waitForRequest(request);
-        
-        if (retVal != kIOReturnSuccess)
-        {
-            perr("Failed to issue the application command. Error = 0x%x.", retVal);
-            
-            continue;
-        }
-        
-        pinfo("[%02d] The application command has been sent successfully.", attempt);
-        
-        return kIOReturnSuccess;
-    }
-    
-    perr("Failed to send the application command. Error = 0x%x.", retVal);
-    
-    return retVal;
-}
-
-///
-/// [Helper] Send the given SD command request and wait for the response
-///
-/// @param request A SD command request
-/// @return `kIOReturnSuccess` on success, other values otherwise.
-///
 IOReturn IOSDHostDriver::waitForRequest(IOSDHostRequest& request)
 {
     pinfo("Preprocessing the request...");
@@ -1029,7 +945,7 @@ IOReturn IOSDHostDriver::CMD2(UInt8* buffer, IOByteCount length)
     
     length = min(sizeof(CID), length);
 
-    memcpy(buffer, request.command.reinterpretResponseAs<SDResponse2>()->value, length);
+    memcpy(buffer, request.command.reinterpretResponseAs<IOSDHostResponse2>()->value, length);
 
     return kIOReturnSuccess;
 }
@@ -1096,7 +1012,7 @@ IOReturn IOSDHostDriver::CMD3(UInt32& rca)
         return retVal;
     }
 
-    rca = request.command.reinterpretResponseAs<SDResponse6>()->getRCA();
+    rca = request.command.reinterpretResponseAs<IOSDHostResponse6>()->getRCA();
 
     return kIOReturnSuccess;
 }
@@ -1199,7 +1115,7 @@ IOReturn IOSDHostDriver::CMD7(UInt32 rca)
 ///             the caller is responsbile for set the VHS value from the OCR register value.
 /// @seealso `IOSDHostDriver::CMD8(vhs:)` if the response can be ignored.
 ///
-IOReturn IOSDHostDriver::CMD8(UInt8 vhs, SDResponse7& response)
+IOReturn IOSDHostDriver::CMD8(UInt8 vhs, IOSDHostResponse7& response)
 {
     static constexpr UInt8 kCheckPattern = 0xAA;
 
@@ -1216,7 +1132,7 @@ IOReturn IOSDHostDriver::CMD8(UInt8 vhs, SDResponse7& response)
     }
 
     // Guard: Verify the check pattern in the response
-    auto res = request.command.reinterpretResponseAs<SDResponse7>();
+    auto res = request.command.reinterpretResponseAs<IOSDHostResponse7>();
 
     if (res->checkPattern != kCheckPattern)
     {
@@ -1257,7 +1173,7 @@ IOReturn IOSDHostDriver::CMD9(UInt32 rca, UInt8* buffer, IOByteCount length)
     
     length = min(sizeof(CSDVX), length);
 
-    memcpy(buffer, request.command.reinterpretResponseAs<SDResponse2>()->value, length);
+    memcpy(buffer, request.command.reinterpretResponseAs<IOSDHostResponse2>()->value, length);
 
     return kIOReturnSuccess;
 }
@@ -1327,7 +1243,7 @@ IOReturn IOSDHostDriver::CMD11()
         return retVal;
     }
 
-    if (BitOptions(request.command.reinterpretResponseAs<SDResponse1>()->getStatus()).contains(R1_ERROR))
+    if (BitOptions(request.command.reinterpretResponseAs<IOSDHostResponse1>()->getStatus()).contains(R1_ERROR))
     {
         perr("The response to the CMD11 has the error bit set.");
 
@@ -1358,7 +1274,7 @@ IOReturn IOSDHostDriver::CMD13(UInt32 rca, UInt32& status)
         return retVal;
     }
 
-    status = request.command.reinterpretResponseAs<SDResponse1>()->getStatus();
+    status = request.command.reinterpretResponseAs<IOSDHostResponse1>()->getStatus();
 
     return kIOReturnSuccess;
 }
@@ -1385,7 +1301,7 @@ IOReturn IOSDHostDriver::CMD55(UInt32 rca)
     }
 
     // Check whether the card supports application commands
-    if (!BitOptions(request.command.reinterpretResponseAs<SDResponse1>()->getStatus()).contains(R1_APP_CMD))
+    if (!BitOptions(request.command.reinterpretResponseAs<IOSDHostResponse1>()->getStatus()).contains(R1_APP_CMD))
     {
         perr("The card does not support application commands.");
 
@@ -1509,7 +1425,7 @@ IOReturn IOSDHostDriver::ACMD41(UInt32& rocr)
         return retVal;
     }
 
-    rocr = request.command.reinterpretResponseAs<SDResponse3>()->getValue();
+    rocr = request.command.reinterpretResponseAs<IOSDHostResponse3>()->getValue();
 
     return kIOReturnSuccess;
 }
@@ -1539,7 +1455,7 @@ IOReturn IOSDHostDriver::ACMD41(UInt32 ocr, UInt32& rocr)
         }
 
         // Retrieve the returned OCR value
-        rocr = request.command.reinterpretResponseAs<SDResponse3>()->getValue();
+        rocr = request.command.reinterpretResponseAs<IOSDHostResponse3>()->getValue();
 
         // Check the busy bit
         if (BitOptions(rocr).containsBit(31))

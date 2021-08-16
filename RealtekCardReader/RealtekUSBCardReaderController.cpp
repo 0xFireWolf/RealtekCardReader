@@ -662,64 +662,6 @@ IOReturn RealtekUSBCardReaderController::endCommandTransferGated(UInt32 timeout,
 ///
 /// Perform a DMA read operation
 ///
-/// @param command A non-null, perpared DMA command
-/// @param timeout Specify the amount of time in milliseconds
-/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-///
-IOReturn RealtekUSBCardReaderController::performDMARead(IODMACommand* command, UInt32 timeout)
-{
-    const IOMemoryDescriptor* buffer = command->getMemoryDescriptor();
-    
-    IOReturn retVal = this->performInboundBulkTransfer(const_cast<IOMemoryDescriptor*>(buffer), buffer->getLength(), timeout);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to perform the inbound bulk transfer. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    // TODO: WARNING: FIXME: EXTRA BUFFER COPIES
-    // Later the host driver will complete the given DMA command,
-    // which implicitly copies IODMACommand buffers back to the memory descriptor.
-    // However, `IOUSBHostPipe::io()` reads the data into the memory descriptor,
-    // so `IODMACommand::complete()` will overwrite the data read from the card.
-    // We have to copy IOMemoryDescriptor memory to the DMA command at here,
-    // which can be avoided if we pass the memory descriptor to the controller instead.
-    // In other words, controllers should be responsible for
-    // 1) Maintaining a pool of preallocated DMA commands.
-    // 2) (De)associate the incoming memory descriptor with a DMA command (IODMACommand::set/clearMemoryDescriptor()).
-    // TODO: Sigh. Need to adjust a lot of things, from the host driver to the controller and the SD request data structures.
-    retVal = command->synchronize(kIODirectionOut);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to synchronize the buffer. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    return kIOReturnSuccess;
-}
-
-///
-/// Perform a DMA write operation
-///
-/// @param command A non-null, perpared DMA command
-/// @param timeout Specify the amount of time in milliseconds
-/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-///
-IOReturn RealtekUSBCardReaderController::performDMAWrite(IODMACommand* command, UInt32 timeout)
-{
-    // Note that we do not have the buffer synchronization issue here
-    const IOMemoryDescriptor* buffer = command->getMemoryDescriptor();
-    
-    return this->performOutboundBulkTransfer(const_cast<IOMemoryDescriptor*>(buffer), buffer->getLength(), timeout);
-}
-
-///
-/// Perform a DMA read operation
-///
 /// @param descriptor A non-null, perpared memory descriptor
 /// @param timeout Specify the amount of time in milliseconds
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.

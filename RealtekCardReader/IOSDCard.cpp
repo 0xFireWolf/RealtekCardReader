@@ -361,7 +361,7 @@ bool IOSDCard::initDefaultSpeedMode()
     {
         perr("Failed to enable the 4-bit wide bus.");
         
-        return false; // TODO: REMOVE THIS???
+        return false;
     }
     else
     {
@@ -434,7 +434,7 @@ bool IOSDCard::initHighSpeedMode()
     {
         perr("Failed to enable the 4-bit wide bus.");
         
-        return false; // TODO: REMOVE THIS???
+        return false;
     }
     else
     {

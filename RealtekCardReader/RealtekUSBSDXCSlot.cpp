@@ -21,7 +21,7 @@ OSDefineMetaClassAndStructors(RealtekUSBSDXCSlot, RealtekSDXCSlot);
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces the code block that flushes the FIFO buffer in `sdmmc_request()` defined in `rtsx_usb_sdmmc.c`.
 ///
-IOReturn RealtekUSBSDXCSlot::postprocessRequest(RealtekSDRequest& request)
+IOReturn RealtekUSBSDXCSlot::postprocessRequest(IOSDHostRequest& request)
 {
     using namespace RTSX::UCR::Chip::MC::FIFO;
     

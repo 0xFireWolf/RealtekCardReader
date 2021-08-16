@@ -989,26 +989,6 @@ public:
     ///
     /// Perform a DMA read operation
     ///
-    /// @param command A non-null, perpared DMA command
-    /// @param timeout Specify the amount of time in milliseconds
-    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    ///
-    DEPRECATE("Use performDMARead(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
-    virtual IOReturn performDMARead(IODMACommand* command, UInt32 timeout) = 0;
-    
-    ///
-    /// Perform a DMA write operation
-    ///
-    /// @param command A non-null, perpared DMA command
-    /// @param timeout Specify the amount of time in milliseconds
-    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    ///
-    DEPRECATE("Use performDMAWrite(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
-    virtual IOReturn performDMAWrite(IODMACommand* command, UInt32 timeout) = 0;
-    
-    ///
-    /// Perform a DMA read operation
-    ///
     /// @param descriptor A non-null, perpared memory descriptor
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.

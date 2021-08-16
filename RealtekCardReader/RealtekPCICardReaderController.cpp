@@ -1059,38 +1059,6 @@ IOReturn RealtekPCICardReaderController::performDMATransfer(IOMemoryDescriptor* 
 ///
 /// Perform a DMA read operation
 ///
-/// @param command A non-null, perpared DMA command
-/// @param timeout Specify the amount of time in milliseconds
-/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-///
-IOReturn RealtekPCICardReaderController::performDMARead(IODMACommand* command, UInt32 timeout)
-{
-    using namespace RTSX::MMIO;
-    
-    pinfo("The host device requests a DMA read operation.");
-    
-    return this->performDMATransfer(command, timeout, HDBCTLR::kDMARead | HDBCTLR::kStartDMA | HDBCTLR::kUseADMA);
-}
-
-///
-/// Perform a DMA write operation
-///
-/// @param command A non-null, perpared DMA command
-/// @param timeout Specify the amount of time in milliseconds
-/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-///
-IOReturn RealtekPCICardReaderController::performDMAWrite(IODMACommand* command, UInt32 timeout)
-{
-    using namespace RTSX::MMIO;
-    
-    pinfo("The host device requests a DMA write operation.");
-    
-    return this->performDMATransfer(command, timeout, HDBCTLR::kStartDMA | HDBCTLR::kUseADMA);
-}
-
-///
-/// Perform a DMA read operation
-///
 /// @param descriptor A non-null, perpared memory descriptor
 /// @param timeout Specify the amount of time in milliseconds
 /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.

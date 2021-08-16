@@ -26,7 +26,7 @@ class RealtekUSBSDXCSlot: public RealtekSDXCSlot
     //
     // MARK: - SD Request Processors
     //
-    
+        
     ///
     /// Postprocess the given SD command request
     ///
@@ -34,7 +34,7 @@ class RealtekUSBSDXCSlot: public RealtekSDXCSlot
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces the code block that flushes the FIFO buffer in `sdmmc_request()` defined in `rtsx_usb_sdmmc.c`.
     ///
-    IOReturn postprocessRequest(RealtekSDRequest& request) override;
+    IOReturn postprocessRequest(IOSDHostRequest& request) override;
     
     //
     // MARK: - Tuning

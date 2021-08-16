@@ -608,26 +608,6 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     ///
     /// Perform a DMA read operation
     ///
-    /// @param command A non-null, perpared DMA command
-    /// @param timeout Specify the amount of time in milliseconds
-    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    ///
-    DEPRECATE("Use performDMARead(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
-    IOReturn performDMARead(IODMACommand* command, UInt32 timeout) override;
-    
-    ///
-    /// Perform a DMA write operation
-    ///
-    /// @param command A non-null, perpared DMA command
-    /// @param timeout Specify the amount of time in milliseconds
-    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    ///
-    DEPRECATE("Use performDMAWrite(IOMemoryDescriptor*, UInt32) to avoid unnecessary buffer copies in the USB card reader controller.")
-    IOReturn performDMAWrite(IODMACommand* command, UInt32 timeout) override;
-    
-    ///
-    /// Perform a DMA read operation
-    ///
     /// @param descriptor A non-null, perpared memory descriptor
     /// @param timeout Specify the amount of time in milliseconds
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
