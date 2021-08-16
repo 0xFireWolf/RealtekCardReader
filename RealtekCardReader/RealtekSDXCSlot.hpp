@@ -257,7 +257,7 @@ public:
     /// @note This function serves as the processor routine that handles any simple command requests.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::commandProcessor`.
     ///
-    IOReturn runSDCommand(IOSDCommandRequest& request);
+    IOReturn processSDCommandRequest(IOSDCommandRequest& request);
     
     ///
     /// [Case 2] Send a SD command and read the data
@@ -295,7 +295,7 @@ public:
     /// @note This function serves as the processor routine that handles command requests that transfer control data from the card.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::inboundDataTransferProcessor`.
     ///
-    IOReturn runSDCommandWithInboundDataTransfer(IOSDDataTransferRequest& request);
+    IOReturn processSDCommandWithInboundDataTransferRequest(IOSDDataTransferRequest& request);
     
     ///
     /// [Case 2] Send a SD command along with the data
@@ -307,7 +307,7 @@ public:
     /// @note This function serves as the processor routine that handles command requests that transfer control data to the card.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::outboundDataTransferProcessor`.
     ///
-    IOReturn runSDCommandWithOutboundDataTransfer(IOSDDataTransferRequest& request);
+    IOReturn processSDCommandWithOutboundDataTransferRequest(IOSDDataTransferRequest& request);
     
     ///
     /// [Case 3] Send a SD command along with an inbound DMA transfer
@@ -319,7 +319,7 @@ public:
     /// @note This function serves as the processor routine that handles command requests that read a single block from the card.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::readSingleBlockProcessor`.
     ///
-    IOReturn runSDCommandWithInboundDMATransfer(IOSDSingleBlockRequest& request);
+    IOReturn processSDCommandWithInboundSingleBlockDMATransfer(IOSDSingleBlockRequest& request);
     
     ///
     /// [Case 3] Send a SD command along with an outbound DMA transfer
@@ -331,7 +331,7 @@ public:
     /// @note This function serves as the processor routine that handles command requests that write a single block to the card.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeSingleBlockProcessor`.
     ///
-    IOReturn runSDCommandWithOutboundDMATransfer(IOSDSingleBlockRequest& request);
+    IOReturn runSDCommandWithOutboundSingleBlockDMATransfer(IOSDSingleBlockRequest& request);
     
     ///
     /// [Case 3] Send a SD command along with an inbound DMA transfer
@@ -343,7 +343,7 @@ public:
     /// @note This function serves as the processor routine that handles command requests that read multiple blocks from the card.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::readMultiBlocksProcessor`.
     ///
-    IOReturn runSDCommandWithInboundDMATransfer(IOSDMultiBlocksRequest& request);
+    IOReturn runSDCommandWithInboundMultiBlocksDMATransfer(IOSDMultiBlocksRequest& request);
     
     ///
     /// [Case 3] Send a SD command along with an outbound DMA transfer
@@ -355,7 +355,7 @@ public:
     /// @note This function serves as the processor routine that handles command requests that write multiple blocks to the card.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeMultiBlocksProcessor`.
     ///
-    IOReturn runSDCommandWithOutboundDMATransfer(IOSDMultiBlocksRequest& request);
+    IOReturn runSDCommandWithOutboundMultiBlocksDMATransfer(IOSDMultiBlocksRequest& request);
     
     ///
     /// Process the given SD command request
