@@ -10,6 +10,7 @@
 
 #include <IOKit/IOCommand.h>
 #include <IOKit/storage/IOStorage.h>
+#include "Utilities.hpp"
 
 /// Forward Declaration
 class IOSDHostDriver;
@@ -65,7 +66,15 @@ public:
     ///
     /// @note This function is invoked by the processor routine to service the request either fully or partially.
     ///
+    DEPRECATE("Replaced by getMemoryDescriptor().")
     virtual IODMACommand* getDMACommand() = 0;
+    
+    ///
+    /// Get the memory descriptor that contains data to service the request
+    ///
+    /// @note This function is invoked by the processor routine to service the request either fully or partially.
+    ///
+    virtual IOMemoryDescriptor* getMemoryDescriptor() = 0;
     
     ///
     /// Get the index of the start block to service the request

@@ -95,6 +95,16 @@ IODMACommand* IOSDSimpleBlockRequest::getDMACommand()
 }
 
 ///
+/// Get the memory descriptor that contains data to service the request
+///
+/// @note This function is invoked by the processor routine to service the request either fully or partially.
+///
+IOMemoryDescriptor* IOSDSimpleBlockRequest::getMemoryDescriptor()
+{
+    return this->buffer;
+}
+
+///
 /// Get the index of the start block to service the request
 ///
 /// @note This function is invoked by the processor routine to service the request either fully or partially.
