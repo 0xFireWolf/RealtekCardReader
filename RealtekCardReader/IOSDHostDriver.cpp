@@ -938,6 +938,89 @@ IOReturn IOSDHostDriver::waitForAppRequest(RealtekSDRequest& request, UInt32 rca
 }
 
 ///
+/// [Helper] Send the given SD command request and wait for the response
+///
+/// @param request A SD command request
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+///
+IOReturn IOSDHostDriver::waitForRequest(IOSDHostRequest& request)
+{
+    pinfo("Preprocessing the request...");
+    
+    IOReturn retVal = this->host->preprocessRequest(request);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to preprocess the request. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("Processing the request...");
+    
+    retVal = this->host->processRequest(request);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to process the request. Error = 0x%x.", retVal);
+        
+        psoftassert(this->host->postprocessRequest(request) == kIOReturnSuccess,
+                    "Failed to postprocess the request.");
+        
+        return retVal;
+    }
+    
+    return this->host->postprocessRequest(request);
+}
+
+///
+/// [Helper] Send the given SD application command request and wait for the response
+///
+/// @param request A SD application command request
+/// @param rca The card relative address
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `mmc_wait_for_app_cmd()` defined in `sd_ops.c`.
+/// @note This function issues a CMD55 before sending the given request.
+///
+IOReturn IOSDHostDriver::waitForAppRequest(IOSDHostRequest& request, UInt32 rca)
+{
+    IOReturn retVal = kIOReturnSuccess;
+    
+    for (int attempt = 0; attempt < RealtekUserConfigs::Card::ACMDMaxNumAttempts; attempt += 1)
+    {
+        pinfo("[%02d] Sending the application command...", attempt);
+        
+        // Guard: Send the CMD55
+        retVal = this->CMD55(rca);
+
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to issue a CMD55. Error = 0x%x.", retVal);
+
+            continue;
+        }
+
+        // Send the application command
+        retVal = this->waitForRequest(request);
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to issue the application command. Error = 0x%x.", retVal);
+            
+            continue;
+        }
+        
+        pinfo("[%02d] The application command has been sent successfully.", attempt);
+        
+        return kIOReturnSuccess;
+    }
+    
+    perr("Failed to send the application command. Error = 0x%x.", retVal);
+    
+    return retVal;
+}
+
+///
 /// CMD0: Reset all cards to the idle state
 ///
 /// @return `kIOReturnSuccess` on success, other values otherwise.

@@ -11,6 +11,7 @@
 #include <IOKit/IOCommandPool.h>
 #include <IOKit/IOCommandGate.h>
 #include "IOSDHostDevice.hpp"
+#include "IOSDHostRequest.hpp"
 #include "IOSDBusConfig.hpp"
 #include "IOSDBlockRequest.hpp"
 #include "IOSDSimpleBlockRequest.hpp"
@@ -533,6 +534,7 @@ public:
     /// @param request A SD command request
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest.")
     IOReturn waitForRequest(RealtekSDRequest& request);
     
     ///
@@ -544,7 +546,27 @@ public:
     /// @note Port: This function replaces `mmc_wait_for_app_cmd()` defined in `sd_ops.c`.
     /// @note This function issues a CMD55 before sending the given request.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest.")
     IOReturn waitForAppRequest(RealtekSDRequest& request, UInt32 rca);
+    
+    ///
+    /// [Helper] Send the given SD command request and wait for the response
+    ///
+    /// @param request A SD command request
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    ///
+    IOReturn waitForRequest(IOSDHostRequest& request);
+    
+    ///
+    /// [Helper] Send the given SD application command request and wait for the response
+    ///
+    /// @param request A SD application command request
+    /// @param rca The card relative address
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `mmc_wait_for_app_cmd()` defined in `sd_ops.c`.
+    /// @note This function issues a CMD55 before sending the given request.
+    ///
+    IOReturn waitForAppRequest(IOSDHostRequest& request, UInt32 rca);
     
     ///
     /// CMD0: Reset all cards to the idle state
