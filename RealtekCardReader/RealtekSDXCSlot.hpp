@@ -96,6 +96,7 @@ private:
     /// @warning This function is valid only when there is an active transfer session.
     ///          i.e. The caller should invoke this function in between `Controller::beginCommandTransfer()` and `Controller::endCommandTransfer()`.
     ///
+    DEPRECATE("Replaced by IOSDHostCommand.")
     IOReturn setSDCommandOpcodeAndArgument(const RealtekSDCommand& command);
     
     ///
@@ -122,6 +123,7 @@ public:
     ///       Upon a successful return, the response is guaranteed to be valid, but the caller is responsible for verifying the content.
     /// @note This function is invoked by `RealtekSDXCSlot::CMD*()` and `RealtekSDXCSlot::ACMD*()` that do not involve a data transfer.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     IOReturn runSDCommand(RealtekSDCommand& command, UInt32 timeout = 100);
     
     ///
@@ -132,6 +134,7 @@ public:
     /// @note Port: This function replaces `sd_send_cmd_get_rsp()` defined in `rtsx_pci_sdmmc.c`.
     /// @note This function is invoked by `RealtekSDXCSlot::CMD*()` and `RealtekSDXCSlot::ACMD*()` that do not involve a data transfer.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     IOReturn runSDCommand(RealtekSDSimpleCommandRequest& request);
     
     ///
@@ -145,6 +148,7 @@ public:
     /// @note Port: This function replaces `sd_read_data()` defined in `rtsx_pci_sdmmc.c`.
     /// @note This function is invoked by `RealtekSDXCSlot::CMD*()` and `RealtekSDXCSlot::ACMD*()` that involve a data transfer.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     IOReturn runSDCommandAndReadData(const RealtekSDCommand& command, UInt8* buffer, IOByteCount length, UInt32 timeout);
     
     ///
@@ -158,6 +162,7 @@ public:
     /// @note Port: This function replaces `sd_write_data()` defined in `rtsx_pci_sdmmc.c`.
     /// @note This function is invoked by `RealtekSDXCSlot::CMD*()` and `RealtekSDXCSlot::ACMD*()` that involve a data transfer.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     IOReturn runSDCommandAndWriteData(RealtekSDCommand& command, const UInt8* buffer, IOByteCount length, UInt32 timeout);
     
     ///
@@ -168,6 +173,7 @@ public:
     /// @note Port: This function replaces the read portion of `sd_normal_rw()` defined in `rtsx_pci_sdmmc.c`.
     /// @note This function is invoked by `RealtekSDXCSlot::CMD*()` and `RealtekSDXCSlot::ACMD*()` that involve a data transfer.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     IOReturn runSDCommandWithInboundDataTransfer(RealtekSDCommandWithInboundDataTransferRequest& request);
     
     ///
@@ -178,6 +184,7 @@ public:
     /// @note Port: This function replaces the write portion of `sd_normal_rw()` defined in `rtsx_pci_sdmmc.c`.
     /// @note This function is invoked by `RealtekSDXCSlot::CMD*()` and `RealtekSDXCSlot::ACMD*()` that involve a data transfer.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     IOReturn runSDCommandWithOutboundDataTransfer(RealtekSDCommandWithOutboundDataTransferRequest& request);
         
     ///
@@ -188,6 +195,7 @@ public:
     /// @note Port: This function replaces `sd_read_long_data()` defined in `rtsx_pci_sdmmc.c`.
     /// @note This function is invoked by `RealtekSDXCSlot::CMD*()` and `RealtekSDXCSlot::ACMD*()` that involve a DMA transfer.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     IOReturn runSDCommandWithInboundDMATransfer(RealtekSDCommandWithBlockDataTransferRequest& request);
     
     ///
@@ -198,6 +206,7 @@ public:
     /// @note Port: This function replaces `sd_write_long_data()` defined in `rtsx_pci_sdmmc.c`.
     /// @note This function is invoked by `RealtekSDXCSlot::CMD*()` and `RealtekSDXCSlot::ACMD*()` that involve a DMA transfer.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     IOReturn runSDCommandWithOutboundDMATransfer(RealtekSDCommandWithBlockDataTransferRequest& request);
         
     ///
@@ -207,7 +216,21 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `sdmmc_request()` defined in `rtsx_pci_sdmmc.c`.
     ///
+    DEPRECATE("Replaced by IOSDHostRequest type.")
     IOReturn processRequest(RealtekSDRequest& request) override;
+    
+    //
+    // MARK: - SD Commander V2
+    //
+    
+    ///
+    /// Process the given SD command request
+    ///
+    /// @param request A SD command request
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sdmmc_request()` defined in `rtsx_pci_sdmmc.c`.
+    ///
+    IOReturn processRequest(IOSDHostRequest& request) override;
     
     //
     // MARK: - SD Bus Configurator

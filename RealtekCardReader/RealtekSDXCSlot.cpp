@@ -1113,6 +1113,23 @@ IOReturn RealtekSDXCSlot::processRequest(RealtekSDRequest& request)
 }
 
 //
+// MARK: - SD Commander V2
+//
+
+///
+/// Process the given SD command request
+///
+/// @param request A SD command request
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sd_request()` defined in `rtsx_pci_sdmmc.c`.
+///
+IOReturn RealtekSDXCSlot::processRequest(IOSDHostRequest& request)
+{
+    // TODO: IMP THIS
+    return kIOReturnSuccess;
+}
+
+//
 // MARK: - SD Bus Configurator
 //
 
