@@ -1555,7 +1555,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndReadData(IOSDHostCommand& command, IOMe
     using namespace RTSX::COM::Chip;
     
     pinfo("SDCMD = %d; Arg = 0x%08X; Data Buffer = 0x%08x%08x; Data Length = %llu bytes; Timeout = %d ms.",
-          command.getOpcode(), command.getArgument(), KPTR(buffer), length, timeout);
+          command.getOpcode(), command.getArgument(), KPTR(descriptor), length, timeout);
     
     // Start a command transfer session
     IOReturn retVal = this->controller->beginCommandTransfer();
@@ -1724,7 +1724,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndWriteData(IOSDHostCommand& command, IOM
     using namespace RTSX::COM::Chip;
     
     pinfo("SDCMD = %d; Arg = 0x%08X; Data Buffer = 0x%08x%08x; Data Length = %llu bytes; Timeout = %d ms.",
-          command.getOpcode(), command.getArgument(), KPTR(buffer), length, timeout);
+          command.getOpcode(), command.getArgument(), KPTR(descriptor), length, timeout);
     
     // Send the SD command
     pinfo("Sending the SD command...");
