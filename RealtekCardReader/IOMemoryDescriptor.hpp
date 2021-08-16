@@ -9,6 +9,7 @@
 #define IOMemoryDescriptor_hpp
 
 #include <IOKit/IOMemoryDescriptor.h>
+#include <IOKit/IOBufferMemoryDescriptor.h>
 #include "Debug.hpp"
 
 ///
@@ -188,6 +189,52 @@ IOReturn IOMemoryDescriptorPrepareWithIntermediateDestinationBuffer(IOMemoryDesc
     };
     
     return IOMemoryDescriptorRunActionWhilePrepared(descriptor, bridge);
+}
+
+///
+/// Allocate wired memory suitable for I/O transfer
+///
+/// @param length The number of bytes to allocate
+/// @param direction The transfer direction, by default `kIODirectionInOut`
+/// @return A non-null, prepared buffer memory descriptor on success, `nullptr` otherwise.
+/// @note The caller must invoke `IOMemoryDescriptorSafeReleaseWiredBuffer()` to unwire and release the returned buffer.
+///
+static inline IOMemoryDescriptor* IOMemoryDescriptorAllocateWiredBuffer(IOByteCount length, IODirection direction = kIODirectionInOut)
+{
+    auto descriptor = IOBufferMemoryDescriptor::withCapacity(length, direction);
+    
+    if (descriptor == nullptr)
+    {
+        return nullptr;
+    }
+    
+    if (descriptor->prepare() != kIOReturnSuccess)
+    {
+        descriptor->release();
+        
+        return nullptr;
+    }
+    
+    return descriptor;
+}
+
+///
+/// Release the given wired memory
+///
+/// @param descriptor A non-null, prepared memory descriptor returned by `IOMemoryDescriptorAllocateWiredBuffer()`
+/// @note This function completes and releases the given memory descriptor if it is not null.
+///       Upon return, the given memory descriptor is set to `nullptr`.
+///
+static inline void IOMemoryDescriptorSafeReleaseWiredBuffer(IOMemoryDescriptor*& descriptor)
+{
+    if (descriptor != nullptr)
+    {
+        psoftassert(descriptor->complete() == kIOReturnSuccess, "Failed to complete the given descriptor.");
+        
+        descriptor->release();
+        
+        descriptor = nullptr;
+    }
 }
 
 #endif /* IOMemoryDescriptor_hpp */
