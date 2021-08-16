@@ -371,7 +371,7 @@ public:
 struct IOSDHostRequest
 {
     /// Type of the function that processes the host request
-    using Processor = IOReturn (*)(void* target, IOSDHostRequest* request);
+    using Processor = IOReturn (*)(void* target, IOSDHostRequest& request);
     
     /// An opaque client-supplied pointer (or the instance pointer for a C++ processor function)
     void* target;
@@ -391,7 +391,7 @@ struct IOSDHostRequest
     ///
     IOReturn process()
     {
-        return this->processor != nullptr ? (*this->processor)(this->target, this) : kIOReturnSuccess;
+        return this->processor != nullptr ? (*this->processor)(this->target, *this) : kIOReturnSuccess;
     }
 };
 
