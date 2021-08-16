@@ -10,9 +10,10 @@
 
 #include "RealtekSDCommand.hpp"
 #include <IOKit/IODMACommand.h>
+#include "Utilities.hpp"
 
 /// Data associated with a SD command
-struct RealtekSDData
+struct DEPRECATE("Replaced by IOSDHostData.") RealtekSDData
 {
     /// A non-null, prepared DMA command
     IODMACommand* data;
@@ -67,7 +68,7 @@ struct RealtekSDData
 class RealtekSDXCSlot;
 
 /// Specify the interface of an abstract SD request
-struct RealtekSDRequest
+struct DEPRECATE("Replaced by IOSDHostRequest.") RealtekSDRequest
 {
     /// Virtual destructor
     virtual ~RealtekSDRequest() = default;
@@ -83,7 +84,7 @@ struct RealtekSDRequest
 };
 
 /// Represents a simple SD command request that does not involve data transfer (i.e. Use CMD line only)
-struct RealtekSDSimpleCommandRequest: RealtekSDRequest
+struct DEPRECATE("Replaced by IOSDHostRequest.") RealtekSDSimpleCommandRequest: RealtekSDRequest
 {
     /// A SD command that involves no data transfer
     RealtekSDCommand command;
@@ -103,7 +104,7 @@ struct RealtekSDSimpleCommandRequest: RealtekSDRequest
 };
 
 /// Represents an abstract SD command request that involves a data transfer (i.e. Use CMD + DAT lines)
-struct RealtekSDCommandWithDataTransferRequest: RealtekSDSimpleCommandRequest
+struct DEPRECATE("Replaced by IOSDHostRequest.") RealtekSDCommandWithDataTransferRequest: RealtekSDSimpleCommandRequest
 {
     /// The data associated with the command
     RealtekSDData data;
@@ -114,7 +115,7 @@ struct RealtekSDCommandWithDataTransferRequest: RealtekSDSimpleCommandRequest
 };
 
 /// Represents a SD command request that involves an inbound data transfer (i.e. Use CMD + DAT lines)
-struct RealtekSDCommandWithInboundDataTransferRequest: RealtekSDCommandWithDataTransferRequest
+struct DEPRECATE("Replaced by IOSDHostRequest.") RealtekSDCommandWithInboundDataTransferRequest: RealtekSDCommandWithDataTransferRequest
 {
     /// Inherit the constructor from the parent class
     using RealtekSDCommandWithDataTransferRequest::RealtekSDCommandWithDataTransferRequest;
@@ -130,7 +131,7 @@ struct RealtekSDCommandWithInboundDataTransferRequest: RealtekSDCommandWithDataT
 };
 
 /// Represents a SD command request that involves an outbound data transfer (i.e. Use CMD + DAT lines)
-struct RealtekSDCommandWithOutboundDataTransferRequest: RealtekSDCommandWithDataTransferRequest
+struct DEPRECATE("Replaced by IOSDHostRequest.") RealtekSDCommandWithOutboundDataTransferRequest: RealtekSDCommandWithDataTransferRequest
 {
     /// Inherit the constructor from the parent class
     using RealtekSDCommandWithDataTransferRequest::RealtekSDCommandWithDataTransferRequest;
@@ -146,14 +147,14 @@ struct RealtekSDCommandWithOutboundDataTransferRequest: RealtekSDCommandWithData
 };
 
 /// Represents an abstract SD command request that involves block-oriented data transfer
-struct RealtekSDCommandWithBlockDataTransferRequest: RealtekSDCommandWithDataTransferRequest
+struct DEPRECATE("Replaced by IOSDHostRequest.") RealtekSDCommandWithBlockDataTransferRequest: RealtekSDCommandWithDataTransferRequest
 {
     /// Inherit the constructor from the parent class
     using RealtekSDCommandWithDataTransferRequest::RealtekSDCommandWithDataTransferRequest;
 };
 
 /// Represents a request that reads a single block from the card (i.e. CMD17)
-struct RealtekSDSingleBlockReadRequest: RealtekSDCommandWithBlockDataTransferRequest
+struct DEPRECATE("Replaced by IOSDHostRequest.") RealtekSDSingleBlockReadRequest: RealtekSDCommandWithBlockDataTransferRequest
 {
     /// Inherit the constructor from the parent class
     using RealtekSDCommandWithBlockDataTransferRequest::RealtekSDCommandWithBlockDataTransferRequest;
@@ -173,7 +174,7 @@ struct RealtekSDSingleBlockReadRequest: RealtekSDCommandWithBlockDataTransferReq
 };
 
 /// Represents a request that writes a single block to the card (i.e. CMD24)
-struct RealtekSDSingleBlockWriteRequest: RealtekSDCommandWithBlockDataTransferRequest
+struct DEPRECATE("Replaced by IOSDHostRequest.") RealtekSDSingleBlockWriteRequest: RealtekSDCommandWithBlockDataTransferRequest
 {
     /// Inherit the constructor from the parent class
     using RealtekSDCommandWithBlockDataTransferRequest::RealtekSDCommandWithBlockDataTransferRequest;
@@ -195,7 +196,7 @@ struct RealtekSDSingleBlockWriteRequest: RealtekSDCommandWithBlockDataTransferRe
 /// Represents a request that reads multiple blocks from the card (i.e. CMD18)
 /// Note that Realtek's driver does not use CMD23 at this moment,
 /// so this is an open ended request that contains a CMD18 and a CMD12.
-struct RealtekSDMultiBlockReadRequest: RealtekSDSingleBlockReadRequest
+struct DEPRECATE("Replaced by IOSDHostRequest.") RealtekSDMultiBlockReadRequest: RealtekSDSingleBlockReadRequest
 {
     /// Create a command request that reads multiple blocks from the card
     RealtekSDMultiBlockReadRequest(UInt32 offset, IODMACommand* data, UInt64 nblocks, UInt64 blockSize)
@@ -228,7 +229,7 @@ struct RealtekSDMultiBlockReadRequest: RealtekSDSingleBlockReadRequest
 /// so this is an open ended request that contains a CMD25 and a CMD12.
 /// However, we issue an ACMD23 to set a number of blocks to be pre-erased to improve the write performance.
 /// Note that ACMD23 is mandatory for all writable SD cards.
-struct RealtekSDMultiBlockWriteRequest: RealtekSDSingleBlockWriteRequest
+struct DEPRECATE("Replaced by IOSDHostRequest.") RealtekSDMultiBlockWriteRequest: RealtekSDSingleBlockWriteRequest
 {
     /// Create a command request that writes multiple blocks to the card
     RealtekSDMultiBlockWriteRequest(UInt32 offset, IODMACommand* data, UInt64 nblocks, UInt64 blockSize)

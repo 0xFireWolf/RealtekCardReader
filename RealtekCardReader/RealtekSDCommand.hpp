@@ -11,11 +11,12 @@
 #include "RealtekCommonRegisters.hpp"
 #include "BitOptions.hpp"
 #include "Debug.hpp"
+#include "Utilities.hpp"
 
 ///
 /// Represents a SD command
 ///
-struct RealtekSDCommand
+struct DEPRECATE("Replaced by RealtekSDHostCommand.") RealtekSDCommand
 {
 private:
     /// The command index
