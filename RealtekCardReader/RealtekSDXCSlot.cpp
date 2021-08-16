@@ -2262,7 +2262,7 @@ IOReturn RealtekSDXCSlot::processSDCommandWithInboundMultiBlocksDMATransferReque
         perr("Failed to service the request that reads multiple blocks. Error = 0x%x.", retVal);
     }
     
-    psoftassert(this->runSDCommand(request.stopCommand), "Failed to send the STOP command.");
+    psoftassert(this->runSDCommand(request.stopCommand) == kIOReturnSuccess, "Failed to send the STOP command.");
     
     return retVal;
 }
@@ -2286,7 +2286,7 @@ IOReturn RealtekSDXCSlot::processSDCommandWithOutboundMultiBlocksDMATransferRequ
         perr("Failed to service the request that writes multiple blocks. Error = 0x%x.", retVal);
     }
     
-    psoftassert(this->runSDCommand(request.stopCommand), "Failed to send the STOP command.");
+    psoftassert(this->runSDCommand(request.stopCommand) == kIOReturnSuccess, "Failed to send the STOP command.");
     
     return retVal;
 }
