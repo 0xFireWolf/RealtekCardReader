@@ -52,9 +52,11 @@ class IOSDHostDriver: public IOService
     //
 
     /// The default pool size
+    DEPRECATE("Relocated to PCIe card reader controller.")
     static constexpr IOItemCount kDefaultPoolSize = 32;
     
     /// Preallocated DMA commands
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     IODMACommand* pDMACommands[kDefaultPoolSize];
     
     /// The SD host device (provider)
@@ -67,6 +69,7 @@ class IOSDHostDriver: public IOService
     IOWorkLoop* sharedWorkLoop;
     
     /// A command pool that contains preallocated DMA commands
+    DEPRECATE("Replaced by IOEnhancedCommandPool.")
     IOCommandPool* dmaCommandPool;
     
     /// A request pool that contains preallocated simple SD block requests
@@ -122,6 +125,7 @@ public:
     ///
     /// @return A non-null DMA command.
     ///
+    DEPRECATE("Relocated to PCIe card reader controller.")
     inline IODMACommand* allocateDMACommandFromPool()
     {
         return OSDynamicCast(IODMACommand, this->dmaCommandPool->getCommand());
@@ -132,6 +136,7 @@ public:
     ///
     /// @param command The command returned by `IOSDHostDriver::allocateDMACommandFromPool()`
     ///
+    DEPRECATE("Relocated to PCIe card reader controller.")
     inline void releaseDMACommandToPool(IODMACommand* command)
     {
         this->dmaCommandPool->returnCommand(command);
