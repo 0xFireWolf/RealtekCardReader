@@ -14,6 +14,7 @@
 #include <IOKit/IOLib.h>
 #include <stdarg.h>
 #include <IOKit/IODMACommand.h>
+#include <IOKit/IOMemoryDescriptor.h>
 
 #define OSLog IOLog
 
@@ -116,6 +117,17 @@ static inline void pbuf(const void* buffer, size_t length, size_t column = 8)
     }
 }
 
+static inline void pbuf(const IOMemoryDescriptor* descriptor, size_t length, size_t column = 8)
+{
+    auto buffer = IOMallocZero(length);
+    
+    psoftassert(descriptor->readBytes(0, buffer, length) == length, "Failed to read the memory descriptor contents.");
+    
+    pbuf(buffer, length, column);
+    
+    IOFree(buffer, length);
+}
+
 static inline void pdma(IODMACommand* dma, IOByteCount length, IOByteCount column)
 {
     auto buffer = IOMallocZero(length);
@@ -130,6 +142,7 @@ static inline void pdma(IODMACommand* dma, IOByteCount length, IOByteCount colum
 static inline void pbufcol(const void* buffer, size_t length) {}
 static inline void pbufrow(const void* buffer, size_t length) {}
 static inline void pbuf(const void* buffer, size_t length, size_t column = 8) {}
+static inline void pbuf(const IOMemoryDescriptor*, size_t length, size_t column = 8) {}
 static inline void pdma(IODMACommand* dma, IOByteCount length, IOByteCount column) {}
 #endif
 
