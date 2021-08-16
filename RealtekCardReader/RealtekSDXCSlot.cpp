@@ -17,6 +17,144 @@
 OSDefineMetaClassAndAbstractStructors(RealtekSDXCSlot, WolfsSDXCSlot);
 
 //
+// MARK: - Private Data Structures
+//
+
+/// A wrapper of the SD host command that provides Realtek-specific operations
+struct RealtekSDHostCommand
+{
+    /// Wrapped SD host command
+    IOSDHostCommand& command;
+    
+    /// Wrap the given SD host command
+    explicit RealtekSDHostCommand(IOSDHostCommand& command) : command(command) {}
+    
+    ///
+    /// Get the register value to be passed to the `SD_CFG2` register
+    ///
+    /// @return The register value.
+    ///
+    inline UInt8 getCFG2() const
+    {
+        using namespace RTSX::COM::Chip;
+        
+        switch (this->command.getResponseType())
+        {
+            case IOSDHostCommand::ResponseType::kR0:
+            {
+                return SD::CFG2::kResponseTypeR0;
+            }
+                
+            case IOSDHostCommand::ResponseType::kR1:
+            {
+                return SD::CFG2::kResponseTypeR1;
+            }
+                
+            case IOSDHostCommand::ResponseType::kR1b:
+            {
+                return SD::CFG2::kResponseTypeR1b;
+            }
+                
+            case IOSDHostCommand::ResponseType::kR2:
+            {
+                return SD::CFG2::kResponseTypeR2;
+            }
+                
+            case IOSDHostCommand::ResponseType::kR3:
+            {
+                return SD::CFG2::kResponseTypeR3;
+            }
+                
+            case IOSDHostCommand::ResponseType::kR6:
+            {
+                return SD::CFG2::kResponseTypeR6;
+            }
+                
+            case IOSDHostCommand::ResponseType::kR7:
+            {
+                return SD::CFG2::kResponseTypeR7;
+            }
+                
+            default:
+            {
+                pfatal("Missing cases.");
+            }
+        }
+    }
+    
+    ///
+    /// Get the response length in bytes
+    ///
+    /// @return The actual response length in the host buffer.
+    ///
+    inline IOByteCount getRealResponseLength() const
+    {
+        // Note that we reserve 1 byte for the value of `SD_STAT1`
+        return min(1, this->command.getResponseLength());
+    }
+    
+    ///
+    /// Check whether the start and the transmission bits in the response are valid or not
+    ///
+    /// @return `true` if both bits are valid, `false` otherwise.
+    ///
+    inline bool verifyStartAndTransmissionBitsInResponse() const
+    {
+        using namespace RTSX::COM::Chip::SD::CFG2;
+        
+        // Guard: Check whether the response contains the ST bits
+        if (this->command.getResponseType() == IOSDHostCommand::ResponseType::kR0)
+        {
+            return true;
+        }
+        else
+        {
+            return (this->command.getResponseBuffer()[0] & 0xC0) == 0;
+        }
+    }
+    
+    ///
+    /// Check whether the CRC7 checksum is valid
+    ///
+    /// @return `true` if the checksum is valid, `false` otherwise.
+    /// @note Since the last byte in the actual response is the value of the register `SD_STAT1`,
+    ///       this function checks the register value instead of calculating the CRC7 checksum manually.
+    ///
+    inline bool verifyCRC7InResponse() const
+    {
+        using namespace RTSX::COM::Chip::SD;
+        
+        // Guard: Check whether the driver should ignore the CRC7 checksum
+        if (BitOptions<UInt8>(this->getCFG2()).contains(CFG2::kNoCheckCRC7))
+        {
+            return true;
+        }
+        else
+        {
+            return (this->command.getResponseBuffer()[this->getRealResponseLength() - 1] & STAT1::kCRC7Error) == 0;
+        }
+    }
+    
+    /// Access the wrapped host command conveniently
+    IOSDHostCommand& operator*()
+    {
+        return this->command;
+    }
+    
+    /// Access the wrapped host command conveniently
+    IOSDHostCommand* operator->()
+    {
+        return &this->command;
+    }
+    
+    /// Wraps the given host command
+    static inline RealtekSDHostCommand wraps(IOSDHostCommand& command)
+    {
+        return RealtekSDHostCommand(command);
+    }
+};
+
+//
 // MARK: - SD Commander
 //
 
