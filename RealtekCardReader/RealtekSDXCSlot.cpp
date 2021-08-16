@@ -90,7 +90,7 @@ struct RealtekSDHostCommand
     inline IOByteCount getRealResponseLength() const
     {
         // Note that we reserve 1 byte for the value of `SD_STAT1`
-        return min(1, this->command.getResponseLength());
+        return max(1, this->command.getResponseLength());
     }
     
     ///
