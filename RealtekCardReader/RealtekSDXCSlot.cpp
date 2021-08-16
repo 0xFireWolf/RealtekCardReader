@@ -1285,6 +1285,261 @@ IOReturn RealtekSDXCSlot::processRequest(RealtekSDRequest& request)
 //
 
 ///
+/// [Case 1] Send a SD command and wait for the response
+///
+/// @param command The SD command to be sent
+/// @param timeout The amount of time in milliseconds to wait for the response until timed out
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sd_send_cmd_get_rsp()` defined in `rtsx_pci/usb_sdmmc.c`.
+/// @note This function checks whether the start and the transmission bits and the CRC7 checksum in the response are valid.
+///       Upon a successful return, the response is guaranteed to be valid, but the caller is responsible for verifying the content.
+/// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that do not involve a data transfer.
+///
+IOReturn RealtekSDXCSlot::runSDCommand(IOSDHostCommand& command, UInt32 timeout)
+{
+    using namespace RTSX::COM::Chip;
+    
+    // Wrap the given host command
+    RealtekSDHostCommand wcmd = RealtekSDHostCommand::wraps(command);
+    
+    // Fetch the response type and set up the timeout value
+    IOSDHostCommand::ResponseType responseType = wcmd->getResponseType();
+    
+    if (responseType == IOSDHostCommand::ResponseType::kR1b)
+    {
+        timeout = wcmd->getBusyTimeout(3000);
+    }
+    
+    IOByteCount responseLength = wcmd.getRealResponseLength();
+    
+    pinfo("SDCMD = %02d; Arg = 0x%08X; Response Length = %llu bytes; Timeout = %d ms.",
+          wcmd->getOpcode(), wcmd->getArgument(), responseLength, timeout);
+    
+    // Start a command transfer session
+    IOReturn retVal = this->controller->beginCommandTransfer();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to initiate a new command transfer session. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Set the command opcode and its argument
+    pinfo("Setting the command opcode and the argument...");
+    
+    retVal = this->setSDCommandOpcodeAndArgument(*wcmd);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the command index and argument. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("The command opcode and the argument are set.");
+    
+    // Set the data source for the card
+    // Use the ping pong buffer for SD commands that do not transfer data
+    retVal = this->controller->selectCardDataSourceToPingPongBuffer();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to select the card data source to be the ping pong buffer. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Set the transfer properties
+    pinfo("Setting the transfer properties...");
+    
+    const ChipRegValuePair wpairs[] =
+    {
+        // Set the response type
+        { SD::rCFG2, 0xFF, wcmd.getCFG2() },
+        
+        // Transfer an SD command and receive the response
+        { SD::rTRANSFER, 0xFF, SD::TRANSFER::kTMCmdResp | SD::TRANSFER::kTransferStart },
+    };
+    
+    retVal = this->controller->enqueueWriteRegisterCommands(SimpleRegValuePairs(wpairs));
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to enqueue a sequence of write operations. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("Transfer properties are set.");
+    
+    // Once the transfer finishes, we need to check the end and the idle bits in the `SD_TRANSFER` register.
+    // Note that the Linux driver issues a CHECK REGISTER operation but ignores its return value.
+    // We will check the register value manually.
+    retVal = this->controller->enqueueCheckRegisterCommand(SD::rTRANSFER,
+                                                           SD::TRANSFER::kTransferEnd | SD::TRANSFER::kTransferIdle,
+                                                           SD::TRANSFER::kTransferEnd | SD::TRANSFER::kTransferIdle);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to enqueue a check operation to verify the transfer status. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Find out where to find the response
+    pinfo("Setting the location of the command response...");
+    
+    if (responseType == IOSDHostCommand::ResponseType::kR2)
+    {
+        // Read 16 bytes from the ping pong buffer 2
+        pinfo("Command Response: Will read 16 bytes from the ping pong buffer 2.");
+        
+        retVal = this->controller->enqueueReadRegisterCommands(ContiguousRegValuePairsForReadAccess(PPBUF::rBASE2, 16));
+    }
+    else if (responseType != IOSDHostCommand::ResponseType::kR0)
+    {
+        // Read 5 bytes from the command registers `SD_CMD{0-4}`
+        pinfo("Command Response: Will read 5 bytes from the command registers.");
+        
+        retVal = this->controller->enqueueReadRegisterCommands(ContiguousRegValuePairsForReadAccess(SD::rCMD0, 5));
+    }
+    else
+    {
+        // No response
+        pinfo("Command Response: No response.");
+    }
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to enqueue a sequence of read operations to load the command response. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("The location of the command response has been set.");
+    
+    // The card reader checks the CRC7 value of the response
+    // We need to read the value of `SD_STAT1` to ensure that the checksum is valid
+    retVal = this->controller->enqueueReadRegisterCommand(SD::rSTAT1);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to enqueue a read operation to load the command status. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Finish the command transfer session and wait for the response
+    retVal = this->controller->endCommandTransfer(timeout, this->controller->getDataTransferFlags().command);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to terminate the command transfer session. Error = 0x%x.", retVal);
+        
+        this->controller->clearError();
+        
+        return retVal;
+    }
+    
+    pinfo("Verifying the transfer result...");
+    
+    //
+    // Layout of the host command buffer at this moment:
+    //
+    // Offset 00: Value of `SD_TRANSFER`
+    // Offset 01: The command response
+    //            0 byte if the response type is R0;
+    //            6 bytes if the response type is not R2;
+    //            17 bytes if the response type is R2.
+    // Offset LB: Value of `SD_STAT1`
+    //
+    // Guard: Verify the transfer status
+    BitOptions transferStatus = this->controller->readHostBufferValue<UInt8>(0);
+    
+    if (!transferStatus.contains(SD::TRANSFER::kTransferEnd | SD::TRANSFER::kTransferIdle))
+    {
+        perr("Failed to find the end and the idle bits in the transfer status (0x%02x).", transferStatus.flatten());
+
+        return kIOReturnInvalid;
+    }
+    
+    pinfo("The transfer status has been verified.");
+    
+    // Load the response
+    retVal = this->controller->readHostBuffer(1, wcmd->getResponseBuffer(), responseLength);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to read the response from the host command buffer. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    wcmd->printResponse();
+    
+    if (!wcmd.verifyStartAndTransmissionBitsInResponse())
+    {
+        perr("The start and the transmission bits in the response are invalid.");
+        
+        return kIOReturnInvalid;
+    }
+    
+    if (!wcmd.verifyCRC7InResponse())
+    {
+        perr("The CRC7 checksum is invalid.");
+        
+        return kIOReturnInvalid;
+    }
+    
+    pinfo("The command response is loaded and verified.");
+    
+    return kIOReturnSuccess;
+}
+
+///
+/// [Case 1] Send a SD command and wait for the response
+///
+/// @param request The SD command request to process
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sd_send_cmd_get_rsp()` defined in `rtsx_pci/usb_sdmmc.c`.
+/// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that do not involve a data transfer.
+/// @note This function serves as the processor routine than handles any simple command requests.
+/// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::commandProcessor`.
+///
+IOReturn RealtekSDXCSlot::runSDCommand(IOSDCommandRequest& request)
+{
+    using namespace RTSX::COM::Chip;
+    
+    // The host must toggle the clock if the command is CMD11
+    if (request.command.getOpcode() != IOSDHostCommand::Opcode::kVoltageSwitch)
+    {
+        return this->runSDCommand(request.command);
+    }
+    
+    // Guard: Toggle the clock
+    IOReturn retVal = this->controller->writeChipRegister(SD::rBUSSTAT, 0xFF, SD::BUSSTAT::kClockToggleEnable);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to toggle the clock. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Guard: Run the command
+    retVal = this->runSDCommand(request.command);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        psoftassert(this->controller->writeChipRegister(SD::rBUSSTAT, SD::BUSSTAT::kClockToggleEnable | SD::BUSSTAT::kClockForceStop, 0) == kIOReturnSuccess,
+                    "Failed to stop the clock.");
+    }
+    
+    return retVal;
+}
+
+///
 /// Process the given SD command request
 ///
 /// @param request A SD command request

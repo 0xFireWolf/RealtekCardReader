@@ -235,6 +235,31 @@ public:
     //
     
     ///
+    /// [Case 1] Send a SD command and wait for the response
+    ///
+    /// @param command The SD command to be sent
+    /// @param timeout The amount of time in milliseconds to wait for the response until timed out
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sd_send_cmd_get_rsp()` defined in `rtsx_pci/usb_sdmmc.c`.
+    /// @note This function checks whether the start and the transmission bits and the CRC7 checksum in the response are valid.
+    ///       Upon a successful return, the response is guaranteed to be valid, but the caller is responsible for verifying the content.
+    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that do not involve a data transfer.
+    ///
+    IOReturn runSDCommand(IOSDHostCommand& command, UInt32 timeout = 100);
+    
+    ///
+    /// [Case 1] Send a SD command and wait for the response
+    ///
+    /// @param request The SD command request to process
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sd_send_cmd_get_rsp()` defined in `rtsx_pci/usb_sdmmc.c`.
+    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that do not involve a data transfer.
+    /// @note This function serves as the processor routine than handles any simple command requests.
+    /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::commandProcessor`.
+    ///
+    IOReturn runSDCommand(IOSDCommandRequest& request);
+    
+    ///
     /// Process the given SD command request
     ///
     /// @param request A SD command request
