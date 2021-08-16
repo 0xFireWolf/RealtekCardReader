@@ -254,10 +254,60 @@ public:
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note Port: This function replaces `sd_send_cmd_get_rsp()` defined in `rtsx_pci/usb_sdmmc.c`.
     /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that do not involve a data transfer.
-    /// @note This function serves as the processor routine than handles any simple command requests.
+    /// @note This function serves as the processor routine that handles any simple command requests.
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::commandProcessor`.
     ///
     IOReturn runSDCommand(IOSDCommandRequest& request);
+    
+    ///
+    /// [Case 2] Send a SD command and read the data
+    ///
+    /// @param command The SD command to be sent
+    /// @param descriptor A buffer to store the response data and is nullable if the given command is one of the tuning command
+    /// @param length The number of bytes to read (up to 512 bytes)
+    /// @param timeout The amount of time in milliseonds to wait for the response data until timed out
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sd_read_data()` defined in `rtsx_pci_sdmmc.c`.
+    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a data transfer.
+    ///
+    IOReturn runSDCommandAndReadData(IOSDHostCommand& command, IOMemoryDescriptor* descriptor, IOByteCount length, UInt32 timeout);
+    
+    ///
+    /// [Case 2] Send a SD command along with the data
+    ///
+    /// @param command The SD command to be sent
+    /// @param descriptor A non-null buffer that contains the data for the given command
+    /// @param length The number of bytes to write (up to 512 bytes)
+    /// @param timeout The amount of time in milliseonds to wait for completion until timed out
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sd_write_data()` defined in `rtsx_pci_sdmmc.c`.
+    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a data transfer.
+    ///
+    IOReturn runSDCommandAndWriteData(IOSDHostCommand& command, IOMemoryDescriptor* descriptor, IOByteCount length, UInt32 timeout);
+    
+    ///
+    /// [Case 2] Send a SD command and read the data
+    ///
+    /// @param request A data transfer request to service
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces the read portion of `sd_normal_rw()` defined in `rtsx_pci_sdmmc.c`.
+    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a data transfer.
+    /// @note This function serves as the processor routine that handles command requests that transfer control data from the card.
+    /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::inboundDataTransferProcessor`.
+    ///
+    IOReturn runSDCommandWithInboundDataTransfer(IOSDDataTransferRequest& request);
+    
+    ///
+    /// [Case 2] Send a SD command along with the data
+    ///
+    /// @param request A data transfer request to service
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces the write portion of `sd_normal_rw()` defined in `rtsx_pci_sdmmc.c`.
+    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a data transfer.
+    /// @note This function serves as the processor routine that handles command requests that transfer control data to the card.
+    /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::outboundDataTransferProcessor`.
+    ///
+    IOReturn runSDCommandWithOutboundDataTransfer(IOSDDataTransferRequest& request);
     
     ///
     /// Process the given SD command request

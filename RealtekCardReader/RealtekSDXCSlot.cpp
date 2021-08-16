@@ -1504,7 +1504,7 @@ IOReturn RealtekSDXCSlot::runSDCommand(IOSDHostCommand& command, UInt32 timeout)
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note Port: This function replaces `sd_send_cmd_get_rsp()` defined in `rtsx_pci/usb_sdmmc.c`.
 /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that do not involve a data transfer.
-/// @note This function serves as the processor routine than handles any simple command requests.
+/// @note This function serves as the processor routine that handles any simple command requests.
 /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::commandProcessor`.
 ///
 IOReturn RealtekSDXCSlot::runSDCommand(IOSDCommandRequest& request)
@@ -1537,6 +1537,392 @@ IOReturn RealtekSDXCSlot::runSDCommand(IOSDCommandRequest& request)
     }
     
     return retVal;
+}
+
+///
+/// [Case 2] Send a SD command and read the data
+///
+/// @param command The SD command to be sent
+/// @param descriptor A buffer to store the response data and is nullable if the given command is one of the tuning command
+/// @param length The number of bytes to read (up to 512 bytes)
+/// @param timeout The amount of time in milliseonds to wait for the response data until timed out
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sd_read_data()` defined in `rtsx_pci_sdmmc.c`.
+/// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a data transfer.
+///
+IOReturn RealtekSDXCSlot::runSDCommandAndReadData(IOSDHostCommand& command, IOMemoryDescriptor* descriptor, IOByteCount length, UInt32 timeout)
+{
+    using namespace RTSX::COM::Chip;
+    
+    pinfo("SDCMD = %d; Arg = 0x%08X; Data Buffer = 0x%08x%08x; Data Length = %llu bytes; Timeout = %d ms.",
+          command.getOpcode(), command.getArgument(), KPTR(buffer), length, timeout);
+    
+    // Start a command transfer session
+    IOReturn retVal = this->controller->beginCommandTransfer();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to initiate a new command transfer session. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Set the command index and the argument
+    pinfo("Setting the command opcode and the argument...");
+    
+    retVal = this->setSDCommandOpcodeAndArgument(command);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the command index and argument. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("The command opcode and the argument are set.");
+    
+    // Set the number of data blocks and the size of each block
+    pinfo("Setting the length of the data blocks associated with the command...");
+    
+    retVal = this->setSDCommandDataLength(1, length);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the command data blocks and length. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("the data length has been set.");
+    
+    // Set the transfer properties
+    pinfo("Setting the transfer properties...");
+    
+    ChipRegValuePair pairs[] =
+    {
+        { SD::rCFG2, 0xFF, SD::CFG2::kCalcCRC7 | SD::CFG2::kCheckCRC7 | SD::CFG2::kCheckCRC16 | SD::CFG2::kNoWaitBusyEnd | SD::CFG2::kResponseLength6 },
+        
+        { SD::rTRANSFER, 0xFF, SD::TRANSFER::kTransferStart }
+    };
+    
+    // Adjust the transfer mode
+    if (command.getOpcode() == IOSDHostCommand::Opcode::kSendTuningBlock)
+    {
+        pairs[1].value |= SD::TRANSFER::kTMAutoTuning;
+    }
+    else
+    {
+        pairs[1].value |= SD::TRANSFER::kTMNormalRead;
+        
+        // Ask the card to send the data to the ping pong buffer
+        // This step is omitted if `command` is a tuning command (i.e., CMD19)
+        retVal = this->controller->selectCardDataSourceToPingPongBuffer();
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to select the card data source to be the ping pong buffer. Error = 0x%x.", retVal);
+            
+            return retVal;
+        }
+    }
+    
+    retVal = this->controller->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs));
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the transfer property. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("Transfer properties are set.");
+    
+    // Once the transfer finishes, we need to check the end bit in the `SD_TRANSFER` register.
+    // Note that the Linux driver issues a CHECK REGISTER operation but ignores its return value.
+    // We will check the register value manually.
+    retVal = this->controller->enqueueCheckRegisterCommand(SD::rTRANSFER, SD::TRANSFER::kTransferEnd, SD::TRANSFER::kTransferEnd);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to enqueue a read operation to load the transfer status. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Finish the command transfer session and wait for the response
+    retVal = this->controller->endCommandTransfer(timeout, this->controller->getDataTransferFlags().commandWithInboundDataTransfer);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to complete the command transfer session. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Verify the transfer status
+    pinfo("Verifying the transfer result...");
+    
+    BitOptions<UInt8> transferStatus = this->controller->readHostBufferValue<UInt8>(0);
+    
+    if (!transferStatus.contains(SD::TRANSFER::kTransferEnd))
+    {
+        perr("Failed to find the end and the idle bits in the transfer status (0x%02x).", transferStatus.flatten());
+
+        return kIOReturnInvalid;
+    }
+    
+    // Read the response from the ping pong buffer
+    if (command.getOpcode() == IOSDHostCommand::Opcode::kSendTuningBlock)
+    {
+        pinfo("Tuning Command: No need to read the response from the ping pong buffer.");
+        
+        return kIOReturnSuccess;
+    }
+    
+    // Warning: The USB driver separates the loading process into two parts:
+    //          the 2-byte aligned part and the unaligned part.
+    //          We keep the implementation that is designed for the PCIe-based card reader driver,
+    //          because the host driver guarantees that the number of bytes to read is always 2-byte aligned.
+    //          For example, it sends a CMD2 to retrieve the card identification data which is 16 bytes long.
+    //          Ideally, the host device (i.e. RealtekSDXCSlot) should not assume that the caller always passes a length that is 2-byte aligned,
+    //          but I don't have a USB-based card driver so I cannot verify whether the card driver accepts a 2-byte aligned length only.
+    //          Besides, Linux's rtsx_usb_read_ppbuf() further separates the read into two parts, the 4-byte aligned part and the unaligned part,
+    //          so why do we need to do aligned read at here?
+    //          P.S. Our implementation of `rtsx_usb_read_ppbuf()` ignores the 4-byte alignment,
+    //               because the host driver always passes a length that can be divided by 4 :).
+    pinfo("Loading the command response from the ping pong buffer...");
+    
+    retVal = this->controller->readPingPongBuffer(descriptor, length);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to load the command response from the ping pong buffer. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pbuf(descriptor, length);
+    
+    pinfo("The command response has been loaded from the ping pong buffer.");
+    
+    return kIOReturnSuccess;
+}
+
+///
+/// [Case 2] Send a SD command along with the data
+///
+/// @param command The SD command to be sent
+/// @param descriptor A non-null buffer that contains the data for the given command
+/// @param length The number of bytes to write (up to 512 bytes)
+/// @param timeout The amount of time in milliseonds to wait for completion until timed out
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sd_write_data()` defined in `rtsx_pci_sdmmc.c`.
+/// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a data transfer.
+///
+IOReturn RealtekSDXCSlot::runSDCommandAndWriteData(IOSDHostCommand& command, IOMemoryDescriptor* descriptor, IOByteCount length, UInt32 timeout)
+{
+    using namespace RTSX::COM::Chip;
+    
+    pinfo("SDCMD = %d; Arg = 0x%08X; Data Buffer = 0x%08x%08x; Data Length = %llu bytes; Timeout = %d ms.",
+          command.getOpcode(), command.getArgument(), KPTR(buffer), length, timeout);
+    
+    // Send the SD command
+    pinfo("Sending the SD command...");
+    
+    IOReturn retVal = this->runSDCommand(command);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to send the SD command. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("The SD command has been sent.");
+    
+    // Write the data to the ping pong buffer
+    pinfo("Writing the data to the ping pong buffer...");
+    
+    pbuf(descriptor, length);
+    
+    retVal = this->controller->writePingPongBuffer(descriptor, length);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to write the given data to the ping pong buffer. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("Data has been written to the ping pong buffer.");
+    
+    // Start a command transfer session
+    retVal = this->controller->beginCommandTransfer();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to initiate a new command transfer session. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Set the number of data blocks and the size of each block
+    pinfo("Setting the length of the data blocks associated with the command...");
+    
+    retVal = this->setSDCommandDataLength(1, length);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the command data blocks and length. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("the data length has been set.");
+    
+    // Set the transfer property
+    pinfo("Setting the transfer properties...");
+    
+    const ChipRegValuePair pairs[] =
+    {
+        { SD::rCFG2, 0xFF, SD::CFG2::kCalcCRC7 | SD::CFG2::kCheckCRC7 | SD::CFG2::kCheckCRC16 | SD::CFG2::kNoWaitBusyEnd | SD::CFG2::kResponseLength0 },
+        
+        { SD::rTRANSFER, 0xFF, SD::TRANSFER::kTransferStart | SD::TRANSFER::kTMAutoWrite3 }
+    };
+    
+    retVal = this->controller->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs));
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to set the transfer property. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    pinfo("Transfer properties are set.");
+    
+    // Once the transfer finishes, we need to check the end bit in the `SD_TRANSFER` register.
+    // Note that the Linux driver issues a CHECK REGISTER operation but ignores its return value.
+    // We will check the register value manually.
+    retVal = this->controller->enqueueCheckRegisterCommand(SD::rTRANSFER, SD::TRANSFER::kTransferEnd, SD::TRANSFER::kTransferEnd);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to enqueue a read operation to load the transfer status. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Finish the command transfer session and wait for the response
+    retVal = this->controller->endCommandTransfer(timeout, this->controller->getDataTransferFlags().commandWithOutboundDataTransfer);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to terminate the command transfer session. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Verify the transfer status
+    pinfo("Verifying the transfer result...");
+    
+    BitOptions<UInt8> transferStatus = this->controller->readHostBufferValue<UInt8>(0);
+    
+    if (!transferStatus.contains(SD::TRANSFER::kTransferEnd))
+    {
+        perr("Failed to find the end bit in the transfer status (0x%02x).", transferStatus.flatten());
+
+        return kIOReturnInvalid;
+    }
+    
+    return kIOReturnSuccess;
+}
+
+///
+/// [Case 2] Send a SD command and read the data
+///
+/// @param request A data transfer request to service
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces the read portion of `sd_normal_rw()` defined in `rtsx_pci_sdmmc.c`.
+/// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a data transfer.
+/// @note This function serves as the processor routine that handles command requests that transfer control data from the card.
+/// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::inboundDataTransferProcessor`.
+///
+IOReturn RealtekSDXCSlot::runSDCommandWithInboundDataTransfer(IOSDDataTransferRequest& request)
+{
+    // In this case, the host can transfer up to 512 bytes to the card
+    // Guard: Switch the clock divider to 0 if necessary
+    IOReturn retVal = this->disableInitialModeIfNecessary();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to disable the initial mode. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Guard: Fetch the block size from the request
+    psoftassert(request.data.getNumBlocks() == 1, "Warning: The number of blocks should be 1 in this case.");
+    
+    IOByteCount blockSize = request.data.getBlockSize();
+    
+    if (blockSize > 512)
+    {
+        perr("The block size (%llu bytes) is too large. Must not exceed 512 bytes.", blockSize);
+        
+        return kIOReturnBadArgument;
+    }
+    
+    // Guard: Send the command and read the data
+    retVal = this->runSDCommandAndReadData(request.command, request.data.getMemoryDescriptor(), blockSize, 200);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to send the command and read the data. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Guard: Switch the clock divider to 128 if necessary
+    retVal = this->enableInitialModeIfNecessary();
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to enable the initial mode. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    return kIOReturnSuccess;
+}
+
+///
+/// [Case 2] Send a SD command along with the data
+///
+/// @param request A data transfer request to service
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces the write portion of `sd_normal_rw()` defined in `rtsx_pci_sdmmc.c`.
+/// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a data transfer.
+/// @note This function serves as the processor routine that handles command requests that transfer control data to the card.
+/// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::outboundDataTransferProcessor`.
+///
+IOReturn RealtekSDXCSlot::runSDCommandWithOutboundDataTransfer(IOSDDataTransferRequest& request)
+{
+    // In this case, the host can transfer up to 512 bytes to the card
+    // Guard: Fetch the block size from the request
+    psoftassert(request.data.getNumBlocks() == 1, "Warning: The number of blocks should be 1 in this case.");
+    
+    IOByteCount blockSize = request.data.getBlockSize();
+    
+    if (blockSize > 512)
+    {
+        perr("The block size (%llu bytes) is too large. Must not exceed 512 bytes.", blockSize);
+        
+        return kIOReturnBadArgument;
+    }
+    
+    // Guard: Send the command and write the data
+    return this->runSDCommandAndWriteData(request.command, request.data.getMemoryDescriptor(), blockSize, 200);
 }
 
 ///
