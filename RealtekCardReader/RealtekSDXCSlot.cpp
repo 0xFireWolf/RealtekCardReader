@@ -189,6 +189,36 @@ IOReturn RealtekSDXCSlot::setSDCommandOpcodeAndArgument(const RealtekSDCommand& 
 }
 
 ///
+/// [Shared] [Helper] Inform the card reader which SD command to be executed
+///
+/// @param command The SD command to be executed
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `sd_cmd_set_sd_cmd()` defined in `rtsx_pci_sdmmc.c`.
+/// @warning This function is valid only when there is an active transfer session.
+///          i.e. The caller should invoke this function in between `Controller::beginCommandTransfer()` and `Controller::endCommandTransfer()`.
+///
+IOReturn RealtekSDXCSlot::setSDCommandOpcodeAndArgument(const IOSDHostCommand& command)
+{
+    using namespace RTSX::COM::Chip::SD;
+    
+    UInt32 argument = command.getArgument();
+    
+    const ChipRegValuePair pairs[] =
+    {
+        // Command index
+        { rCMD0, 0xFF, command.getOpcodeWithStartAndTransmissionBits() },
+        
+        // Command argument in big endian
+        { rCMD1, 0xFF, static_cast<UInt8>(argument >> 24) },
+        { rCMD2, 0xFF, static_cast<UInt8>(argument >> 16) },
+        { rCMD3, 0xFF, static_cast<UInt8>(argument >>  8) },
+        { rCMD4, 0xFF, static_cast<UInt8>(argument & 0xFF)},
+    };
+    
+    return this->controller->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs));
+}
+
+///
 /// [Shared] [Helper] Inform the card reader the number of blocks to access
 ///
 /// @param nblocks The number of blocks

@@ -100,6 +100,17 @@ private:
     IOReturn setSDCommandOpcodeAndArgument(const RealtekSDCommand& command);
     
     ///
+    /// [Shared] [Helper] Inform the card reader which SD command to be executed
+    ///
+    /// @param command The SD command to be executed
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `sd_cmd_set_sd_cmd()` defined in `rtsx_pci_sdmmc.c`.
+    /// @warning This function is valid only when there is an active transfer session.
+    ///          i.e. The caller should invoke this function in between `Controller::beginCommandTransfer()` and `Controller::endCommandTransfer()`.
+    ///
+    IOReturn setSDCommandOpcodeAndArgument(const IOSDHostCommand& command);
+    
+    ///
     /// [Shared] [Helper] Inform the card reader the number of blocks to access
     ///
     /// @param nblocks The number of blocks
