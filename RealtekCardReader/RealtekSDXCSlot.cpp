@@ -873,6 +873,25 @@ IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferReque
 {
     using namespace RTSX::COM::Chip;
     
+    // Send the SD command
+    IOReturn retVal = this->runSDCommand(request.command);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to send the SD command. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    // Set up the SD_CFG2 register value
+    UInt8 cfg2 = SD::CFG2::kCalcCRC7 | SD::CFG2::kCheckCRC7 | SD::CFG2::kCheckCRC16 | SD::CFG2::kNoWaitBusyEnd | SD::CFG2::kResponseLength0;
+    
+    // FIXME: PCIe specific???
+    if (!this->isRunningInUltraHighSpeedMode())
+    {
+        cfg2 |= SD::CFG2::kNoCheckWaitCRCTo;
+    }
+    
     // Fetch the data length
     UInt64 dataLength = request.data.getDataLength();
     
@@ -880,16 +899,8 @@ IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferReque
     
     pinfo("SDCMD = %d; Arg = 0x%08X; Data Length = %llu bytes.", request.command.getOpcode(), request.command.getArgument(), dataLength);
     
-    // Fetch the SD_CFG2 register value
-    UInt8 cfg2 = RealtekSDHostCommand::wraps(request.command).getCFG2();
-
-    if (!this->isRunningInUltraHighSpeedMode())
-    {
-        cfg2 |= SD::CFG2::kNoCheckWaitCRCTo;
-    }
-    
     // Start a command transfer session
-    IOReturn retVal = this->controller->beginCommandTransfer();
+    retVal = this->controller->beginCommandTransfer();
     
     if (retVal != kIOReturnSuccess)
     {
@@ -897,20 +908,6 @@ IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferReque
         
         return retVal;
     }
-    
-    // Set the command index and the argument
-    pinfo("Setting the command opcode and the argument...");
-    
-    retVal = this->setSDCommandOpcodeAndArgument(request.command);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to set the command index and argument. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    pinfo("The command opcode and the argument are set.");
     
     // Set the number of data blocks and the size of each block
     pinfo("Setting the length of the data blocks associated with the command...");
@@ -950,7 +947,7 @@ IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferReque
     const ChipRegValuePair pairs[] =
     {
         { SD::rCFG2, 0xFF, cfg2 },
-        { SD::rTRANSFER, 0xFF, SD::TRANSFER::kTransferStart | SD::TRANSFER::kTMAutoRead2 },
+        { SD::rTRANSFER, 0xFF, SD::TRANSFER::kTransferStart | SD::TRANSFER::kTMAutoRead3 },
     };
     
     retVal = this->controller->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs));
@@ -977,7 +974,7 @@ IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferReque
 //    }
     
     // Send the command
-    retVal = this->controller->endCommandTransfer(100, this->controller->getDataTransferFlags().commandWithInboundDMATransfer);
+    retVal = this->controller->endCommandTransfer(100, this->controller->getDataTransferFlags().commandWithInboundDMATransfer); // Linux uses NoWait().
 
     if (retVal != kIOReturnSuccess)
     {
@@ -989,17 +986,15 @@ IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferReque
     //this->controller->endCommandTransferNoWait();
     
     // Verify the transfer status
-    //pinfo("Verifying the transfer result...");
-    
-//    BitOptions<UInt8> transferStatus = this->controller->peekHostBuffer<UInt8>(0);
+//    pinfo("Verifying the transfer result...");
 //
-//    pinfo("[BEFORE] Transfer status is 0x%02x.", transferStatus.flatten());
+//    BitOptions<UInt8> transferStatus = this->controller->peekHostBuffer<UInt8>(0);
 //
 //    if (!transferStatus.contains(SD::TRANSFER::kTransferEnd))
 //    {
-//        pwarning("Failed to find the end and the idle bits in the transfer status (0x%02x).", transferStatus.flatten());
+//        perr("Failed to find the end and the idle bits in the transfer status (0x%02x).", transferStatus.flatten());
 //
-//        //return kIOReturnInvalid;
+//        return kIOReturnInvalid;
 //    }
     
     // Initiate the DMA transfer
@@ -1048,6 +1043,7 @@ IOReturn RealtekSDXCSlot::processSDCommandWithOutboundSingleBlockDMATransferRequ
     // Set up the SD_CFG2 register value
     UInt8 cfg2 = SD::CFG2::kNoCalcCRC7 | SD::CFG2::kNoCheckCRC7 | SD::CFG2::kCheckCRC16 | SD::CFG2::kNoWaitBusyEnd | SD::CFG2::kResponseLength0;
     
+    // FIXME: PCIe specific???
     if (!this->isRunningInUltraHighSpeedMode())
     {
         cfg2 |= SD::CFG2::kNoCheckWaitCRCTo;
@@ -1082,7 +1078,7 @@ IOReturn RealtekSDXCSlot::processSDCommandWithOutboundSingleBlockDMATransferRequ
         return retVal;
     }
     
-    pinfo("the data length has been set.");
+    pinfo("The data length has been set.");
     
     // Set the transfer property
     pinfo("Setting the transfer properties...");
