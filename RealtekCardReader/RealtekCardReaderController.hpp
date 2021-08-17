@@ -874,6 +874,44 @@ public:
     ///
     IOReturn endCommandTransfer(UInt32 timeout = 100, UInt32 flags = 0);
     
+    ///
+    /// Launch a custom command transfer session conveniently
+    ///
+    /// @param action A callable action that enqueues any host commands and returns an `IOReturn` code
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @param flags An optional flag, 0 by default
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
+    /// @note This function provides an elegant way to start a command transfer session and handle errors.
+    ///       Same as calling `startCommandTransfer`, a sequence of enqueue invocations and `endCommandTransfer`.
+    /// @note Signature of the action: `IOReturn operator()()`.
+    ///
+    template <typename Action>
+    IOReturn withCustomCommandTransfer(Action action, UInt32 timeout = 100, UInt32 flags = 0)
+    {
+        // Guard: Begin command transfer
+        IOReturn retVal = this->beginCommandTransfer();
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to initiate a new command transfer session. Error = 0x%x.", retVal);
+            
+            return retVal;
+        }
+        
+        // Guard: Enqueue commands
+        retVal = action();
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to enqueue the given sequence of commands. Error = 0x%x.", retVal);
+            
+            return retVal;
+        }
+        
+        // Guard: Transfer commands
+        return this->endCommandTransfer(timeout, flags);
+    }
+    
     //
     // MARK: - Host Command Management (Convenient)
     //
@@ -979,6 +1017,7 @@ public:
     /// @note This function provides an elegant way to start a command transfer session and handle errors.
     ///       Same as calling `startCommandTransfer`, a sequence of enqueue invocations and `endCommandTransfer`.
     ///
+    DEPRECATE("Use the template version.")
     IOReturn withCustomCommandTransfer(EnqueueAction action, void* context = nullptr, UInt32 timeout = 100, UInt32 flags = 0);
     
     //
