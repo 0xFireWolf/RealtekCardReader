@@ -594,6 +594,8 @@ IOReturn RealtekSDXCSlot::runSDCommandAndReadData(IOSDHostCommand& command, IOMe
     
     BitOptions<UInt8> transferStatus = this->controller->readHostBufferValue<UInt8>(0);
     
+    pinfo("Transfer status = 0x%02x.", transferStatus.flatten());
+    
     if (!transferStatus.contains(SD::TRANSFER::kTransferEnd))
     {
         perr("Failed to find the end and the idle bits in the transfer status (0x%02x).", transferStatus.flatten());
@@ -757,6 +759,8 @@ IOReturn RealtekSDXCSlot::runSDCommandAndWriteData(IOSDHostCommand& command, IOM
     pinfo("Verifying the transfer result...");
     
     BitOptions<UInt8> transferStatus = this->controller->readHostBufferValue<UInt8>(0);
+    
+    pinfo("Transfer status = 0x%02x.", transferStatus.flatten());
     
     if (!transferStatus.contains(SD::TRANSFER::kTransferEnd))
     {
