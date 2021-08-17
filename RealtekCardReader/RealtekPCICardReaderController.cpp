@@ -831,26 +831,21 @@ IOReturn RealtekPCICardReaderController::endCommandTransferGated(UInt32 timeout,
 void RealtekPCICardReaderController::endCommandTransferNoWait()
 {
     // The transfer routine will run in a gated context
-    auto action = [](OSObject* controller, void* timeout, void*, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekPCICardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
         // Tell the device the location of the command buffer and to start executing commands
         using namespace RTSX::MMIO;
         
-        instance->hostBufferTransferStatus = kIOReturnNotReady;
+        this->hostBufferTransferStatus = kIOReturnNotReady;
         
-        instance->writeRegister32(rHCBAR, instance->hostBufferAddress);
+        this->writeRegister32(rHCBAR, this->hostBufferAddress);
         
-        instance->writeRegister32(rHCBCTLR, HCBCTLR::RegValueForStartCommand(instance->hostCommandCounter.total));
+        this->writeRegister32(rHCBCTLR, HCBCTLR::RegValueForStartCommand(this->hostCommandCounter.total));
         
         return kIOReturnSuccess;
     };
     
-    this->commandGate->runAction(action);
+    IOCommandGateRunAction(this->commandGate, action);
 }
 
 //
@@ -966,39 +961,34 @@ IOReturn RealtekPCICardReaderController::performDMATransfer(IODMACommand* comman
     // Returns `kIOReturnTimeout` if the transfer has timed out;
     //         `kIOReturnSuccess` if the transfer has succeeded;
     //         `kIOReturnError` otherwise.
-    auto action = [](OSObject* controller, void* timeout, void* control, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekPCICardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
         // Tell the device the location of the data buffer and to start the DMA transfer
         using namespace RTSX::MMIO;
         
-        instance->hostBufferTransferStatus = kIOReturnNotReady;
+        this->hostBufferTransferStatus = kIOReturnNotReady;
         
-        instance->writeRegister32(rHDBAR, instance->hostBufferAddress + RealtekPCICardReaderController::kHostDataBufferOffset);
+        this->writeRegister32(rHDBAR, this->hostBufferAddress + RealtekPCICardReaderController::kHostDataBufferOffset);
         
-        instance->writeRegister32(rHDBCTLR, *reinterpret_cast<UInt32*>(control));
+        this->writeRegister32(rHDBCTLR, control);
         
         // Set up the timer
-        passert(instance->hostBufferTimer != nullptr, "The host buffer timer should not be NULL.");
+        passert(this->hostBufferTimer != nullptr, "The host buffer timer should not be NULL.");
         
-        passert(instance->hostBufferTimer->setTimeoutMS(*reinterpret_cast<UInt32*>(timeout)) == kIOReturnSuccess, "Should be able to set the timeout.");
+        passert(this->hostBufferTimer->setTimeoutMS(timeout) == kIOReturnSuccess, "Should be able to set the timeout.");
         
         // Wait for the transfer result
         // Block the current thread and release the gate
         // Either the timeout handler or the interrupt handler will modify the status and wakeup the current thread
-        instance->commandGate->commandSleep(&instance->hostBufferTransferStatus);
+        this->commandGate->commandSleep(&this->hostBufferTransferStatus);
         
         // When the sleep function returns, the transfer is done
-        return instance->hostBufferTransferStatus;
+        return this->hostBufferTransferStatus;
     };
     
     pinfo("Initiating the DMA transfer with timeout = %d ms and control = 0x%08x...", timeout, control);
     
-    retVal = this->commandGate->runAction(action, &timeout, &control);
+    retVal = IOCommandGateRunAction(this->commandGate, action);
     
     if (retVal != kIOReturnSuccess)
     {

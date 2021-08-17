@@ -7,6 +7,7 @@
 
 #include "IOSDBlockRequestQueue.hpp"
 #include "Debug.hpp"
+#include "IOCommandGate.hpp"
 #include <kern/queue.h>
 
 //
@@ -47,20 +48,16 @@ IOSDBlockRequestQueue* IOSDBlockRequestQueue::create(IOWorkLoop* workLoop)
 ///
 bool IOSDBlockRequestQueue::isEmpty()
 {
-    bool empty;
+    bool empty = false;
     
-    auto action = [](OSObject* queue, void* result, void*, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto instance = OSDynamicCast(IOSDBlockRequestQueue, queue);
-        
-        passert(instance != nullptr, "The given object is not a valid instance of IOSDBlockRequestQueue.");
-        
-        *reinterpret_cast<bool*>(result) = queue_empty(&instance->fQueueHead);
+        empty = queue_empty(&this->fQueueHead);
         
         return kIOReturnSuccess;
     };
     
-    this->fSerializer->runAction(action, &empty);
+    IOCommandGateRunAction(this->fSerializer, action);
     
     return empty;
 }

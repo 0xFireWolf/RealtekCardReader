@@ -11,6 +11,7 @@
 #include "IOSDBlockStorageDevice.hpp"
 #include "IOMemoryDescriptor.hpp"
 #include "RealtekUserConfigs.hpp"
+#include "IOCommandGate.hpp"
 
 //
 // MARK: - Meta Class Definitions
@@ -1925,31 +1926,27 @@ IOReturn IOSDHostDriver::isCardPresent(bool& result)
 ///
 IOReturn IOSDHostDriver::getCardNumBlocks(UInt64& nblocks)
 {
-    auto action = [](OSObject* driver, void* nblocks, void*, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto instance = OSDynamicCast(IOSDHostDriver, driver);
-        
-        passert(instance != nullptr, "The driver should not be null.");
-        
-        if (instance->card == nullptr)
+        if (this->card == nullptr)
         {
             perr("The card is not present.");
             
             return kIOReturnNoMedia;
         }
         
-        *reinterpret_cast<UInt64*>(nblocks) = instance->card->getCSD().capacity;
+        nblocks = this->card->getCSD().capacity;
         
         // Treat the SDSC card as a block device whose block size is 512 bytes
         // SDHC/XC cards always have a read block length of 9
         // SDSC cards may have a read block length of 9, 10, or 11
         // Adjust the total number of blocks accordingly
-        *reinterpret_cast<UInt64*>(nblocks) <<= (instance->card->getCSD().readBlockLength - 9);
+        nblocks <<= (this->card->getCSD().readBlockLength - 9);
         
         return kIOReturnSuccess;
     };
     
-    return this->processorCommandGate->runAction(action, &nblocks);
+    return IOCommandGateRunAction(this->processorCommandGate, action);
 }
 
 ///
@@ -1975,25 +1972,21 @@ IOReturn IOSDHostDriver::getCardMaxBlockIndex(UInt64& index)
 ///
 IOReturn IOSDHostDriver::getCardBlockLength(UInt64& length)
 {
-    auto action = [](OSObject* driver, void* length, void*, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto instance = OSDynamicCast(IOSDHostDriver, driver);
-        
-        passert(instance != nullptr, "The driver should not be null.");
-        
-        if (instance->card == nullptr)
+        if (this->card == nullptr)
         {
             perr("The card is not present.");
             
             return kIOReturnNoMedia;
         }
         
-        *reinterpret_cast<UInt64*>(length) = 512;
+        length = 512;
         
         return kIOReturnSuccess;
     };
     
-    return this->processorCommandGate->runAction(action, &length);
+    return IOCommandGateRunAction(this->processorCommandGate, action);
 }
 
 ///
@@ -2006,18 +1999,14 @@ const char* IOSDHostDriver::getCardVendor()
 {
     const char* vendor = nullptr;
     
-    auto action = [](OSObject* driver, void* vendor, void*, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto instance = OSDynamicCast(IOSDHostDriver, driver);
-        
-        passert(instance != nullptr, "The driver should not be null.");
-        
-        *reinterpret_cast<const char**>(vendor) = instance->card == nullptr ? "Realtek" : instance->card->getCID().getVendorString();
+        vendor = this->card == nullptr ? "Realtek" : this->card->getCID().getVendorString();
         
         return kIOReturnSuccess;
     };
     
-    this->processorCommandGate->runAction(action, &vendor);
+    IOCommandGateRunAction(this->processorCommandGate, action);
     
     return vendor;
 }
@@ -2033,20 +2022,16 @@ const char* IOSDHostDriver::getCardVendor()
 ///
 IOReturn IOSDHostDriver::getCardName(char* name, IOByteCount length)
 {
-    auto action = [](OSObject* driver, void* name, void* length, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto instance = OSDynamicCast(IOSDHostDriver, driver);
-        
-        passert(instance != nullptr, "The driver should not be null.");
-        
-        if (instance->card == nullptr)
+        if (this->card == nullptr)
         {
             perr("The card is not present.");
             
             return kIOReturnNoMedia;
         }
         
-        if (!instance->card->getCardName(reinterpret_cast<char*>(name), *reinterpret_cast<IOByteCount*>(length)))
+        if (!this->card->getCardName(name, length))
         {
             perr("The given buffer/length is invalid.");
             
@@ -2056,7 +2041,7 @@ IOReturn IOSDHostDriver::getCardName(char* name, IOByteCount length)
         return kIOReturnSuccess;
     };
     
-    return this->processorCommandGate->runAction(action, name, &length);
+    return IOCommandGateRunAction(this->processorCommandGate, action);
 }
 
 ///
@@ -2070,20 +2055,16 @@ IOReturn IOSDHostDriver::getCardName(char* name, IOByteCount length)
 ///
 IOReturn IOSDHostDriver::getCardRevision(char* revision, IOByteCount length)
 {
-    auto action = [](OSObject* driver, void* revision, void* length, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto instance = OSDynamicCast(IOSDHostDriver, driver);
-        
-        passert(instance != nullptr, "The driver should not be null.");
-        
-        if (instance->card == nullptr)
+        if (this->card == nullptr)
         {
             perr("The card is not present.");
             
             return kIOReturnNoMedia;
         }
         
-        if (!instance->card->getCardRevision(reinterpret_cast<char*>(revision), *reinterpret_cast<IOByteCount*>(length)))
+        if (!this->card->getCardRevision(revision, length))
         {
             perr("The given buffer/length is invalid.");
             
@@ -2093,7 +2074,7 @@ IOReturn IOSDHostDriver::getCardRevision(char* revision, IOByteCount length)
         return kIOReturnSuccess;
     };
     
-    return this->processorCommandGate->runAction(action, revision, &length);
+    return IOCommandGateRunAction(this->processorCommandGate, action);
 }
 
 ///
@@ -2107,20 +2088,16 @@ IOReturn IOSDHostDriver::getCardRevision(char* revision, IOByteCount length)
 ///
 IOReturn IOSDHostDriver::getCardProductionDate(char* date, IOByteCount length)
 {
-    auto action = [](OSObject* driver, void* date, void* length, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto instance = OSDynamicCast(IOSDHostDriver, driver);
-        
-        passert(instance != nullptr, "The driver should not be null.");
-        
-        if (instance->card == nullptr)
+        if (this->card == nullptr)
         {
             perr("The card is not present.");
             
             return kIOReturnNoMedia;
         }
         
-        if (!instance->card->getCardProductionDate(reinterpret_cast<char*>(date), *reinterpret_cast<IOByteCount*>(length)))
+        if (!this->card->getCardProductionDate(date, length))
         {
             perr("The given buffer/length is invalid.");
             
@@ -2130,7 +2107,7 @@ IOReturn IOSDHostDriver::getCardProductionDate(char* date, IOByteCount length)
         return kIOReturnSuccess;
     };
     
-    return this->processorCommandGate->runAction(action, date, &length);
+    return IOCommandGateRunAction(this->processorCommandGate, action);
 }
 
 ///
@@ -2141,25 +2118,21 @@ IOReturn IOSDHostDriver::getCardProductionDate(char* date, IOByteCount length)
 ///
 IOReturn IOSDHostDriver::getCardSerialNumber(UInt32& serial)
 {
-    auto action = [](OSObject* driver, void* serial, void*, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto instance = OSDynamicCast(IOSDHostDriver, driver);
-        
-        passert(instance != nullptr, "The driver should not be null.");
-        
-        if (instance->card == nullptr)
+        if (this->card == nullptr)
         {
             perr("The card is not present.");
             
             return kIOReturnNoMedia;
         }
         
-        *reinterpret_cast<UInt32*>(serial) = instance->card->getCID().serial;
+        serial = this->card->getCID().serial;
         
         return kIOReturnSuccess;
     };
     
-    return this->processorCommandGate->runAction(action, &serial);
+    return IOCommandGateRunAction(this->processorCommandGate, action);
 }
 
 //

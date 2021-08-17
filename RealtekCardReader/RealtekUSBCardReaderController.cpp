@@ -268,23 +268,16 @@ IOReturn RealtekUSBCardReaderController::readChipRegistersSequentially(UInt16 ad
     // TODO: Does IOUSBHostPipe::io() require an aligned buffer length?
     
     // The transfer routine will run in a gated context
-    auto action = [](OSObject* controller, void* address, void* count, void* destination, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekUSBCardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
         // Create the packet for reading registers sequentially and write it to the host buffer
-        UInt16 nregs = *reinterpret_cast<UInt16*>(count);
-        
-        instance->writePacketToHostBufferGated(Packet::forSeqReadCommand(nregs));
+        this->writePacketToHostBufferGated(Packet::forSeqReadCommand(count));
         
         // Set the starting register address in the host buffer
-        instance->writeHostBufferValueGated(Offset::kHostCmdOff, OSSwapHostToBigInt16(*reinterpret_cast<UInt16*>(address)));
+        this->writeHostBufferValueGated(Offset::kHostCmdOff, OSSwapHostToBigInt16(address));
         
         // Initiate the outbound bulk transfer to send the command
-        IOReturn retVal = instance->performOutboundBulkTransfer(instance->hostBufferDescriptor, Offset::kSeqRegsVal, 100);
+        IOReturn retVal = this->performOutboundBulkTransfer(this->hostBufferDescriptor, Offset::kSeqRegsVal, 100);
         
         if (retVal != kIOReturnSuccess)
         {
@@ -293,16 +286,10 @@ IOReturn RealtekUSBCardReaderController::readChipRegistersSequentially(UInt16 ad
             return retVal;
         }
         
-        // TODO: Probably too many buffer copies
-        // TODO: Consider to change the signature of readPingPongBuffer():
-        // TODO: Use IOMemoryDescriptor instead of the raw buffer
-        // TODO: Probably also require to change the host device implementation
-        // TODO: Consider to add another variant `readChipRegistersSequentially(UInt16, UInt16, IOMemoryDescriptor*)`?
-        // TODO: This function is invoked by `readPingPongBuffer()` only at this moment.
-        return instance->performInboundBulkTransfer(destination, nregs, 100);
+        return this->performInboundBulkTransfer(destination, count, 100);
     };
     
-    return this->commandGate->runAction(action, &address, &count, destination);
+    return IOCommandGateRunAction(this->commandGate, action);
 }
 
 ///
@@ -320,23 +307,16 @@ IOReturn RealtekUSBCardReaderController::writeChipRegistersSequentially(UInt16 a
     // TODO: Does IOUSBHostPipe::io() require an aligned buffer length?
     
     // The transfer routine will run in a gated context
-    auto action = [](OSObject* controller, void* address, void* count, void* source, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekUSBCardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
         // Create the packet for reading registers sequentially and write it to the host buffer
-        UInt16 nregs = *reinterpret_cast<UInt16*>(count);
-        
-        instance->writePacketToHostBufferGated(Packet::forSeqWriteCommand(nregs));
+        this->writePacketToHostBufferGated(Packet::forSeqWriteCommand(count));
         
         // Set the starting register address in the host buffer
-        instance->writeHostBufferValueGated(Offset::kHostCmdOff, OSSwapHostToBigInt16(*reinterpret_cast<UInt16*>(address)));
+        this->writeHostBufferValueGated(Offset::kHostCmdOff, OSSwapHostToBigInt16(address));
         
         // Copy the registers value to the host buffer
-        IOReturn retVal = instance->writeHostBuffer(Offset::kSeqRegsVal, source, nregs);
+        IOReturn retVal = this->writeHostBuffer(Offset::kSeqRegsVal, source, count);
         
         if (retVal != kIOReturnSuccess)
         {
@@ -346,10 +326,10 @@ IOReturn RealtekUSBCardReaderController::writeChipRegistersSequentially(UInt16 a
         }
         
         // Initiate the bulk transfer
-        return instance->performOutboundBulkTransfer(instance->hostBufferDescriptor, Offset::kSeqRegsVal + nregs, 100);
+        return this->performOutboundBulkTransfer(this->hostBufferDescriptor, Offset::kSeqRegsVal + count, 100);
     };
     
-    return this->commandGate->runAction(action, &address, &count, const_cast<void*>(reinterpret_cast<const void*>(source)));
+    return IOCommandGateRunAction(this->commandGate, action);
 }
 
 ///

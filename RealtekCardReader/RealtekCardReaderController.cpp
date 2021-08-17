@@ -76,17 +76,12 @@ IOReturn RealtekCardReaderController::readHostBuffer(IOByteCount offset, void* b
     }
     
     // The read routine will run in a gated context
-    auto action = [](OSObject* controller, void* offset, void* buffer, void* length, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekCardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
-        return instance->readHostBufferGated(*reinterpret_cast<IOByteCount*>(offset), buffer, *reinterpret_cast<IOByteCount*>(length));
+        return this->readHostBufferGated(offset, buffer, length);
     };
     
-    return this->commandGate->runAction(action, &offset, buffer, &length);
+    return IOCommandGateRunAction(this->commandGate, action);
 }
 
 ///
@@ -117,17 +112,12 @@ IOReturn RealtekCardReaderController::writeHostBuffer(IOByteCount offset, const 
     }
     
     // The write routine will run in a gated context
-    auto action = [](OSObject* controller, void* offset, void* buffer, void* length, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekCardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
-        return instance->writeHostBufferGated(*reinterpret_cast<IOByteCount*>(offset), buffer, *reinterpret_cast<IOByteCount*>(length));
+        return this->writeHostBufferGated(offset, buffer, length);
     };
     
-    return this->commandGate->runAction(action, &offset, const_cast<void*>(buffer), &length);
+    return IOCommandGateRunAction(this->commandGate, action);
 }
 
 ///
@@ -164,22 +154,17 @@ void RealtekCardReaderController::dumpHostBuffer(IOByteCount offset, IOByteCount
 IOReturn RealtekCardReaderController::beginCommandTransfer()
 {
     // The reset counter routine will run in a gated context
-    auto action = [](OSObject* controller, void*, void*, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekCardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
         // Reset the counter
-        instance->hostCommandCounter.reset();
+        this->hostCommandCounter.reset();
         
         return kIOReturnSuccess;
     };
     
     pinfo("Begin a command transfer session.");
     
-    return this->commandGate->runAction(action);
+    return IOCommandGateRunAction(this->commandGate, action);
 }
 
 ///
@@ -192,17 +177,12 @@ IOReturn RealtekCardReaderController::beginCommandTransfer()
 IOReturn RealtekCardReaderController::enqueueCommand(const Command& command)
 {
     // The enqueue routine will run in a gated context
-    auto action = [](OSObject* controller, void* command, void*, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekCardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
-        return instance->enqueueCommandGated(*reinterpret_cast<Command*>(command));
+        return this->enqueueCommandGated(command);
     };
     
-    return this->commandGate->runAction(action, const_cast<void*>(reinterpret_cast<const void*>(&command)));
+    return IOCommandGateRunAction(this->commandGate, action);
 }
 
 ///
@@ -217,17 +197,12 @@ IOReturn RealtekCardReaderController::enqueueCommand(const Command& command)
 IOReturn RealtekCardReaderController::endCommandTransfer(UInt32 timeout, UInt32 flags)
 {
     // The transfer routine will run in a gated context
-    auto action = [](OSObject* controller, void* timeout, void* flags, void*, void*) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        // Retrieve the controller instance
-        auto instance = OSDynamicCast(RealtekCardReaderController, controller);
-        
-        passert(instance != nullptr, "The controller instance is invalid.");
-        
-        return instance->endCommandTransferGated(*reinterpret_cast<UInt32*>(timeout), *reinterpret_cast<UInt32*>(flags));
+        return this->endCommandTransferGated(timeout, flags);
     };
     
-    IOReturn retVal = this->commandGate->runAction(action, &timeout, &flags);
+    IOReturn retVal = IOCommandGateRunAction(this->commandGate, action);
     
     if (retVal != kIOReturnSuccess)
     {
