@@ -13,6 +13,12 @@
 - Resolved an issue that USB-based card readers fail to initialize UHS-I cards properly.
 - Pause the polling thread of the USB-based card reader when the host driver is processing a card event.
 - Skip setting the bus power mode if the card reader is already operating at the requested mode.
+- Resolved an issue that the card clock is incorrectly toggled thus fails to switch to 1.8V after the host device sends the CMD11.
+- Revise the design of the host driver stack to make all data structures that are related to host requests device-independent.
+- Optimize the host driver stack to avoid unnecessary bounce buffer allocations and data copies in card reader controllers.
+- Minimize the amount of time the transfer buffer is ready for DMA to reduce the pressure in the low 4GB of physical memory.
+- Addressed an issue that CMD17 and CMD24 fail to transfer any data from/to the card with USB-based card readers.
+- Switched the mode from `AutoRead2` to `AutoRead3` when the host device services an inbound DMA transfer request.
 
 #### v0.9.5 Beta
 - Rebranded the project.
