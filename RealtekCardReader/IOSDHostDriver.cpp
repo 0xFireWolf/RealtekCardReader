@@ -1033,30 +1033,23 @@ IOReturn IOSDHostDriver::CMD3(UInt32& rca)
 ///
 IOReturn IOSDHostDriver::CMD6(UInt32 mode, UInt32 group, UInt8 value, UInt8* response, IOByteCount length)
 {
-    // Allocate a buffer
-    IOMemoryDescriptor* buffer = IOMemoryDescriptorAllocateWiredBuffer(64);
-    
-    if (buffer == nullptr)
-    {
-        perr("Failed to allocate a 64-byte buffer.");
-
-        return kIOReturnNoMemory;
-    }
-
     // Send the command
-    IOReturn retVal = this->CMD6(mode, group, value, buffer);
-    
-    if (retVal == kIOReturnSuccess)
+    auto action = [&](IOMemoryDescriptor* descriptor) -> IOReturn
     {
-        // Copy the SD status from the DMA buffer
-        length = min(length, 64);
+        IOReturn retVal = this->CMD6(mode, group, value, descriptor);
+        
+        if (retVal == kIOReturnSuccess)
+        {
+            // Copy the response from the memory descriptor
+            length = min(length, 64);
 
-        retVal = buffer->readBytes(0, response, length) == length ? kIOReturnSuccess : kIOReturnError;
-    }
-
-    IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
-
-    return retVal;
+            retVal = descriptor->readBytes(0, response, length) == length ? kIOReturnSuccess : kIOReturnError;
+        }
+        
+        return retVal;
+    };
+    
+    return IOMemoryDescriptorRunActionWithWiredBuffer(64, kIODirectionInOut, action);
 }
 
 ///
@@ -1370,39 +1363,25 @@ IOReturn IOSDHostDriver::ACMD6(UInt32 rca, IOSDBusConfig::BusWidth busWidth)
 ///
 IOReturn IOSDHostDriver::ACMD13(UInt32 rca, UInt8* status, IOByteCount length)
 {
-    // Allocate a buffer
-    IOMemoryDescriptor* buffer = IOMemoryDescriptorAllocateWiredBuffer(64);
-    
-    if (buffer == nullptr)
-    {
-        perr("Failed to allocate a 64-byte buffer.");
-
-        return kIOReturnNoMemory;
-    }
-
     // Send the command
-    // TODO: SET DATA TIMEOUT????
-    auto request = this->host->getRequestFactory().ACMD13(buffer);
-
-    IOReturn retVal = this->waitForAppRequest(request, rca);
-
-    if (retVal != kIOReturnSuccess)
+    auto action = [&](IOMemoryDescriptor* descriptor) -> IOReturn
     {
-        perr("Failed to issue the ACMD13. Error = 0x%x.", retVal);
+        auto request = this->host->getRequestFactory().ACMD13(descriptor);
+
+        IOReturn retVal = this->waitForAppRequest(request, rca);
         
-        IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
+        if (retVal == kIOReturnSuccess)
+        {
+            // Copy the SD status from the memory descriptor
+            length = min(length, 64);
 
+            retVal = descriptor->readBytes(0, status, length) == length ? kIOReturnSuccess : kIOReturnError;
+        }
+        
         return retVal;
-    }
-
-    // Copy the SD status from the DMA buffer
-    length = min(length, 64);
-
-    retVal = buffer->readBytes(0, status, length) == length ? kIOReturnSuccess : kIOReturnError;
-
-    IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
-
-    return retVal;
+    };
+    
+    return IOMemoryDescriptorRunActionWithWiredBuffer(64, kIODirectionInOut, action);
 }
 
 ///
@@ -1485,39 +1464,25 @@ IOReturn IOSDHostDriver::ACMD41(UInt32 ocr, UInt32& rocr)
 ///
 IOReturn IOSDHostDriver::ACMD51(UInt32 rca, UInt8* configuration, IOByteCount length)
 {
-    // Allocate a buffer
-    IOMemoryDescriptor* buffer = IOMemoryDescriptorAllocateWiredBuffer(8);
-    
-    if (buffer == nullptr)
-    {
-        perr("Failed to allocate a 64-byte buffer.");
-
-        return kIOReturnNoMemory;
-    }
-
     // Send the command
-    // TODO: SET DATA TIMEOUT????
-    auto request = this->host->getRequestFactory().ACMD51(buffer);
-
-    IOReturn retVal = this->waitForAppRequest(request, rca);
-
-    if (retVal != kIOReturnSuccess)
+    auto action = [&](IOMemoryDescriptor* descriptor) -> IOReturn
     {
-        perr("Failed to issue the ACMD51. Error = 0x%x.", retVal);
+        auto request = this->host->getRequestFactory().ACMD51(descriptor);
 
-        IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
+        IOReturn retVal = this->waitForAppRequest(request, rca);
 
+        if (retVal == kIOReturnSuccess)
+        {
+            // Copy the SD configuration value from the memory descriptor
+            length = min(length, 8);
+
+            retVal = descriptor->readBytes(0, configuration, length) == length ? kIOReturnSuccess : kIOReturnError;
+        }
+        
         return retVal;
-    }
-
-    // Copy the SD status from the DMA buffer
-    length = min(length, 8);
-
-    retVal = buffer->readBytes(0, configuration, length) == length ? kIOReturnSuccess : kIOReturnError;
-
-    IOMemoryDescriptorSafeReleaseWiredBuffer(buffer);
-
-    return retVal;
+    };
+    
+    return IOMemoryDescriptorRunActionWithWiredBuffer(8, kIODirectionInOut, action);
 }
 
 ///
