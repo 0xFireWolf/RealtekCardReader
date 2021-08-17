@@ -120,3 +120,50 @@ IOReturn RealtekPCISDXCSlot::executeTuning(const IOSDBusConfig& config)
     
     return retVal;
 }
+
+//
+// MARK: - IOService Implementations
+//
+
+///
+/// Initialize the host device
+///
+/// @return `true` on success, `false` otherwise.
+///
+bool RealtekPCISDXCSlot::init(OSDictionary* dictionary)
+{
+    if (!super::init(dictionary))
+    {
+        return false;
+    }
+    
+    // Configure the request factory for PCIe-based card readers
+    this->factory =
+    {
+        // Opaque target pointer
+        this,
+        
+        // Simple command request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandRequest),
+        
+        // Inbound data transfer request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithInboundDataTransferRequest),
+        
+        // Outbound data transfer request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithOutboundDataTransferRequest),
+        
+        // Inbound single block request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferRequest),
+        
+        // Outbound single block request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithOutboundSingleBlockDMATransferRequest),
+        
+        // Inbound multiple blocks request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithInboundMultiBlocksDMATransferRequest),
+        
+        // Outbound multiple blocks request processor
+        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithOutboundMultiBlocksDMATransferRequest),
+    };
+    
+    return true;
+}

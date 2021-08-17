@@ -2451,32 +2451,7 @@ bool RealtekSDXCSlot::init(OSDictionary* dictionary)
     
     this->dmaLimits = { 256, 65536, 524288 };
     
-    this->factory =
-    {
-        // Opaque target pointer
-        this,
-        
-        // Simple command request processor
-        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandRequest),
-        
-        // Inbound data transfer request processor
-        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithInboundDataTransferRequest),
-        
-        // Outbound data transfer request processor
-        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithOutboundDataTransferRequest),
-        
-        // Inbound single block request processor
-        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferRequest),
-        
-        // Outbound single block request processor
-        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithOutboundSingleBlockDMATransferRequest),
-        
-        // Inbound multiple blocks request processor
-        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithInboundMultiBlocksDMATransferRequest),
-        
-        // Outbound multiple blocks request processor
-        OSMemberFunctionCast(IOSDHostRequest::Processor, this, &RealtekSDXCSlot::processSDCommandWithOutboundMultiBlocksDMATransferRequest),
-    };
+    this->factory = {};
     
     this->controller = nullptr;
     

@@ -36,6 +36,18 @@ public:
     /// @note Port: This function replaces `sdmmc_execute_tuning()` defined in `rtsx_pci_sdmmc.c`.
     ///
     IOReturn executeTuning(const IOSDBusConfig& config) override;
+    
+    //
+    // MARK: - IOService Implementations
+    //
+    
+public:
+    ///
+    /// Initialize the host device
+    ///
+    /// @return `true` on success, `false` otherwise.
+    ///
+    bool init(OSDictionary* dictionary = nullptr) override;
 };
 
 #endif /* RealtekPCISDXCSlot_hpp */
