@@ -13,6 +13,9 @@
 #pragma clang diagnostic ignored "-Wdocumentation"
 #include <IOKit/usb/IOUSBHostInterface.h>
 #pragma clang diagnostic pop
+#include "IOMemoryDescriptor.hpp"
+#include "Debug.hpp"
+#include "Utilities.hpp"
 
 ///
 /// Find the pipe that represents an endpoint of the given type and direction
@@ -41,6 +44,51 @@ using IOUSBHostInterfaceBufferAction = IOReturn (*)(IOUSBHostInterface*, IOMemor
 ///         otherwise the return value of the given action routine.
 /// @note This function uses `IOUSBHostInterface::createIOBuffer()` to allocate the intermediate buffer.
 ///
+DEPRECATE("Replaced by IOUSBHostInterfaceWithIntermediateIOBuffer().")
 IOReturn IOUSBHostInterfaceWithIntermediateIOBuffer(IOUSBHostInterface* interface, IODirection direction, IOByteCount capacity, IOUSBHostInterfaceBufferAction action, const void* context = nullptr);
+
+///
+/// Perform a custom action with an intermediate buffer that is suitable for I/O transfer
+///
+/// @param interface The host interface
+/// @param direction Specify the direction of the intermediate buffer
+/// @param capacity Specify the capacity of the intermediate buffer
+/// @param action A callable action that takes the host interface and the intermediate buffer as input and returns an `IOReturn` code
+/// @return `kIOReturnNoMemory` if failed to allocate the intermediate buffer, otherwise the return value of the given action routine.
+/// @note This function uses `IOUSBHostInterface::createIOBuffer()` to allocate the intermediate buffer.
+/// @note This function completes and releases the intermediate buffer after the given action returns,
+///       so the caller should not use the intermediate buffer once the action routine returns.
+/// @note Signature of the action: `IOReturn operator()(IOUSBHostInterface*, IOMemoryDescriptor*)`.
+///
+template <typename Action>
+IOReturn IOUSBHostInterfaceWithIntermediateIOBuffer(IOUSBHostInterface* interface, IODirection direction, IOByteCount capacity, Action action)
+{
+    // Guard: Allocate the intermediate buffer
+    IOBufferMemoryDescriptor* buffer = interface->createIOBuffer(direction, capacity);
+    
+    if (buffer == nullptr)
+    {
+        perr("Failed to create the intermediate buffer.");
+        
+        return kIOReturnNoMemory;
+    }
+    
+    // Invoke the given action while the intermediate buffer is prepared
+    // Control Flow:
+    // 1) Page in and wire down the intermediate buffer
+    // 2) Run the given action
+    // 3) Complete the intermediate buffer
+    auto bridge = [&](IOMemoryDescriptor* preparedDescriptor) -> IOReturn
+    {
+        return action(interface, preparedDescriptor);
+    };
+    
+    IOReturn retVal = IOMemoryDescriptorRunActionWhilePrepared(buffer, bridge);
+    
+    // Cleanup
+    buffer->release();
+    
+    return retVal;
+}
 
 #endif /* IOUSBHostInterface_hpp */
