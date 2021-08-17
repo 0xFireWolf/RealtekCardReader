@@ -237,4 +237,31 @@ static inline void IOMemoryDescriptorSafeReleaseWiredBuffer(IOMemoryDescriptor*&
     }
 }
 
+///
+/// Run a custom action with a newly allocated, wired buffer
+///
+/// @param length The number of bytes to allocate
+/// @param direction The transfer direction, by default `kIODirectionInOut`
+/// @param action A callable action that takes a non-null, prepared memory descriptor as input and returns an `IOReturn` code
+/// @return The value returned by the given action, otherwise `kIOReturnNoMemory` if failed to allocate a buffer of the given length.
+/// @warning This function completes and releases the memory descriptor passed to the given action,
+///          so the caller should not use the memory descriptor after the action returns.
+///
+template <typename Action>
+IOReturn IOMemoryDescriptorRunActionWithWiredBuffer(IOByteCount length, IODirection direction, Action action)
+{
+    IOMemoryDescriptor* descriptor = IOMemoryDescriptorAllocateWiredBuffer(length, direction);
+    
+    if (descriptor == nullptr)
+    {
+        return kIOReturnNoMemory;
+    }
+    
+    IOReturn retVal = action(descriptor);
+    
+    IOMemoryDescriptorSafeReleaseWiredBuffer(descriptor);
+    
+    return retVal;
+}
+
 #endif /* IOMemoryDescriptor_hpp */
