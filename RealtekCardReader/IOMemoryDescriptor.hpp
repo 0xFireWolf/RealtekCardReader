@@ -19,6 +19,7 @@
 /// @param action A callable action that takes the prepared memory descriptor as its sole argument and returns an `IOReturn` code
 /// @return The value returned by the given action, other values if failed to prepare the given memory descriptor.
 /// @warning The given memory descriptor becomes unprepared after the given action routine returns.
+/// @note Signature of the action: `IOReturn operator()(IOMemoryDescriptor*)`.
 ///
 template <typename Action>
 IOReturn IOMemoryDescriptorRunActionWhilePrepared(IOMemoryDescriptor* descriptor, Action action)
@@ -246,6 +247,7 @@ static inline void IOMemoryDescriptorSafeReleaseWiredBuffer(IOMemoryDescriptor*&
 /// @return The value returned by the given action, otherwise `kIOReturnNoMemory` if failed to allocate a buffer of the given length.
 /// @warning This function completes and releases the memory descriptor passed to the given action,
 ///          so the caller should not use the memory descriptor after the action returns.
+/// @note Signature of the action: `IOReturn operator()(IOMemoryDescriptor*)`.
 ///
 template <typename Action>
 IOReturn IOMemoryDescriptorRunActionWithWiredBuffer(IOByteCount length, IODirection direction, Action action)
