@@ -1549,11 +1549,9 @@ IOReturn RealtekUSBCardReaderController::performBulkTransfer(IOUSBHostPipe* pipe
 ///
 IOReturn RealtekUSBCardReaderController::performInboundBulkTransfer(void* buffer, IOByteCount length, UInt32 timeout)
 {
-    auto action = [](IOUSBHostInterface* interface, IOMemoryDescriptor* descriptor, const void* context) -> IOReturn
+    auto action = [&](IOUSBHostInterface* interface, IOMemoryDescriptor* descriptor) -> IOReturn
     {
-        auto argument = reinterpret_cast<const BulkTransferContext*>(context);
-        
-        IOReturn retVal = argument->controller->performInboundBulkTransfer(descriptor, argument->length, argument->timeout);
+        IOReturn retVal = this->performInboundBulkTransfer(descriptor, length, timeout);
         
         if (retVal != kIOReturnSuccess)
         {
@@ -1562,15 +1560,12 @@ IOReturn RealtekUSBCardReaderController::performInboundBulkTransfer(void* buffer
             return retVal;
         }
         
-        passert(descriptor->readBytes(0, argument->buffer, argument->length) == argument->length,
-                "Should be able to read from the intermediate buffer.");
+        passert(descriptor->readBytes(0, buffer, length) == length, "Should be able to read from the intermediate buffer.");
         
         return kIOReturnSuccess;
     };
     
-    BulkTransferContext context(this, buffer, length, timeout);
-    
-    return IOUSBHostInterfaceWithIntermediateIOBuffer(this->interface, kIODirectionIn, length, action, &context);
+    return IOUSBHostInterfaceWithIntermediateIOBuffer(this->interface, kIODirectionIn, length, action);
 }
 
 ///
@@ -1586,19 +1581,14 @@ IOReturn RealtekUSBCardReaderController::performInboundBulkTransfer(void* buffer
 ///
 IOReturn RealtekUSBCardReaderController::performOutboundBulkTransfer(const void* buffer, IOByteCount length, UInt32 timeout)
 {
-    auto action = [](IOUSBHostInterface* interface, IOMemoryDescriptor* descriptor, const void* context) -> IOReturn
+    auto action = [&](IOUSBHostInterface* interface, IOMemoryDescriptor* descriptor) -> IOReturn
     {
-        auto argument = reinterpret_cast<const BulkTransferContext*>(context);
+        passert(descriptor->writeBytes(0, buffer, length) == length, "Should be able to write to the intermediate buffer.");
         
-        passert(descriptor->writeBytes(0, argument->buffer, argument->length) == argument->length,
-                "Should be able to write to the intermediate buffer.");
-        
-        return argument->controller->performInboundBulkTransfer(descriptor, argument->length, argument->timeout);
+        return this->performOutboundBulkTransfer(descriptor, length, timeout);
     };
     
-    BulkTransferContext context(this, const_cast<void*>(buffer), length, timeout);
-    
-    return IOUSBHostInterfaceWithIntermediateIOBuffer(this->interface, kIODirectionIn, length, action, &context);
+    return IOUSBHostInterfaceWithIntermediateIOBuffer(this->interface, kIODirectionOut, length, action);
 }
 
 //

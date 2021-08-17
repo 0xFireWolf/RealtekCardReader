@@ -289,7 +289,7 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// @see `RealtekUSBCardReaderController::performInboundBulkTransfer(buffer:length:timeout:)`
     /// @see `RealtekUSBCardReaderController::performOutboundBulkTransfer(buffer:length:timeout:)`
     ///
-    struct BulkTransferContext
+    struct DEPRECATE("Captured by the lambda automatically.") BulkTransferContext
     {
         /// The card reader controller
         RealtekUSBCardReaderController* controller;
