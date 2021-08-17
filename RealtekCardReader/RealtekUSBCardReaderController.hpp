@@ -283,34 +283,6 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     static_assert(offsetof(Packet, itemCount) == Offset::kItemCntH8b, "ABI Error: Item count offset is not 6.");
     static_assert(offsetof(Packet, flags) == Offset::kStageFlags, "ABI Error: Flags offset is not 7.");
     
-    ///
-    /// A temporary quartet for bulk transfer
-    ///
-    /// @see `RealtekUSBCardReaderController::performInboundBulkTransfer(buffer:length:timeout:)`
-    /// @see `RealtekUSBCardReaderController::performOutboundBulkTransfer(buffer:length:timeout:)`
-    ///
-    struct DEPRECATE("Captured by the lambda automatically.") BulkTransferContext
-    {
-        /// The card reader controller
-        RealtekUSBCardReaderController* controller;
-        
-        /// The buffer involved in the bulk transfer
-        void* buffer;
-        
-        /// The buffer length
-        IOByteCount length;
-        
-        /// The timeout value in milliseconds
-        UInt32 timeout;
-        
-        /// Padding
-        UInt32 reserved;
-        
-        /// Create the context
-        BulkTransferContext(RealtekUSBCardReaderController* controller, void* buffer, IOByteCount length, UInt32 timeout)
-            : controller(controller), buffer(buffer), length(length), timeout(timeout), reserved(0) {}
-    };
-    
     /// A namespace that defines constants and utilities related to USB endpoints
     struct Endpoints
     {
