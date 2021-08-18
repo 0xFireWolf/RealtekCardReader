@@ -1636,13 +1636,11 @@ IOReturn RealtekUSBCardReaderController::resetHardware()
     pinfo("Resetting the card reader...");
     
     // Launch a custom command transfer session
-    auto action = [](void* context) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto self = reinterpret_cast<RealtekUSBCardReaderController*>(context);
-        
         IOReturn retVal = kIOReturnSuccess;
         
-        if (self->isLQFT48)
+        if (this->isLQFT48)
         {
             const ChipRegValuePair lqft48[] =
             {
@@ -1653,7 +1651,7 @@ IOReturn RealtekUSBCardReaderController::resetHardware()
                 { CARD::PULL::rCTL6, 0x0C, 0x04 },
             };
             
-            retVal = self->enqueueWriteRegisterCommands(SimpleRegValuePairs(lqft48));
+            retVal = this->enqueueWriteRegisterCommands(SimpleRegValuePairs(lqft48));
             
             if (retVal != kIOReturnSuccess)
             {
@@ -1676,13 +1674,13 @@ IOReturn RealtekUSBCardReaderController::resetHardware()
             { CARD::PULL::rCTL5, 0x03, 0x01 },
         };
         
-        if (self->isRTS5179)
+        if (this->isRTS5179)
         {
-            retVal = self->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs1));
+            retVal = this->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs1));
         }
         else
         {
-            retVal = self->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs1, arrsize(pairs1) - 1));
+            retVal = this->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs1, arrsize(pairs1) - 1));
         }
         
         if (retVal != kIOReturnSuccess)
@@ -1698,10 +1696,10 @@ IOReturn RealtekUSBCardReaderController::resetHardware()
             { CARD::rINTPEND, CARD::INTPEND::kAll, CARD::INTPEND::kAll },
         };
 
-        return self->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs2));
+        return this->enqueueWriteRegisterCommands(SimpleRegValuePairs(pairs2));
     };
     
-    IOReturn retVal = this->withCustomCommandTransfer(action, this, 100, Packet::Flags::kC);
+    IOReturn retVal = this->withCustomCommandTransfer(action, 100, Packet::Flags::kC);
     
     if (retVal != kIOReturnSuccess)
     {
