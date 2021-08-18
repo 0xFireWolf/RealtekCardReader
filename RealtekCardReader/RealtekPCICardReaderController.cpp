@@ -2910,16 +2910,6 @@ bool RealtekPCICardReaderController::setupHostBuffer()
     
     passert(this->hostBufferDMACommand != nullptr, "Should be able to allocate a command from the pool.");
     
-    // TODO: Retrieve a command from the pool
-//    this->hostBufferDMACommand = IODMACommand::withSpecification(kIODMACommandOutputHost32, 32, 0, IODMACommand::kMapped, 0, 1);
-//
-//    if (this->hostBufferDMACommand == nullptr)
-//    {
-//        perr("Failed to allocate the DMA command.");
-//
-//        goto error2;
-//    }
-    
     // Guard: 3. Page in and wire down the buffer
     if (this->hostBufferDescriptor->prepare() != kIOReturnSuccess)
     {
@@ -2987,9 +2977,6 @@ error5:
     this->hostBufferDescriptor->complete();
     
 error3:
-//    this->hostBufferDMACommand->release();
-//
-//    this->hostBufferDMACommand = nullptr;
     this->dmaCommandPool->returnCommand(this->hostBufferDMACommand);
     
     this->hostBufferDMACommand = nullptr;
@@ -3204,13 +3191,10 @@ void RealtekPCICardReaderController::tearDownHostBuffer()
     // R5: Complete the DMA transaction (auto complete is set to true)
     // R4: Dissociate the buffer descriptor from the DMA command
     // R2: Release the DMA command
-    // TODO: Return the DMA command back to the pool
     if (this->hostBufferDMACommand != nullptr)
     {
         psoftassert(this->hostBufferDMACommand->clearMemoryDescriptor() == kIOReturnSuccess,
                     "Failed to dissociate the buffer descriptor from the DMA command and stop the transaction.");
-        
-        //this->hostBufferDMACommand->release();
         
         this->dmaCommandPool->returnCommand(this->hostBufferDMACommand);
         
