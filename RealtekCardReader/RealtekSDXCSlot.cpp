@@ -1375,20 +1375,18 @@ IOReturn RealtekSDXCSlot::powerOn()
     // Select the SD card and enable the clock
     pinfo("Selecting and enabling the SD card...");
     
-    auto action1 = [](void* context) -> IOReturn
+    auto action1 = [&]() -> IOReturn
     {
-        auto self = reinterpret_cast<RealtekSDXCSlot*>(context);
+        passert(this->controller->selectCard() == kIOReturnSuccess, "Failed to select the SD card.");
         
-        passert(self->controller->selectCard() == kIOReturnSuccess, "Failed to select the SD card.");
+        passert(this->controller->configureCardShareMode() == kIOReturnSuccess, "Failed to configure the card share mode.");
         
-        passert(self->controller->configureCardShareMode() == kIOReturnSuccess, "Failed to configure the card share mode.");
-        
-        passert(self->controller->enableCardClock() == kIOReturnSuccess, "Failed to enable the card clock.");
+        passert(this->controller->enableCardClock() == kIOReturnSuccess, "Failed to enable the card clock.");
         
         return kIOReturnSuccess;
     };
     
-    IOReturn retVal = this->controller->withCustomCommandTransfer(action1, this);
+    IOReturn retVal = this->controller->withCustomCommandTransfer(action1);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -1430,14 +1428,12 @@ IOReturn RealtekSDXCSlot::powerOn()
     // Enable the card output
     pinfo("Enabling the card output...");
     
-    auto action2 = [](void* context) -> IOReturn
+    auto action2 = [&]() -> IOReturn
     {
-        auto self = reinterpret_cast<RealtekSDXCSlot*>(context);
-        
-        return self->controller->enableCardOutput();
+        return this->controller->enableCardOutput();
     };
     
-    retVal = this->controller->withCustomCommandTransfer(action2, this);
+    retVal = this->controller->withCustomCommandTransfer(action2);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -1465,18 +1461,16 @@ IOReturn RealtekSDXCSlot::powerOff()
     // Disable the card clock and the output
     pinfo("Disabling the card clock and output...");
     
-    auto action = [](void* context) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto self = reinterpret_cast<RealtekSDXCSlot*>(context);
+        passert(this->controller->disableCardClock() == kIOReturnSuccess, "Failed to disable the card clock.");
         
-        passert(self->controller->disableCardClock() == kIOReturnSuccess, "Failed to disable the card clock.");
-        
-        passert(self->controller->disableCardOutput() == kIOReturnSuccess, "Failed to disable the card output.");
+        passert(this->controller->disableCardOutput() == kIOReturnSuccess, "Failed to disable the card output.");
         
         return kIOReturnSuccess;
     };
     
-    IOReturn retVal = this->controller->withCustomCommandTransfer(action, this);
+    IOReturn retVal = this->controller->withCustomCommandTransfer(action);
     
     if (retVal != kIOReturnSuccess)
     {
@@ -1852,14 +1846,12 @@ IOReturn RealtekSDXCSlot::waitVoltageStable2()
     psoftassert(this->controller->writeChipRegister(SD::rBUSSTAT, SD::BUSSTAT::kClockToggleEnable | SD::BUSSTAT::kClockForceStop, 0) == kIOReturnSuccess,
                 "Failed to stop and disable the SD clock.");
     
-    auto action = [](void* context) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto self = reinterpret_cast<RealtekSDXCSlot*>(context);
-        
-        return self->controller->disableCardClock();
+        return this->controller->disableCardClock();
     };
     
-    psoftassert(this->controller->withCustomCommandTransfer(action, this) == kIOReturnSuccess, "Failed to disable the card clock.");
+    psoftassert(this->controller->withCustomCommandTransfer(action) == kIOReturnSuccess, "Failed to disable the card clock.");
     
     return kIOReturnInvalid;
 }
