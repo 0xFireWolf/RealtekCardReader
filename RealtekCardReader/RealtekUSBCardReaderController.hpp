@@ -1116,13 +1116,6 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     ///
     bool setupPollingTimer();
     
-    ///
-    /// Create the card slot and publish it
-    ///
-    /// @return `true` on success, `false` otherwise.
-    ///
-    bool createCardSlot();
-    
     //
     // MARK: - Teardown Routines
     //
@@ -1146,11 +1139,6 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// Destroy the polling timer
     ///
     void tearDownPollingTimer();
-    
-    ///
-    /// Destroy the card slot
-    ///
-    void destroyCardSlot();
     
 public:
     //

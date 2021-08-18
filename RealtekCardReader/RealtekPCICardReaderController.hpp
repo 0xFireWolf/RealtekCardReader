@@ -1755,13 +1755,6 @@ private:
     bool setupCardReader();
     
     ///
-    /// Create the card slot and publish it
-    ///
-    /// @return `true` on success, `false` otherwise.
-    ///
-    bool createCardSlot();
-    
-    ///
     /// Create the timer that delays the initialization of a card
     ///
     /// @return `true` on success, `false` otherwise.
@@ -1795,11 +1788,6 @@ private:
     /// Tear down the host command and buffer management module
     ///
     void tearDownHostBuffer();
-    
-    ///
-    /// Destroy the card slot
-    ///
-    void destroyCardSlot();
     
     ///
     /// Destory the timer that delays the initialization of a card

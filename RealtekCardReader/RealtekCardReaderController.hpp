@@ -1600,10 +1600,47 @@ private:
     ///
     bool setupWorkLoop();
     
+    ///
+    /// Create the card slot and publish it
+    ///
+    /// @return `true` on success, `false` otherwise.
+    /// @note This function is a private helper of `RealtekCardReaderController::createCardSlot().`
+    /// @note When this function is called, the card slot is guaranteed to be non-null.
+    ///
+    bool setupCardSlot();
+    
+protected:
+    ///
+    /// Create the card slot and publish it
+    ///
+    /// @tparam Slot Specify the class of the card slot
+    /// @return `true` on success, `false` otherwise.
+    /// @note Concrete controllers must invoke this function after the hardware is initialized.
+    ///
+    template <typename Slot>
+    bool createCardSlot()
+    {
+        pinfo("Allocating the card slot...");
+        
+        this->slot = OSTypeAlloc(Slot);
+        
+        if (this->slot != nullptr)
+        {
+            return this->setupCardSlot();
+        }
+        else
+        {
+            perr("Failed to allocate the card slot.");
+            
+            return false;
+        }
+    }
+    
     //
     // MARK: - Teardown Routines
     //
     
+private:
     ///
     /// Tear down the power management
     ///
@@ -1614,11 +1651,17 @@ private:
     ///
     void tearDownWorkLoop();
     
-public:
+protected:
+    ///
+    /// Destroy the card slot
+    ///
+    void destroyCardSlot();
+    
     //
     // MARK: - IOService Implementations
     //
     
+public:
     ///
     /// Initialize the controller
     ///

@@ -2124,60 +2124,6 @@ bool RealtekUSBCardReaderController::setupPollingTimer()
     return true;
 }
 
-///
-/// Create the card slot and publish it
-///
-/// @return `true` on success, `false` otherwise.
-///
-bool RealtekUSBCardReaderController::createCardSlot()
-{
-    pinfo("Creating the card slot...");
-    
-    RealtekSDXCSlot* slot = OSTypeAlloc(RealtekUSBSDXCSlot);
-    
-    if (slot == nullptr)
-    {
-        perr("Failed to allocate the card slot.");
-        
-        return false;
-    }
-    
-    if (!slot->init())
-    {
-        perr("Failed to initialize the card slot.");
-        
-        slot->release();
-        
-        return false;
-    }
-    
-    if (!slot->attach(this))
-    {
-        perr("Failed to attach the card slot.");
-        
-        slot->release();
-        
-        return false;
-    }
-    
-    if (!slot->start(this))
-    {
-        perr("Failed to start the card slot.");
-        
-        slot->detach(this);
-        
-        slot->release();
-        
-        return false;
-    }
-    
-    this->slot = slot;
-    
-    pinfo("The card slot has been created and published.");
-    
-    return true;
-}
-
 //
 // MARK: - Teardown Routines
 //
@@ -2235,23 +2181,6 @@ void RealtekUSBCardReaderController::tearDownPollingTimer()
         this->timer->release();
         
         this->timer = nullptr;
-    }
-}
-
-///
-/// Destroy the card slot
-///
-void RealtekUSBCardReaderController::destroyCardSlot()
-{
-    pinfo("Stopping the card slot...");
-    
-    if (this->slot != nullptr)
-    {
-        this->slot->stop(this);
-        
-        this->slot->detach(this);
-        
-        OSSafeReleaseNULL(this->slot);
     }
 }
 
@@ -2397,7 +2326,7 @@ bool RealtekUSBCardReaderController::start(IOService* provider)
     }
     
     // Create the card slot
-    if (!this->createCardSlot())
+    if (!this->createCardSlot<RealtekUSBSDXCSlot>())
     {
         perr("Failed to create the card slot.");
         

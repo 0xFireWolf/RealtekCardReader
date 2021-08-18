@@ -568,6 +568,51 @@ error:
     return false;
 }
 
+///
+/// Create the card slot and publish it
+///
+/// @return `true` on success, `false` otherwise.
+/// @note This function is a private helper of `RealtekCardReaderController::createCardSlot().`
+/// @note When this function is called, the card slot is guaranteed to be non-null.
+///
+bool RealtekCardReaderController::setupCardSlot()
+{
+    passert(this->slot != nullptr, "The card slot instance should be non-null at this moment.");
+    
+    if (!this->slot->init())
+    {
+        perr("Failed to initialize the card slot.");
+        
+        OSSafeReleaseNULL(this->slot);
+        
+        return false;
+    }
+    
+    if (!this->slot->attach(this))
+    {
+        perr("Failed to attach the card slot.");
+        
+        OSSafeReleaseNULL(this->slot);
+        
+        return false;
+    }
+    
+    if (!this->slot->start(this))
+    {
+        perr("Failed to start the card slot.");
+        
+        this->slot->detach(this);
+        
+        OSSafeReleaseNULL(this->slot);
+        
+        return false;
+    }
+    
+    pinfo("The card slot has been created and published.");
+    
+    return true;
+}
+
 //
 // MARK: - Teardown Routines
 //
@@ -597,6 +642,23 @@ void RealtekCardReaderController::tearDownWorkLoop()
     }
     
     OSSafeReleaseNULL(this->workLoop);
+}
+
+///
+/// Destroy the card slot
+///
+void RealtekCardReaderController::destroyCardSlot()
+{
+    pinfo("Stopping the card slot...");
+    
+    if (this->slot != nullptr)
+    {
+        this->slot->stop(this);
+        
+        this->slot->detach(this);
+        
+        OSSafeReleaseNULL(this->slot);
+    }
 }
 
 //

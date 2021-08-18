@@ -3038,60 +3038,6 @@ bool RealtekPCICardReaderController::setupCardReader()
 }
 
 ///
-/// Create the card slot and publish it
-///
-/// @return `true` on success, `false` otherwise.
-///
-bool RealtekPCICardReaderController::createCardSlot()
-{
-    pinfo("Creating the card slot...");
-    
-    RealtekSDXCSlot* slot = OSTypeAlloc(RealtekPCISDXCSlot);
-    
-    if (slot == nullptr)
-    {
-        perr("Failed to allocate the card slot.");
-        
-        return false;
-    }
-    
-    if (!slot->init())
-    {
-        perr("Failed to initialize the card slot.");
-        
-        slot->release();
-        
-        return false;
-    }
-    
-    if (!slot->attach(this))
-    {
-        perr("Failed to attach the card slot.");
-        
-        slot->release();
-        
-        return false;
-    }
-    
-    if (!slot->start(this))
-    {
-        perr("Failed to start the card slot.");
-        
-        slot->detach(this);
-        
-        slot->release();
-        
-        return false;
-    }
-    
-    this->slot = slot;
-    
-    pinfo("The card slot has been created and published.");
-    
-    return true;
-}
-
-///
 /// Create the timer that delays the initialization of a card
 ///
 /// @return `true` on success, `false` otherwise.
@@ -3226,23 +3172,6 @@ void RealtekPCICardReaderController::unmapDeviceMemory()
     this->deviceMemoryDescriptor = nullptr;
     
     OSSafeReleaseNULL(this->deviceMemoryMap);
-}
-
-///
-/// Destroy the card slot
-///
-void RealtekPCICardReaderController::destroyCardSlot()
-{
-    pinfo("Stopping the card slot...");
-    
-    if (this->slot != nullptr)
-    {
-        this->slot->stop(this);
-        
-        this->slot->detach(this);
-        
-        OSSafeReleaseNULL(this->slot);
-    }
 }
 
 ///
@@ -3417,7 +3346,7 @@ bool RealtekPCICardReaderController::start(IOService* provider)
     this->uhsCaps.reserved = this->parameters.caps.supportsSDExpress;
     
     // Create the card slot
-    if (!this->createCardSlot())
+    if (!this->createCardSlot<RealtekPCISDXCSlot>())
     {
         perr("Failed to create the card slot.");
         
