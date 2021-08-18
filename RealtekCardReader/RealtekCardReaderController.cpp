@@ -217,58 +217,6 @@ IOReturn RealtekCardReaderController::endCommandTransfer(UInt32 timeout, UInt32 
 }
 
 //
-// MARK: - Host Command Management (Convenient)
-//
-
-///
-/// Launch a custom command transfer session conveniently
-///
-/// @param action A non-null action that enqueues any host commands
-/// @param context An optional user-defined context that will be passed to the given action
-/// @param timeout Specify the amount of time in milliseconds
-/// @param flags An optional flag, 0 by default
-/// @return `kIOReturnSuccess` on success, `kIOReturnBadArgument` if the given action is null,
-///         `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-/// @note This function provides an elegant way to start a command transfer session and handle errors.
-///       Same as calling `startCommandTransfer`, a sequence of enqueue invocations and `endCommandTransfer`.
-///
-IOReturn RealtekCardReaderController::withCustomCommandTransfer(EnqueueAction action, void* context, UInt32 timeout, UInt32 flags)
-{
-    IOReturn retVal;
-    
-    // Guard: The action cannot be null
-    if (action == nullptr)
-    {
-        perr("The given action is null.");
-        
-        return kIOReturnBadArgument;
-    }
-    
-    // Guard: Begin command transfer
-    retVal = this->beginCommandTransfer();
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to initiate a new command transfer session. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    // Guard: Enqueue commands
-    retVal = (*action)(context);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to enqueue the given sequence of commands. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    // Guard: Transfer commands
-    return this->endCommandTransfer(timeout, flags);
-}
-
-//
 // MARK: - Clear Error
 //
 

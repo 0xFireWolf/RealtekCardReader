@@ -1081,21 +1081,6 @@ public:
         return this->withCustomCommandTransfer(action, timeout, flags);
     }
     
-    ///
-    /// Launch a custom command transfer session conveniently
-    ///
-    /// @param action A non-null action that enqueues any host commands
-    /// @param context An optional user-defined context that will be passed to the given action
-    /// @param timeout Specify the amount of time in milliseconds
-    /// @param flags An optional flag, 0 by default
-    /// @return `kIOReturnSuccess` on success, `kIOReturnBadArgument` if the given action is null,
-    ///         `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
-    /// @note This function provides an elegant way to start a command transfer session and handle errors.
-    ///       Same as calling `startCommandTransfer`, a sequence of enqueue invocations and `endCommandTransfer`.
-    ///
-    DEPRECATE("Use the template version.")
-    IOReturn withCustomCommandTransfer(EnqueueAction action, void* context = nullptr, UInt32 timeout = 100, UInt32 flags = 0);
-    
     //
     // MARK: - Host Data Management
     //
