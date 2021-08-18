@@ -1260,18 +1260,16 @@ IOReturn RealtekSDXCSlot::processRequest(IOSDHostRequest& request)
     // Guard: Select the card
     pinfo("Selecting the SD card...");
     
-    auto action = [](void* context) -> IOReturn
+    auto action = [&]() -> IOReturn
     {
-        auto self = reinterpret_cast<RealtekSDXCSlot*>(context);
+        passert(this->controller->selectCard() == kIOReturnSuccess, "Failed to select the card.");
         
-        passert(self->controller->selectCard() == kIOReturnSuccess, "Failed to select the card.");
-        
-        passert(self->controller->configureCardShareMode() == kIOReturnSuccess, "Failed to configure the card share mode.");
+        passert(this->controller->configureCardShareMode() == kIOReturnSuccess, "Failed to configure the card share mode.");
         
         return kIOReturnSuccess;
     };
     
-    retVal = this->controller->withCustomCommandTransfer(action, this);
+    retVal = this->controller->withCustomCommandTransfer(action);
     
     if (retVal != kIOReturnSuccess)
     {
