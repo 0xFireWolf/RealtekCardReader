@@ -81,6 +81,46 @@ public:
         
         /// Retrieve the total number of pairs
         virtual IOItemCount size() const = 0;
+        
+        ///
+        /// Run the given action on each pair
+        ///
+        /// @param action A callable action that takes a chip register value pair as input
+        ///
+        template <typename Action>
+        void forEach(Action action) const
+        {
+            for (auto index = 0; index < this->size(); index += 1)
+            {
+                action(this->get(index));
+            }
+        }
+        
+        ///
+        /// Run the given action on each pair until the return value of `action` is not expected
+        ///
+        /// @param action A callable action that takes a chip register value pair as input and returns the result
+        /// @param expected The expected return value of the given action routine
+        /// @return The expected value on success, otherwise the actual value returned by the action routine.
+        /// @note This function aborts the loop if the action routine fails to process a chip register value pair.
+        ///
+        template <typename Action, typename Result>
+        Result forEachUntil(Action action, Result expected) const
+        {
+            for (auto index = 0; index < this->size(); index += 1)
+            {
+                Result result = action(this->get(index));
+                
+                if (result != expected)
+                {
+                    perr("Failed to run the action with the chip register pair at index %u.", index);
+                    
+                    return result;
+                }
+            }
+            
+            return expected;
+        }
     };
 
     ///
@@ -970,7 +1010,16 @@ public:
     /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
     /// @note This function provides an elegant way to enqueue multiple commands and handle errors.
     ///
-    IOReturn enqueueReadRegisterCommands(const ChipRegValuePairs& pairs);
+    inline IOReturn enqueueReadRegisterCommands(const ChipRegValuePairs& pairs)
+    {
+        // Enqueue a command
+        auto action = [&](ChipRegValuePair pair) -> IOReturn
+        {
+            return this->enqueueReadRegisterCommand(pair.address);
+        };
+        
+        return pairs.forEachUntil(action, kIOReturnSuccess);
+    }
     
     ///
     /// Enqueue a sequence of commands to write registers conveniently
@@ -979,7 +1028,16 @@ public:
     /// @return `kIOReturnSuccess` on success, `kIOReturnError` otherwise.
     /// @note This function provides an elegant way to enqueue multiple commands and handle errors.
     ///
-    IOReturn enqueueWriteRegisterCommands(const ChipRegValuePairs& pairs);
+    inline IOReturn enqueueWriteRegisterCommands(const ChipRegValuePairs& pairs)
+    {
+        // Enqueue a command
+        auto action = [&](ChipRegValuePair pair) -> IOReturn
+        {
+            return this->enqueueWriteRegisterCommand(pair.address, pair.mask, pair.value);
+        };
+        
+        return pairs.forEachUntil(action, kIOReturnSuccess);
+    }
     
     ///
     /// Transfer a sequence of commands to read registers conveniently
@@ -991,7 +1049,16 @@ public:
     /// @note This function provides an elegant way to start a command transfer session and handle errors.
     ///       Same as calling `startCommandTransfer`, a sequence of `enqueueReadRegisterCommand` and `endCommandTransfer`.
     ///
-    IOReturn transferReadRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout = 100, UInt32 flags = 0);
+    inline IOReturn transferReadRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout = 100, UInt32 flags = 0)
+    {
+        // Enqueue commands
+        auto action = [&]() -> IOReturn
+        {
+            return this->enqueueReadRegisterCommands(pairs);
+        };
+        
+        return this->withCustomCommandTransfer(action, timeout, flags);
+    }
     
     ///
     /// Transfer a sequence of commands to write registers conveniently
@@ -1003,7 +1070,16 @@ public:
     /// @note This function provides an elegant way to start a command transfer session and handle errors.
     ///       Same as calling `startCommandTransfer`, a sequence of `enqueueWriteRegisterCommand` and `endCommandTransfer`.
     ///
-    IOReturn transferWriteRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout = 100, UInt32 flags = 0);
+    inline IOReturn transferWriteRegisterCommands(const ChipRegValuePairs& pairs, UInt32 timeout = 100, UInt32 flags = 0)
+    {
+        // Enqueue commands
+        auto action = [&]() -> IOReturn
+        {
+            return this->enqueueWriteRegisterCommands(pairs);
+        };
+        
+        return this->withCustomCommandTransfer(action, timeout, flags);
+    }
     
     ///
     /// Launch a custom command transfer session conveniently
