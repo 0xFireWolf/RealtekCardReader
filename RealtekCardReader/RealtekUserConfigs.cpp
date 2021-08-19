@@ -35,6 +35,9 @@ namespace RealtekUserConfigs::Card
     /// `True` if the card should be initialized at the high speed mode
     bool InitAtHighSpeed = BootArgs::contains("-rtsxhsm");
     
+    /// `True` if the driver should separate each CMD18/25 request into multiple CMD17/24 ones
+    bool SeparateAccessBlocksRequest = BootArgs::contains("-rtsxsabr");
+    
     /// Specify the maximum number of attempts to retry an application command
     UInt32 ACMDMaxNumAttempts = max(BootArgs::get("rtsxamna", 2), 1);
 }

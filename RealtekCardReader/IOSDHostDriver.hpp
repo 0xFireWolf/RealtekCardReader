@@ -9,6 +9,7 @@
 #define IOSDHostDriver_hpp
 
 #include <IOKit/IOCommandGate.h>
+#include <IOKit/IOSubMemoryDescriptor.h>
 #include "IOEnhancedCommandPool.hpp"
 #include "IOSDHostDevice.hpp"
 #include "IOSDHostRequest.hpp"
@@ -153,7 +154,7 @@ public:
     }
     
     //
-    // MARK: - I/O Requests
+    // MARK: - Submit Block I/O Requests
     //
     
     ///
@@ -241,8 +242,12 @@ public:
         return this->submitBlockRequest(processor, buffer, block, nblocks, attributes, completion);
     }
     
+    //
+    // MARK: - Process Block I/O Requests
+    //
+    
     ///
-    /// Transform the given starting block number to the argument of CMD17/18/24/25 if necessary
+    /// [Helper] Transform the given starting block number to the argument of CMD17/18/24/25 if necessary
     ///
     /// @param block The starting block number
     /// @return The argument to be passed to CMD17/18/24/25.
@@ -252,12 +257,98 @@ public:
     UInt32 transformBlockOffsetIfNecessary(UInt64 block);
     
     ///
+    /// [Helper] Process the given request to access multiple blocks separately
+    ///
+    /// @param request A non-null block request
+    /// @param requestBuilder A callable object that takes the block offset and the transfer data as input and returns a single block transfer request
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note The return value will be passed to the storage completion routine.
+    /// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
+    /// @note This function separates a CMD18/25 request into multiple CMD17/24 ones.
+    /// @note Signature of the request builder: `IOSDSingleBlockRequest operator()(UInt32, IOMemoryDescriptor*)`.
+    ///
+    template <typename RequestBuilder>
+    IOReturn processAccessBlocksRequestSeparately(IOSDBlockRequest* request, RequestBuilder requestBuilder)
+    {
+        pinfo("Processing the request that reads multiple blocks separately...");
+        
+        IOReturn retVal = kIOReturnSuccess;
+        
+        // Fetching the properties of the original request
+        UInt64 blockOffset = request->getBlockOffset();
+        
+        UInt64 nblocks = request->getNumBlocks();
+        
+        IOMemoryDescriptor* data = request->getMemoryDescriptor();
+        
+        pinfo("Request: Block Offset = %llu; NumBlocks = %llu.", blockOffset, nblocks);
+        
+        // The portion of the data buffer
+        IOSubMemoryDescriptor* pdata = OSTypeAlloc(IOSubMemoryDescriptor);
+        
+        if (pdata == nullptr)
+        {
+            perr("Failed to allocate the sub-memory descriptor.");
+            
+            return kIOReturnNoMemory;
+        }
+        
+        // Process each CMD17/24 subrequest
+        for (UInt64 index = 0; index < nblocks; index += 1)
+        {
+            // Calculate the properties for the current subrequest
+            UInt64 pBlockOffset = blockOffset + index;
+            
+            UInt64 pDataOffset = index * 512;
+            
+            pinfo("[%02llu] Subrequest: Block Offset = %llu; Data Offset = %llu.", index, pBlockOffset, pDataOffset);
+            
+            // Specify the portion of data to be transferred
+            if (!pdata->initSubRange(data, pDataOffset, 512, data->getDirection()))
+            {
+                perr("[%02llu] Failed to initialize the sub-memory descriptor.", index);
+                
+                retVal = kIOReturnError;
+                
+                break;
+            }
+            
+            // Prepare the data
+            if (pdata->prepare() != kIOReturnSuccess)
+            {
+                perr("[%02llu] Failed to page in and wire down the portion of data.", index);
+                
+                break;
+            }
+            
+            // Process the subrequest
+            auto prequest = requestBuilder(this->transformBlockOffsetIfNecessary(pBlockOffset), pdata);
+            
+            retVal = this->waitForRequest(prequest);
+            
+            psoftassert(pdata->complete() == kIOReturnSuccess, "[%02llu] Failed to complete the portion of data.", index);
+            
+            if (retVal != kIOReturnSuccess)
+            {
+                perr("[%02llu] Failed to complete the subrequest. Error = 0x%08x.", index, retVal);
+                
+                break;
+            }
+        }
+        
+        // Cleanup
+        pdata->release();
+        
+        return retVal;
+    }
+    
+    ///
     /// Process the given request to read a single block
     ///
     /// @param request A non-null block request
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note The return value will be passed to the storage completion routine.
-    /// @note When this function is invoked, the DMA command is guaranteed to be non-null and prepared.
+    /// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
     ///
     IOReturn processReadBlockRequest(IOSDBlockRequest* request);
     
@@ -267,9 +358,20 @@ public:
     /// @param request A non-null block request
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note The return value will be passed to the storage completion routine.
-    /// @note When this function is invoked, the DMA command is guaranteed to be non-null and prepared.
+    /// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
     ///
     IOReturn processReadBlocksRequest(IOSDBlockRequest* request);
+    
+    ///
+    /// Process the given request to read multiple blocks separately
+    ///
+    /// @param request A non-null block request
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note The return value will be passed to the storage completion routine.
+    /// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
+    /// @note This function separates a CMD18 request into multiple CMD17 ones.
+    ///
+    IOReturn processReadBlocksRequestSeparately(IOSDBlockRequest* request);
     
     ///
     /// Process the given request to write a single block
@@ -277,7 +379,7 @@ public:
     /// @param request A non-null block request
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note The return value will be passed to the storage completion routine.
-    /// @note When this function is invoked, the DMA command is guaranteed to be non-null and prepared.
+    /// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
     ///
     IOReturn processWriteBlockRequest(IOSDBlockRequest* request);
     
@@ -287,9 +389,20 @@ public:
     /// @param request A non-null block request
     /// @return `kIOReturnSuccess` on success, other values otherwise.
     /// @note The return value will be passed to the storage completion routine.
-    /// @note When this function is invoked, the DMA command is guaranteed to be non-null and prepared.
+    /// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
     ///
     IOReturn processWriteBlocksRequest(IOSDBlockRequest* request);
+    
+    ///
+    /// Process the given request to write multiple blocks separately
+    ///
+    /// @param request A non-null block request
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note The return value will be passed to the storage completion routine.
+    /// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
+    /// @note This function separates a CMD25 request into multiple CMD24 ones.
+    ///
+    IOReturn processWriteBlocksRequestSeparately(IOSDBlockRequest* request);
     
     ///
     /// Finalize a request that has been processed

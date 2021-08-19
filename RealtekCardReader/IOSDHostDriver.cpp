@@ -20,7 +20,7 @@
 OSDefineMetaClassAndStructors(IOSDHostDriver, IOService);
 
 //
-// MARK: - I/O Requests
+// MARK: - Submit Block I/O Requests
 //
 
 ///
@@ -80,8 +80,12 @@ IOReturn IOSDHostDriver::submitBlockRequest(IOSDBlockRequest::Processor processo
     return kIOReturnSuccess;
 }
 
+//
+// MARK: - Process Block I/O Requests
+//
+
 ///
-/// Transform the given starting block number to the argument of CMD17/18/24/25 if necessary
+/// [Helper] Transform the given starting block number to the argument of CMD17/18/24/25 if necessary
 ///
 /// @param block The starting block number
 /// @return The argument to be passed to CMD17/18/24/25.
@@ -117,7 +121,7 @@ UInt32 IOSDHostDriver::transformBlockOffsetIfNecessary(UInt64 block)
 /// @param request A non-null block request
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note The return value will be passed to the storage completion routine.
-/// @note When this function is invoked, the DMA command is guaranteed to be non-null and prepared.
+/// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
 ///
 IOReturn IOSDHostDriver::processReadBlockRequest(IOSDBlockRequest* request)
 {
@@ -134,10 +138,18 @@ IOReturn IOSDHostDriver::processReadBlockRequest(IOSDBlockRequest* request)
 /// @param request A non-null block request
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note The return value will be passed to the storage completion routine.
-/// @note When this function is invoked, the DMA command is guaranteed to be non-null and prepared.
+/// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
 ///
 IOReturn IOSDHostDriver::processReadBlocksRequest(IOSDBlockRequest* request)
 {
+    // Guard: Check if the driver should separate the incoming request
+    if (RealtekUserConfigs::Card::SeparateAccessBlocksRequest)
+    {
+        pinfo("User requests to separate the CMD18 request into multiple CMD17 ones.");
+        
+        return this->processReadBlocksRequestSeparately(request);
+    }
+    
     pinfo("Processing the request that reads multiple blocks...");
     
     auto creq = this->host->getRequestFactory().CMD18(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getMemoryDescriptor(), request->getNumBlocks());
@@ -146,12 +158,33 @@ IOReturn IOSDHostDriver::processReadBlocksRequest(IOSDBlockRequest* request)
 }
 
 ///
+/// Process the given request to read multiple blocks separately
+///
+/// @param request A non-null block request
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note The return value will be passed to the storage completion routine.
+/// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
+/// @note This function separates a CMD18 request into multiple CMD17 ones.
+///
+IOReturn IOSDHostDriver::processReadBlocksRequestSeparately(IOSDBlockRequest* request)
+{
+    pinfo("Processing the request that reads multiple blocks separately...");
+    
+    auto builder = [&](UInt32 offset, IOMemoryDescriptor* data) -> IOSDSingleBlockRequest
+    {
+        return this->host->getRequestFactory().CMD17(offset, data);
+    };
+    
+    return this->processAccessBlocksRequestSeparately(request, builder);
+}
+
+///
 /// Process the given request to write a single block
 ///
 /// @param request A non-null block request
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note The return value will be passed to the storage completion routine.
-/// @note When this function is invoked, the DMA command is guaranteed to be non-null and prepared.
+/// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
 ///
 IOReturn IOSDHostDriver::processWriteBlockRequest(IOSDBlockRequest* request)
 {
@@ -168,10 +201,18 @@ IOReturn IOSDHostDriver::processWriteBlockRequest(IOSDBlockRequest* request)
 /// @param request A non-null block request
 /// @return `kIOReturnSuccess` on success, other values otherwise.
 /// @note The return value will be passed to the storage completion routine.
-/// @note When this function is invoked, the DMA command is guaranteed to be non-null and prepared.
+/// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
 ///
 IOReturn IOSDHostDriver::processWriteBlocksRequest(IOSDBlockRequest* request)
 {
+    // Guard: Check if the driver should separate the incoming request
+    if (RealtekUserConfigs::Card::SeparateAccessBlocksRequest)
+    {
+        pinfo("User requests to separate the CMD25 request into multiple CMD24 ones.");
+        
+        return this->processWriteBlocksRequestSeparately(request);
+    }
+    
     // Issue the ACMD23 to set the number of pre-erased blocks
     pinfo("Issuing an ACMD23 to set the number of pre-erased blocks...");
     
@@ -196,6 +237,27 @@ IOReturn IOSDHostDriver::processWriteBlocksRequest(IOSDBlockRequest* request)
     auto creq = this->host->getRequestFactory().CMD25(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getMemoryDescriptor(), request->getNumBlocks());
     
     return this->waitForRequest(creq);
+}
+
+///
+/// Process the given request to write multiple blocks separately
+///
+/// @param request A non-null block request
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note The return value will be passed to the storage completion routine.
+/// @note When this function is invoked, the memory descriptor is guaranteed to be non-null and prepared.
+/// @note This function separates a CMD25 request into multiple CMD24 ones.
+///
+IOReturn IOSDHostDriver::processWriteBlocksRequestSeparately(IOSDBlockRequest* request)
+{
+    pinfo("Processing the request that writes multiple blocks separately...");
+    
+    auto builder = [&](UInt32 offset, IOMemoryDescriptor* data) -> IOSDSingleBlockRequest
+    {
+        return this->host->getRequestFactory().CMD24(offset, data);
+    };
+    
+    return this->processAccessBlocksRequestSeparately(request, builder);
 }
 
 ///

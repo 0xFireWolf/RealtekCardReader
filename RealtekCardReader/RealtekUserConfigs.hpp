@@ -38,6 +38,9 @@ namespace RealtekUserConfigs::Card
     /// `True` if the card should be initialized at the high speed mode
     extern bool InitAtHighSpeed;
     
+    /// `True` if the driver should separate each CMD18/25 request into multiple CMD17/24 ones
+    extern bool SeparateAccessBlocksRequest;
+    
     /// Specify the maximum number of attempts to retry an application command
     extern UInt32 ACMDMaxNumAttempts;
 }
