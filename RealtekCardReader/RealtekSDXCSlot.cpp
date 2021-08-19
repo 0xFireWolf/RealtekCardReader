@@ -886,9 +886,10 @@ IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferReque
     // Set up the SD_CFG2 register value
     UInt8 cfg2 = SD::CFG2::kCalcCRC7 | SD::CFG2::kCheckCRC7 | SD::CFG2::kCheckCRC16 | SD::CFG2::kNoWaitBusyEnd | SD::CFG2::kResponseLength0;
     
-    // FIXME: PCIe specific???
     if (!this->isRunningInUltraHighSpeedMode())
     {
+        // This branch seems to be PCIe-specific
+        // but has no side effect with USB card readers
         cfg2 |= SD::CFG2::kNoCheckWaitCRCTo;
     }
     
@@ -1013,6 +1014,28 @@ IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferReque
     
     pinfo("DMA transfer completed successfully.");
     
+    // FIXME: **USB Card Readers** Known Issue:
+    // The bulk pipe will definitely be stalled after the host device initiates a DMA transfer (CMD18/25).
+    // The next command transfer after the DMA operation is always timed out.
+    // Here we initiate a command transfer to read a chip register, which will be timed out on USB-based card readers,
+    // but the following CMD12 will complete without errors, so the storage subsystem can read the card properly.
+    // Note that the root cause of the timeout issue after the DMA transfer is still under investigation.
+    // Feel free to submit a pull request or issue on Github to share your thoughts or fix this issue.
+    // Check the transfer status
+    auto action = [&]() -> IOReturn
+    {
+        return this->controller->enqueueCheckRegisterCommand(SD::rTRANSFER, SD::TRANSFER::kTransferEnd, SD::TRANSFER::kTransferEnd);
+    };
+    
+    if (this->controller->withCustomCommandTransfer(action) != kIOReturnSuccess)
+    {
+        perr("Failed to send the command to check the transfer status.");
+    }
+    else
+    {
+        pinfo("Transfer status = 0x%02x.", this->controller->readHostBufferValue<UInt8>(0));
+    }
+    
     return kIOReturnSuccess;
 }
 
@@ -1043,9 +1066,10 @@ IOReturn RealtekSDXCSlot::processSDCommandWithOutboundSingleBlockDMATransferRequ
     // Set up the SD_CFG2 register value
     UInt8 cfg2 = SD::CFG2::kNoCalcCRC7 | SD::CFG2::kNoCheckCRC7 | SD::CFG2::kCheckCRC16 | SD::CFG2::kNoWaitBusyEnd | SD::CFG2::kResponseLength0;
     
-    // FIXME: PCIe specific???
     if (!this->isRunningInUltraHighSpeedMode())
     {
+        // This branch seems to be PCIe-specific
+        // but has no side effect with USB card readers
         cfg2 |= SD::CFG2::kNoCheckWaitCRCTo;
     }
     
@@ -1169,6 +1193,28 @@ IOReturn RealtekSDXCSlot::processSDCommandWithOutboundSingleBlockDMATransferRequ
     }
     
     pinfo("DMA transfer completed successfully.");
+    
+    // FIXME: **USB Card Readers** Known Issue:
+    // The bulk pipe will definitely be stalled after the host device initiates a DMA transfer (CMD18/25).
+    // The next command transfer after the DMA operation is always timed out.
+    // Here we initiate a command transfer to read a chip register, which will be timed out on USB-based card readers,
+    // but the following CMD12 will complete without errors, so the storage subsystem can read the card properly.
+    // Note that the root cause of the timeout issue after the DMA transfer is still under investigation.
+    // Feel free to submit a pull request or issue on Github to share your thoughts or fix this issue.
+    // Check the transfer status
+    auto action = [&]() -> IOReturn
+    {
+        return this->controller->enqueueCheckRegisterCommand(SD::rTRANSFER, SD::TRANSFER::kTransferEnd, SD::TRANSFER::kTransferEnd);
+    };
+    
+    if (this->controller->withCustomCommandTransfer(action) != kIOReturnSuccess)
+    {
+        perr("Failed to send the command to check the transfer status.");
+    }
+    else
+    {
+        pinfo("Transfer status = 0x%02x.", this->controller->readHostBufferValue<UInt8>(0));
+    }
     
     return kIOReturnSuccess;
 }
