@@ -1505,28 +1505,30 @@ IOReturn RealtekUSBCardReaderController::performBulkTransfer(IOUSBHostPipe* pipe
         
         if (retVal == kUSBHostReturnPipeStalled)
         {
-            perr("The given pipe is stalled. Will clear the stall status.");
+            perr("[%02d] The given pipe is stalled. Will clear the stall status.", retry);
             
             psoftassert(pipe->clearStall(true) == kIOReturnSuccess, "Failed to clear the stall status.");
+            
+            this->clearError();
             
             continue;
         }
         
         if (retVal != kIOReturnSuccess)
         {
-            perr("Failed to request the bulk transfer. Error = 0x%x.", retVal);
+            perr("[%02d] Failed to request the bulk transfer. Error = 0x%x.", retry, retVal);
             
             return retVal;
         }
         
         if (actualLength != bufferLength)
         {
-            perr("The number of bytes transferred (%u) is not identical to the requested one.", actualLength);
+            perr("[%02d] The number of bytes transferred (%u) is not identical to the requested one.", retry, actualLength);
             
             return kIOReturnError;
         }
         
-        pinfo("[%02d] the bulk transfer completed successfully.", retry);
+        pinfo("[%02d] The bulk transfer completed successfully.", retry);
         
         return kIOReturnSuccess;
     }
