@@ -148,6 +148,7 @@
 		D5A049F626D043EE00E953FB /* IOSDHostDriverUserConfigs.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDHostDriverUserConfigs.hpp; sourceTree = "<group>"; };
 		D5A049F926D043FC00E953FB /* RealtekCardReaderUserConfigs.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekCardReaderUserConfigs.cpp; sourceTree = "<group>"; };
 		D5A049FA26D043FC00E953FB /* RealtekCardReaderUserConfigs.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekCardReaderUserConfigs.hpp; sourceTree = "<group>"; };
+		D5A049FD26D051F800E953FB /* BootArgs.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BootArgs.md; sourceTree = "<group>"; };
 		D5BDBCBB26C85EB2002467CA /* IOEnhancedCommandPool.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOEnhancedCommandPool.hpp; sourceTree = "<group>"; };
 		D5BDBCBF26C87F33002467CA /* IOSDHostRequest.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDHostRequest.hpp; sourceTree = "<group>"; };
 		D5BDBCC326C8E4A4002467CA /* IOCommandGate.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOCommandGate.hpp; sourceTree = "<group>"; };
@@ -334,6 +335,7 @@
 			isa = PBXGroup;
 			children = (
 				D57FA6AB267D3C610023097C /* FAQ.md */,
+				D5A049FD26D051F800E953FB /* BootArgs.md */,
 			);
 			path = Docs;
 			sourceTree = "<group>";

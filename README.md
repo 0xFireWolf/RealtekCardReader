@@ -22,7 +22,7 @@ It uses the Linux driver as a reference implementation but is written from scrat
 - SD Express cards are not supported
 
 ## Current Status
-- **Last Updated:** Jul 14, 2021
+- **Last Updated:** Aug 20, 2021
 - **Reference:** [Linux Kernel 5.11](https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.11.tar.xz)
 - **Driver Status:** Pre-1.0 Beta (v0.9.5)
     - Basic power management is now available.
@@ -62,6 +62,9 @@ It uses the Linux driver as a reference implementation but is written from scrat
 - RTS525A has the highest priority than other chips, because that's the only chip available for me to test the driver.
 - If a device's support status is "Not Yet", its controller is not implemented yet.
 - Other Realtek USB card readers (e.g., RTS5138) conform to the USB Attached SCSI (UAS) protocol and therefore may be supported by the native driver.
+
+## Boot Arguments
+Please refer to this dedicated [page](Docs/BootArgs.md) to see all boot arguments.
 
 ## Questions, Issues and Documentation
 
