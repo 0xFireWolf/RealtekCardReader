@@ -10,7 +10,7 @@
 #include "Debug.hpp"
 #include "IOSDBlockStorageDevice.hpp"
 #include "IOMemoryDescriptor.hpp"
-#include "RealtekUserConfigs.hpp"
+#include "IOSDHostDriverUserConfigs.hpp"
 #include "IOCommandGate.hpp"
 
 //
@@ -143,7 +143,7 @@ IOReturn IOSDHostDriver::processReadBlockRequest(IOSDBlockRequest* request)
 IOReturn IOSDHostDriver::processReadBlocksRequest(IOSDBlockRequest* request)
 {
     // Guard: Check if the driver should separate the incoming request
-    if (RealtekUserConfigs::Card::SeparateAccessBlocksRequest)
+    if (UserConfigs::Card::SeparateAccessBlocksRequest)
     {
         pinfo("User requests to separate the CMD18 request into multiple CMD17 ones.");
         
@@ -206,7 +206,7 @@ IOReturn IOSDHostDriver::processWriteBlockRequest(IOSDBlockRequest* request)
 IOReturn IOSDHostDriver::processWriteBlocksRequest(IOSDBlockRequest* request)
 {
     // Guard: Check if the driver should separate the incoming request
-    if (RealtekUserConfigs::Card::SeparateAccessBlocksRequest)
+    if (UserConfigs::Card::SeparateAccessBlocksRequest)
     {
         pinfo("User requests to separate the CMD25 request into multiple CMD24 ones.");
         
@@ -885,7 +885,7 @@ IOReturn IOSDHostDriver::waitForAppRequest(IOSDHostRequest& request, UInt32 rca)
 {
     IOReturn retVal = kIOReturnSuccess;
     
-    for (int attempt = 0; attempt < RealtekUserConfigs::Card::ACMDMaxNumAttempts; attempt += 1)
+    for (int attempt = 0; attempt < UserConfigs::Card::ACMDMaxNumAttempts; attempt += 1)
     {
         pinfo("[%02d] Sending the application command...", attempt);
         

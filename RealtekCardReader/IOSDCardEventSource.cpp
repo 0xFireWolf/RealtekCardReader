@@ -40,7 +40,7 @@ bool IOSDCardEventSource::checkForWork()
     
     // Acknowledge the card event
     //super::disable();
-    this->disable(); // Getting card status may return timeout, leading to card detach.
+    this->disable(); // FIXME:Getting card status may return timeout, leading to card detach.
     
     pinfo("Processing the card event...");
     

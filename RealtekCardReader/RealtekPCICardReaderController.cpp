@@ -7,7 +7,7 @@
 
 #include "RealtekPCICardReaderController.hpp"
 #include "RealtekPCISDXCSlot.hpp"
-#include "RealtekUserConfigs.hpp"
+#include "RealtekCardReaderUserConfigs.hpp"
 #include "BitOptions.hpp"
 #include "IOPCIeDevice.hpp"
 #include "IOMemoryDescriptor.hpp"
@@ -1536,7 +1536,7 @@ IOReturn RealtekPCICardReaderController::switchCardClock(UInt8 depth, UInt8 n, U
     }
     
     // Wait until the SSC clock becomes stable
-    IOSleep(RealtekUserConfigs::COM::DelayStableSSCClock);
+    IOSleep(UserConfigs::COM::DelayStableSSCClock);
     
     return this->writeChipRegister(CLK::rCTL, CLK::CTL::kLowFrequency, 0);
 }
@@ -3356,9 +3356,9 @@ bool RealtekPCICardReaderController::start(IOService* provider)
     // Setup the card if it is present when the driver starts
     if (this->setupCardInitTimer())
     {
-        pinfo("User requests to delay %u ms to initialize the card found during the system boots.", RealtekUserConfigs::PCR::DelayCardInitAtBoot);
+        pinfo("User requests to delay %u ms to initialize the card found during the system boots.", UserConfigs::PCR::DelayCardInitAtBoot);
         
-        this->cardSetupTimer->setTimeoutMS(RealtekUserConfigs::PCR::DelayCardInitAtBoot);
+        this->cardSetupTimer->setTimeoutMS(UserConfigs::PCR::DelayCardInitAtBoot);
     }
     
     this->registerService();
