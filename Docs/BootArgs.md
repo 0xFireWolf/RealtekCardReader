@@ -11,31 +11,26 @@ If a boot argument has a numeric type, for example `UInt32`, you should add the 
 For example, if the name is `rtsxabcd` and the value is `10`, `<Name>=<Value>` becomes `rtsxabcd=10`.
 
 ### Card Specific
-
 - InitAt3v3
     - Boot Argument: `-iosd3v3`
     - Value Type: `Boolean`
     - Default Value: `false`
     - Description: Add this boot argument to initialize all cards at 3.3V, so cards can work at the default or the high speed mode only.
-    
 - InitAtDefaultSpeed
     - Boot Argument: `-iosddsm`
     - Value Type: `Boolean`
     - Default Value: `false`
     - Description: Add this boot argument to initialize all cards at the default speed mode. The maximum data transfer rate is limited to 12 MB/s.
-    
 - InitAtHighSpeed
     - Boot Argument: `-iosdhsm`
     - Value Type: `Boolean`
     - Default Value: `false`
     - Description: Add this boot argument to initialize all cards at the high speed mode. The maximum data transfer rate is limited to 25 MB/s.
-    
 - SeparateAccessBlocksRequest
     - Boot Argument: `-iosdsabr`
     - Value Type: `Boolean`
     - Default Value: `false`
     - Description: Add this boot argument to separate each CMD18/25 request into multiple CMD17/24 ones, so the host driver will not access multiple blocks on the card in one shot.
-    
 - ACMDMaxNumAttempts
     - Boot Argument: `iosdamna`
     - Value Type: `UInt32`
@@ -44,7 +39,6 @@ For example, if the name is `rtsxabcd` and the value is `10`, `<Name>=<Value>` b
     - Description: Specify the maximum number of attempts to retry an application command (`ACMD*`).
 
 ### PCIe-based Card Reader Specific
-
 - DelayCardInitAtBoot
     - Boot Argument: `rtsxdcib`
     - Value Type: `UInt32`
@@ -53,7 +47,6 @@ For example, if the name is `rtsxabcd` and the value is `10`, `<Name>=<Value>` b
     - Description: Specify the amount of time in milliseconds to delay the card initialization if the card is present when the driver starts. Increase the delay if your card cannot be initialized when the system boots.
 
 ### USB-based Card Reader Specific
-
 - DeviceStatusPollingInterval
     - Boot Argument: `rtsxdspi`
     - Value Type: `UInt32`
@@ -62,7 +55,6 @@ For example, if the name is `rtsxabcd` and the value is `10`, `<Name>=<Value>` b
     - Description: Specify the interval in milliseconds of polling for the device status. A background thread checks whether a card is present every `interval` milliseconds and notifies other driver components if a card is inserted or removed. Increasing the interval will increase the latency of processing the card event, while decreasing the value will waste your CPU cycle, so please choose an interval value wisely.
 
 ### PCIe/USB-based Card Reader Specific
-
 - DelayStableSSCClock
     - Boot Argument: `rtsxdssc`
     - Value Type: `UInt32`
