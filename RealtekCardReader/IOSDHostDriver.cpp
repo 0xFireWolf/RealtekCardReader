@@ -2652,8 +2652,6 @@ bool IOSDHostDriver::start(IOService* provider)
     
     this->host->retain();
     
-    // TODO: Adjust the error label # after `setupPreallocatedDMACommands` is removed.
-    
     // Setup the power managememt
     if (!this->setupPowerManagement())
     {
@@ -2663,37 +2661,37 @@ bool IOSDHostDriver::start(IOService* provider)
     // Setup the shared work loop
     if (!this->setupSharedWorkLoop())
     {
-        goto error4;
+        goto error2;
     }
     
     // Create the block request pool
     if (!this->setupBlockRequestPool())
     {
-        goto error6;
+        goto error3;
     }
     
     // Create the request queue
     if (!this->setupBlockRequestQueue())
     {
-        goto error7;
+        goto error4;
     }
     
     // Create the processor work loop
     if (!this->setupProcessorWorkLoop())
     {
-        goto error8;
+        goto error5;
     }
     
     // Create the block request event source
     if (!this->setupBlockRequestEventSource())
     {
-        goto error9;
+        goto error6;
     }
     
     // Create the card insertion and removal event sources
     if (!this->setupCardEventSources())
     {
-        goto error10;
+        goto error7;
     }
     
     pinfo("========================================");
@@ -2702,27 +2700,21 @@ bool IOSDHostDriver::start(IOService* provider)
     
     return true;
     
-error10:
+error7:
     this->tearDownBlockRequestEventSource();
     
-error9:
+error6:
     this->tearDownProcessorWorkLoop();
     
-error8:
+error5:
     this->tearDownBlockRequestQueue();
     
-error7:
+error4:
     this->tearDownBlockRequestPool();
     
-error6:
-    
-error5:
-    this->tearDownSharedWorkLoop();
-    
-error4:
-    
 error3:
-    
+    this->tearDownSharedWorkLoop();
+
 error2:
     this->tearDownPowerManagement();
     

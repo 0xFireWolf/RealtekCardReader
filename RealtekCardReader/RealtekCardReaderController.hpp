@@ -342,13 +342,6 @@ public:
         }
     };
     
-    ///
-    /// Type of an action that takes a ussr-defined context as its sole argument and enqueues any host commands
-    ///
-    /// @see `RealtekCardReaderController::withCustomCommandTransfer()`.
-    ///
-    using EnqueueAction = IOReturn (*)(void*);
-    
     //
     // MARK: - Controller-Independent Data Structures (Private)
     //
