@@ -23,3 +23,10 @@ namespace UserConfigs::PCR
     /// if the card is present when the driver starts
     UInt32 DelayCardInitAtBoot = BootArgs::get("rtsxdcib", 100);
 }
+
+/// Boot arguments that customize the USB-based card reader controller
+namespace UserConfigs::UCR
+{
+    /// The amount of time in milliseconds to poll for the device status
+    UInt32 DeviceStatusPollingInterval = max(BootArgs::get("rtsxdspi", 500), 100);
+}

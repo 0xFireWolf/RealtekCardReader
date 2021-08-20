@@ -1868,7 +1868,7 @@ void RealtekUSBCardReaderController::onCardEventProcessedGated(void* parameters,
     this->cardEventLock = 0;
     
     // Resume polling the device status
-    this->timer->setTimeoutMS(kPollingInterval);
+    this->timer->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval);
 }
 
 ///
@@ -1932,7 +1932,7 @@ void RealtekUSBCardReaderController::fetchDeviceStatusGated(IOTimerEventSource* 
     }
     
     // Schedule the next action
-    sender->setTimeoutMS(kPollingInterval);
+    sender->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval);
 }
 
 //
@@ -2339,7 +2339,9 @@ bool RealtekUSBCardReaderController::start(IOService* provider)
     this->setDeviceProperties();
     
     // Enable the polling timer
-    psoftassert(this->timer->setTimeoutMS(kPollingInterval) == kIOReturnSuccess, "Failed to enable the polling timer.");
+    pinfo("User requests to poll for the device status every %u milliseconds.", UserConfigs::UCR::DeviceStatusPollingInterval);
+    
+    psoftassert(this->timer->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval) == kIOReturnSuccess, "Failed to enable the polling timer.");
     
     // Register the service so that the reporter can see the device
     this->registerService();

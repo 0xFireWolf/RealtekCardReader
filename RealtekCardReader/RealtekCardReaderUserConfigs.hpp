@@ -26,4 +26,11 @@ namespace UserConfigs::PCR
     extern UInt32 DelayCardInitAtBoot;
 }
 
+/// Boot arguments that customize the USB-based card reader controller
+namespace UserConfigs::UCR
+{
+    /// The amount of time in milliseconds to poll for the device status
+    extern UInt32 DeviceStatusPollingInterval;
+}
+
 #endif /* RealtekCardReaderUserConfigs_hpp */
