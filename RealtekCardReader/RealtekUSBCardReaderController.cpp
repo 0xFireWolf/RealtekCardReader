@@ -635,6 +635,56 @@ IOReturn RealtekUSBCardReaderController::endCommandTransferGated(UInt32 timeout,
     return this->performInboundBulkTransfer(this->hostBufferDescriptor, align(rlength, 4ULL), timeout);
 }
 
+///
+/// Finish the existing host command transfer session without waiting for the response
+///
+/// @param flags An optional flag, 0 by default
+/// @return `kIOReturnSuccess` on success, other values if failes to send the command to the device.
+/// @note Port: This function replaces `rtsx_pci_send_cmd_no_wait()` defined in `rtsx_psr.c`.
+/// @note Port: This function replaces `rtsx_usb_send_cmd()` (the original version) defined in `rtsx_usb.c`.
+/// @note This function sends all commands in the queue to the device.
+/// @note This function runs in a gated context.
+///
+IOReturn RealtekUSBCardReaderController::endCommandTransferNoWaitGated(UInt32 flags)
+{
+    // Create the packet for the batch command transfer and write it to the host buffer
+    IOItemCount ncmds = this->hostCommandCounter.total;
+    
+    this->writePacketToHostBufferGated(Packet::forBatchCommand(ncmds, static_cast<Packet::Flags>(flags & 0xFF)));
+    
+    // Initiate the outbound bulk transfer to send the host commands
+    UInt32 nbytes = Offset::kHostCmdOff + ncmds * sizeof(Command);
+    
+    return this->performOutboundBulkTransfer(this->hostBufferDescriptor, nbytes, 100);
+}
+
+///
+/// Load the response to the existing host command transfer session
+///
+/// @param timeout Specify the amount of time in milliseconds
+/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, other values otherwise.
+/// @note Port: This function is a noop and returns `kIOReturnSuccess` for PCIe-based card reader controllers.
+/// @note Port: This function replaces `rtsx_usb_get_rsp()` (the original version) defined in `rtsx_usb.c`.
+/// @note This function runs in a gated context.
+///
+IOReturn RealtekUSBCardReaderController::loadCommandTransferResponseGated(UInt32 timeout)
+{
+    // Check whether the controller needs to load the response
+    IOByteCount rlength = this->hostCommandCounter.getResponseLength();
+    
+    if (rlength == 0)
+    {
+        pinfo("The current transfer session does not contain read or check register command. No need to load the response.");
+        
+        return kIOReturnSuccess;
+    }
+    
+    // Initiate the inbound bulk transfer to load the response to the host commands
+    pinfo("The response length is %llu bytes.", rlength);
+    
+    return this->performInboundBulkTransfer(this->hostBufferDescriptor, align(rlength, 4ULL), timeout);
+}
+
 //
 // MARK: - Host Data Management
 //
