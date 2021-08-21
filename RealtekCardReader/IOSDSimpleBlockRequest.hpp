@@ -109,21 +109,11 @@ public:
     
 protected:
     ///
-    /// Prepare the request
+    /// Service the block request once
     ///
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note This function allocates a DMA command and prepares the buffer accordingly.
+    /// @return `kIOReturnSuccess` if the block request completes without errors, other values otherwise.
     ///
-    IOReturn prepare();
-    
-    ///
-    /// Complete the request
-    ///
-    /// @param retVal The return value passed to the completion routine
-    /// @note This function releases the DMA command and completes the buffer accordingly,
-    ///       and then invokes the storage completion routine with the given return value.
-    ///
-    void complete(IOReturn retVal);
+    IOReturn serviceOnce();
 };
 
 #endif /* IOSDSimpleBlockRequest_hpp */

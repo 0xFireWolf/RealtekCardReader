@@ -7,6 +7,7 @@
 
 #include "IOSDComplexBlockRequest.hpp"
 #include <IOKit/IOSubMemoryDescriptor.h>
+#include "IOMemoryDescriptor.hpp"
 #include "IOSDHostDriver.hpp"
 #include "Utilities.hpp"
 #include "Debug.hpp"
@@ -69,29 +70,23 @@ void IOSDComplexBlockRequest::deinit()
 ///
 void IOSDComplexBlockRequest::service()
 {
-    // The service status
-    IOReturn retVal = kIOReturnSuccess;
-    
-    // The maximum number of blocks to be transferred in one transaction
-    UInt64 maxRequestNumBlocks = this->driver->getHostDevice()->getDMALimits().maxRequestNumBlocks();
-    
-    // The original completion action
-    IOStorageCompletionAction action = this->completion.action;
-    
-    // A buffer that describes a portion of data to be transfered in the current DMA transaction
+    // Guard: A buffer that describes a portion of data to be transfered in the current DMA transaction
     IOSubMemoryDescriptor* buffer = OSTypeAlloc(IOSubMemoryDescriptor);
+    
+    if (buffer == nullptr)
+    {
+        IOStorage::complete(&this->completion, kIOReturnNoMemory, 0);
+        
+        return;
+    }
     
     this->buffer = buffer;
     
-    if (this->buffer == nullptr)
-    {
-        retVal = kIOReturnNoMemory;
-        
-        goto out;
-    }
+    // The service status
+    IOReturn status = kIOReturnSuccess;
     
-    // `IOStorage::complete()` becomes a noop in each intermediate transaction
-    this->completion.action = nullptr;
+    // The maximum number of blocks to be transferred in one transaction
+    UInt64 maxRequestNumBlocks = this->driver->getHostDevice()->getDMALimits().maxRequestNumBlocks();
     
     pinfo("BREQ: Servicing the complex request: Start index = %llu; Number of blocks = %llu.", this->block, this->nblocks);
     
@@ -108,29 +103,17 @@ void IOSDComplexBlockRequest::service()
         {
             perr("Failed to initialize the sub-memory descriptor.");
             
-            retVal = kIOReturnError;
-            
-            break;
-        }
-                
-        // Guard: Prepare the intermediate request
-        retVal = this->prepare();
-        
-        if (retVal != kIOReturnSuccess)
-        {
-            perr("Failed to prepare the request. Error = 0x%x.", retVal);
+            status = kIOReturnError;
             
             break;
         }
         
-        // Guard: Process the intermediate request
-        passert(this->processor != nullptr, "The processor should not be null.");
+        // Service the intermediate request
+        status = this->serviceOnce();
         
-        retVal = (*this->processor)(this->driver, this);
-        
-        if (retVal != kIOReturnSuccess)
+        if (status != kIOReturnSuccess)
         {
-            perr("Failed to process the request. Error = 0x%x.", retVal);
+            perr("Failed to process the intermediate transaction. Error = 0x%x.", status);
             
             break;
         }
@@ -138,19 +121,18 @@ void IOSDComplexBlockRequest::service()
         // Guard: Complete the intermediate request
         pinfo("BREQ: Serviced the intermediate transaction: Current start index = %llu; Number of blocks = %llu.", this->cblock, this->cnblocks);
         
-        this->complete(retVal);
-        
         // The intermediate request completes without errors
         this->cblock += maxRequestNumBlocks;
     }
+    
+    // Complete the request
+    UInt64 actualByteCount = status == kIOReturnSuccess ? this->nblocks * 512 : 0;
 
-out:
-    // Restore the original completion action
-    this->completion.action = action;
+    IOStorage::complete(&this->completion, status, actualByteCount);
     
     OSSafeReleaseNULL(this->buffer);
     
-    this->complete(retVal);
+    pinfo("The request is completed. Return value = 0x%08x.", retVal);
 }
 
 ///

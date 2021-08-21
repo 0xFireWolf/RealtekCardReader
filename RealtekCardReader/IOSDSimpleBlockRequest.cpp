@@ -7,6 +7,7 @@
 
 #include "IOSDSimpleBlockRequest.hpp"
 #include "IOSDHostDriver.hpp"
+#include "IOMemoryDescriptor.hpp"
 #include "Debug.hpp"
 
 //
@@ -115,75 +116,33 @@ UInt64 IOSDSimpleBlockRequest::getNumBlocks()
 ///
 void IOSDSimpleBlockRequest::service()
 {
-    // Guard: Prepare the request
-    IOReturn retVal = this->prepare();
+    // Service the request
+    pinfo("Processing the request...");
     
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to prepare the request. Error = 0x%x.", retVal);
-        
-        goto out;
-    }
+    IOReturn status = this->serviceOnce();
     
-    // Guard: Service the request
-    passert(this->processor != nullptr, "The processor should not be null.");
-    
-    retVal = (*this->processor)(this->driver, this);
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to process the request. Error = 0x%x.", retVal);
-    }
-    
-out:
-    this->complete(retVal);
-}
+    // Complete the request
+    UInt64 actualByteCount = status == kIOReturnSuccess ? this->nblocks * 512 : 0;
 
-///
-/// Prepare the request
-///
-/// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note This function allocates a DMA command and prepares the buffer accordingly.
-///
-IOReturn IOSDSimpleBlockRequest::prepare()
-{
-    // Guard: Page in and wire down the transfer buffer
-    pinfo("Page in and wire down the transfer buffer.");
-    
-    IOReturn retVal = this->buffer->prepare();
-    
-    if (retVal != kIOReturnSuccess)
-    {
-        perr("Failed to page in and wire down the transfer buffer. Error = 0x%x.", retVal);
-        
-        return retVal;
-    }
-    
-    return kIOReturnSuccess;
-}
-
-///
-/// Complete the request
-///
-/// @param retVal The return value passed to the completion routine
-/// @note This function releases the DMA command and completes the buffer accordingly,
-///       and then invokes the storage completion routine with the given return value.
-///
-void IOSDSimpleBlockRequest::complete(IOReturn retVal)
-{
-    // Dissociate the transfer buffer from the DMA command
-    pinfo("Completing the request...");
-    
-    if (this->buffer != nullptr)
-    {
-        psoftassert(this->buffer->complete() == kIOReturnSuccess, "Failed to complete the transfer buffer.");
-    }
-    
-    UInt64 actualByteCount = retVal == kIOReturnSuccess ? this->nblocks * 512 : 0;
-    
-    pinfo("Invoking the completion routine.");
-
-    IOStorage::complete(&this->completion, retVal, actualByteCount);
+    IOStorage::complete(&this->completion, status, actualByteCount);
     
     pinfo("The request is completed. Return value = 0x%08x.", retVal);
+}
+
+///
+/// Service the block request once
+///
+/// @return `kIOReturnSuccess` if the block request completes without errors, other values otherwise.
+///
+IOReturn IOSDSimpleBlockRequest::serviceOnce()
+{
+    // Service the request while the transfer buffer is prepared
+    auto action = [&](IOMemoryDescriptor*) -> IOReturn
+    {
+        passert(this->processor != nullptr, "The processor should not be null.");
+        
+        return (*this->processor)(this->driver, this);
+    };
+    
+    return IOMemoryDescriptorRunActionWhilePrepared(this->buffer, action);
 }
