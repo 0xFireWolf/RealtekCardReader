@@ -886,6 +886,29 @@ protected:
     ///
     virtual IOReturn endCommandTransferGated(UInt32 timeout, UInt32 flags) = 0;
     
+    ///
+    /// Finish the existing host command transfer session without waiting for the response
+    ///
+    /// @param flags An optional flag, 0 by default
+    /// @return `kIOReturnSuccess` on success, other values if failes to send the command to the device.
+    /// @note Port: This function replaces `rtsx_pci_send_cmd_no_wait()` defined in `rtsx_psr.c`.
+    /// @note Port: This function replaces `rtsx_usb_send_cmd()` (the original version) defined in `rtsx_usb.c`.
+    /// @note This function sends all commands in the queue to the device.
+    /// @note This function runs in a gated context.
+    ///
+    virtual IOReturn endCommandTransferNoWaitGated(UInt32 flags) = 0;
+    
+    ///
+    /// Load the response to the existing host command transfer session
+    ///
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, other values otherwise.
+    /// @note Port: This function is a noop and returns `kIOReturnSuccess` for PCIe-based card reader controllers.
+    /// @note Port: This function replaces `rtsx_usb_get_rsp()` (the original version) defined in `rtsx_usb.c`.
+    /// @note This function runs in a gated context.
+    ///
+    virtual IOReturn loadCommandTransferResponseGated(UInt32 timeout) = 0;
+    
 public:
     ///
     /// Enqueue a command
@@ -906,6 +929,27 @@ public:
     /// @note This function sends all commands in the queue to the device.
     ///
     IOReturn endCommandTransfer(UInt32 timeout = 100, UInt32 flags = 0);
+    
+    ///
+    /// Finish the existing host command transfer session without waiting for the response
+    ///
+    /// @param flags An optional flag, 0 by default
+    /// @return `kIOReturnSuccess` on success, other values if failes to send the command to the device.
+    /// @note Port: This function replaces `rtsx_pci_send_cmd_no_wait()` defined in `rtsx_psr.c`.
+    /// @note Port: This function replaces `rtsx_usb_send_cmd()` (the original version) defined in `rtsx_usb.c`.
+    /// @note This function sends all commands in the queue to the device.
+    ///
+    IOReturn endCommandTransferNoWait(UInt32 flags = 0);
+    
+    ///
+    /// Load the response to the existing host command transfer session
+    ///
+    /// @param timeout Specify the amount of time in milliseconds
+    /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, other values otherwise.
+    /// @note Port: This function is a noop and returns `kIOReturnSuccess` for PCIe-based card reader controllers.
+    /// @note Port: This function replaces `rtsx_usb_get_rsp()` (the original version) defined in `rtsx_usb.c`.
+    ///
+    IOReturn loadCommandTransferResponse(UInt32 timeout);
     
     ///
     /// Launch a custom command transfer session conveniently

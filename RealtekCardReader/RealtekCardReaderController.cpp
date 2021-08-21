@@ -209,11 +209,65 @@ IOReturn RealtekCardReaderController::endCommandTransfer(UInt32 timeout, UInt32 
         perr("Failed to transfer host commands. Error = 0x%x.", retVal);
         
         this->clearError();
+        
+        return retVal;
     }
     
     pinfo("Finished a command transfer session. Returns 0x%x.", retVal);
     
-    return retVal;
+    return kIOReturnSuccess;
+}
+
+///
+/// Finish the existing host command transfer session without waiting for the response
+///
+/// @param flags An optional flag, 0 by default
+/// @return `kIOReturnSuccess` on success, other values if failes to send the command to the device.
+/// @note Port: This function replaces `rtsx_pci_send_cmd_no_wait()` defined in `rtsx_psr.c`.
+/// @note Port: This function replaces `rtsx_usb_send_cmd()` (the original version) defined in `rtsx_usb.c`.
+/// @note This function sends all commands in the queue to the device.
+///
+IOReturn RealtekCardReaderController::endCommandTransferNoWait(UInt32 flags)
+{
+    // The transfer routine will run in a gated context
+    auto action = [&]() -> IOReturn
+    {
+        return this->endCommandTransferNoWaitGated(flags);
+    };
+    
+    IOReturn retVal = IOCommandGateRunAction(this->commandGate, action);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to transfer host commands. Error = 0x%x.", retVal);
+        
+        this->clearError();
+        
+        return retVal;
+    }
+    
+    pinfo("Finished a command transfer session. Returns 0x%x.", retVal);
+    
+    return kIOReturnSuccess;
+}
+
+///
+/// Load the response to the existing host command transfer session
+///
+/// @param timeout Specify the amount of time in milliseconds
+/// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, other values otherwise.
+/// @note Port: This function is a noop and returns `kIOReturnSuccess` for PCIe-based card reader controllers.
+/// @note Port: This function replaces `rtsx_usb_get_rsp()` (the original version) defined in `rtsx_usb.c`.
+///
+IOReturn RealtekCardReaderController::loadCommandTransferResponse(UInt32 timeout)
+{
+    // The transfer routine will run in a gated context
+    auto action = [&]() -> IOReturn
+    {
+        return this->loadCommandTransferResponseGated(timeout);
+    };
+    
+    return IOCommandGateRunAction(this->commandGate, action);
 }
 
 //
