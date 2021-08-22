@@ -192,18 +192,6 @@ public:
     IOReturn processSDCommandWithInboundSingleBlockDMATransferRequest(IOSDSingleBlockRequest& request);
     
     ///
-    /// [Case 3] Send a SD command along with an inbound DMA transfer
-    ///
-    /// @param request A block-oriented data transfer request to service
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces `sd_read_long_data()` defined in `rtsx_pci_sdmmc.c`.
-    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a DMA transfer.
-    /// @note This function serves as the processor routine that handles command requests that read a single block from the card.
-    /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::readSingleBlockProcessor`.
-    ///
-    IOReturn processSDCommandWithInboundSingleBlockDMATransferRequestV2(IOSDSingleBlockRequest& request);
-    
-    ///
     /// [Case 3] Send a SD command along with an outbound DMA transfer
     ///
     /// @param request A block-oriented data transfer request to service
@@ -214,18 +202,6 @@ public:
     /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeSingleBlockProcessor`.
     ///
     IOReturn processSDCommandWithOutboundSingleBlockDMATransferRequest(IOSDSingleBlockRequest& request);
-    
-    ///
-    /// [Case 3] Send a SD command along with an outbound DMA transfer
-    ///
-    /// @param request A block-oriented data transfer request to service
-    /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces `sd_write_long_data()` defined in `rtsx_pci_sdmmc.c`.
-    /// @note This function is invoked by `IOSDHostDriver::CMD*()` and `IOSDHostDriver::ACMD*()` that involve a DMA transfer.
-    /// @note This function serves as the processor routine that handles command requests that write a single block to the card.
-    /// @seealso `IOSDHostRequest::processor` and `IOSDHostRequestFactory::writeSingleBlockProcessor`.
-    ///
-    IOReturn processSDCommandWithOutboundSingleBlockDMATransferRequestV2(IOSDSingleBlockRequest& request);
     
     ///
     /// [Case 3] Send a SD command along with an inbound DMA transfer
