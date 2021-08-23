@@ -132,7 +132,7 @@ void IOSDComplexBlockRequest::service()
     
     OSSafeReleaseNULL(this->buffer);
     
-    pinfo("The request is completed. Return value = 0x%08x.", retVal);
+    pinfo("The request is completed. Return value = 0x%08x.", status);
 }
 
 ///

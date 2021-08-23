@@ -126,7 +126,7 @@ void IOSDSimpleBlockRequest::service()
 
     IOStorage::complete(&this->completion, status, actualByteCount);
     
-    pinfo("The request is completed. Return value = 0x%08x.", retVal);
+    pinfo("The request is completed. Return value = 0x%08x.", status);
 }
 
 ///
