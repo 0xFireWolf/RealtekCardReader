@@ -170,13 +170,6 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     static constexpr IOItemCount kMaxNumCommands = (kHostBufferSize - Offset::kHostCmdOff) / 4;
     
     //
-    // MARK: - Constants: Device Status Polling Interval
-    //
-    
-    /// Poll the device status every 100ms
-    static constexpr UInt32 kPollingInterval = /*100*/1000;
-    
-    //
     // MARK: - Data Structures (Private)
     //
     
