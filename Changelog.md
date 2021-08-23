@@ -20,6 +20,7 @@
 - Addressed an issue that CMD17 and CMD24 fail to transfer any data from/to the card with USB-based card readers.
 - Switched the mode from `AutoRead2` to `AutoRead3` when the host device services an inbound DMA transfer request.
 - Resolved an issue that bulk pipes halted after the driver issued a DMA transfer request to USB-based card readers. 
+- Revise the implementation of processing block requests to fix the regression caused by the new driver stack.
 
 #### v0.9.5 Beta
 - Rebranded the project.
