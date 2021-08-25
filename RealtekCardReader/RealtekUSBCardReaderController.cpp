@@ -1950,7 +1950,16 @@ void RealtekUSBCardReaderController::onCardEventProcessedGated(void* parameters,
     this->cardEventLock = 0;
     
     // Resume polling the device status
-    this->timer->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval);
+    if (BootArgs::contains("-rtsxsppp"))
+    {
+        // WARNING: This feature will be removed in later releases
+        // TODO: REMOVE THIS
+        pinfo("User requests to stop polling the device status after the card event has been processed.");
+    }
+    else
+    {
+        this->timer->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval);
+    }
 }
 
 ///
