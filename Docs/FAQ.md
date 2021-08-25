@@ -1,6 +1,6 @@
 #  Frequently Asked Questions
 
-**Last Updated:** Jun 24, 2021
+**Last Updated:** Aug 25, 2021
 
 ## Device Support
 
@@ -27,9 +27,9 @@ Milestones:
 - 1: Base controller implementation for all supported Realtek PCIe-based card readers.
 - 2: Chip-independent Realtek SD host device implementation.
 - 3: Initial SD host driver stack implementation for macOS.
-- 4: I/O performance and stability of the driver. (<-- Right Now)
+- 4: I/O performance and stability of the driver.
 - 5: Power management implementation.
-- 6: Support more card readers.
+- 6: Support more card readers. (<-- Right Now)
 
 ## Installation
 
@@ -73,7 +73,9 @@ You should be able to see something similar to the following lines.
 [    1.132105]: RTSX: bool RealtekPCICardReaderController::setupWorkLoop() DInfo: The workloop and the command gate have been created.
 [    1.132147]: RTSX: int RealtekPCICardReaderController::probeMSIIndex() DInfo: Found the MSI index = 1.
 ```
-If the log file is empty or is incomplete, please install the [DebugEnhancer](https://github.com/acidanthera/DebugEnhancer) and try again.
+If the log file is empty or is incomplete, please install the [DebugEnhancer](https://github.com/acidanthera/DebugEnhancer) and try again.  
+Note that please avoid using the DEBUG version of other kexts when you test this driver.  
+The kernel buffer has a limited capacity thus cannot hold the logs produced by these kexts together.  
 
 #### macOS Catalina and earlier
 
@@ -93,3 +95,53 @@ Once everything is fine, you may switch to the RELEASE version.
 
 The RELEASE version produces log only when there is an error and thus may not be helpful when you plan to investigate an issue.  
 However, you are recommended to use the RELEASE version after you ensure that the driver works fine with your hardware to enjoy the best performance.
+
+## Performance
+
+### General Notes
+
+- Please use a SDXC UHS-I card to get a more precise estimate of the I/O speed under macOS.  
+- Please install the RELEASE version to avoid the performance degradation due to logging.
+- Most cards have a high read speed but a rather low write speed. Refer to the product manual of your cards.
+- Some high-end cards may have a speed that exceeds the limit of your hardware. You may test the speed under other systems to know the limits.
+
+### How do I test the read speed under macOS?
+
+Supposed that your card is mounted at `/Volumes/SDXC/` and there is a file named `Test.bin` on your card.
+Open the terminal and type the following command to test the read speed.
+
+```(sh)
+dd if=/Volumes/SDXC/Test.bin of=/dev/null bs=128k
+```
+
+Once the test finishes, you should be able to see the result similar to below.
+
+```(sh)
+bash$ dd if=/Volumes/SDXC/1GB.bin of=/dev/null bs=128k
+8000+0 records in
+8000+0 records out
+1048576000 bytes transferred in 12.131642 secs (86433147 bytes/sec)
+```
+
+In this case, the read speed is 86433147 bytes/s (82.42 MB/s).
+If you want to test the speed again with the **same** file, type `sudo purge` to clear the filesystem cache before issuing the next `dd` command.
+
+### How do I test the write speed under macOS?
+
+Supposed that your card is mounted at `/Volumes/SDXC/` and there is a file named `Test.bin` on your desktop.
+Open the terminal and type the following command to test the write speed.
+
+```(sh)
+dd if=/Users/<YourUserName>/Desktop/Test.bin of=/Volumes/SDXC/Test.bin bs=128k
+```
+
+Once the test finishes, you should be able to see the result similar to below.
+
+```(sh)
+bash$ dd if=/Users/FireWolf/Desktop/Archive.7z of=/Volumes/SDXC/Archive.7z bs=128k
+7938+1 records in
+7938+1 records out
+1040485250 bytes transferred in 12.380992 secs (84038925 bytes/sec)
+```
+
+In this case, the write speed is 84038925 bytes/s (80.15 MB/s).
