@@ -22,6 +22,7 @@
 - Resolved an issue that bulk pipes halted after the driver issued a DMA transfer request to USB-based card readers. 
 - Revise the implementation of processing block requests to fix the regression caused by the new driver stack.
 - Fixed an issue that the maximum segment size for DMA transfers is incorrectly defined for PCIe-based card readers.
+- Fixed a race condition introduced by the polling thread that corrupts the response sent by USB-based card readers.
 
 #### v0.9.5 Beta
 - Rebranded the project.
