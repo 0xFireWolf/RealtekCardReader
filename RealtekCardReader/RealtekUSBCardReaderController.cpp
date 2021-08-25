@@ -1678,9 +1678,7 @@ IOReturn RealtekUSBCardReaderController::performOutboundBulkTransfer(const void*
 ///
 void RealtekUSBCardReaderController::prepareToSleep()
 {
-    this->timer->cancelTimeout();
-    
-    this->timer->disable();
+    this->pausePollingThread();
     
     pinfo("The hardware is ready to sleep.");
 }
@@ -1698,9 +1696,7 @@ void RealtekUSBCardReaderController::prepareToWakeUp()
     
     pinfo("The hardware is ready.");
     
-    this->timer->enable();
-    
-    psoftassert(this->timer->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval) == kIOReturnSuccess, "Failed to enable the polling timer.");
+    this->resumePollingThread();
 }
 
 //
@@ -1978,7 +1974,7 @@ void RealtekUSBCardReaderController::onCardEventProcessedGated(void* parameters,
     }
     else
     {
-        this->timer->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval);
+        this->resumePollingThread();
     }
 }
 
