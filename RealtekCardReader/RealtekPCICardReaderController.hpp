@@ -416,7 +416,7 @@ class RealtekPCICardReaderController: public RealtekCardReaderController
     static constexpr IOItemCount kMaxNumSegments = 256;
     
     /// The maximum segment size supported by the card reader
-    static constexpr IOItemCount kMaxSegmentSize = 65535;
+    static constexpr IOItemCount kMaxSegmentSize = 65536;
     
     /// The maximum number of DMA transfer failures until the host should reduce the card clock
     static constexpr IOItemCount kMaxDMATransferFailures = 8;
