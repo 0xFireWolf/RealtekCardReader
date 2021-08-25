@@ -1532,8 +1532,9 @@ IOReturn RealtekUSBCardReaderController::writePingPongBuffer(IOMemoryDescriptor*
 /// @note This function increases the timeout to 600 ms if the given timeout is less than 600 ms.
 /// @note This function returns an error if the actual number of bytes transferred is not identical to the given `length`.
 /// @note Port: This function in a sense replaces `rtsx_usb_transfer_data()` and `rtsx_usb_bulk_transfer_sglist()` defined in `rtsx_usb.c`.
+/// @note This function runs in a gated context.
 ///
-IOReturn RealtekUSBCardReaderController::performBulkTransfer(IOUSBHostPipe* pipe, IOMemoryDescriptor* buffer, IOByteCount length, UInt32 timeout, UInt32 retries)
+IOReturn RealtekUSBCardReaderController::performBulkTransferGated(IOUSBHostPipe* pipe, IOMemoryDescriptor* buffer, IOByteCount length, UInt32 timeout, UInt32 retries)
 {
     pinfo("Initiating a bulk transfer with length = %llu bytes and timeout = %u ms...", length, timeout);
     
@@ -1586,6 +1587,29 @@ IOReturn RealtekUSBCardReaderController::performBulkTransfer(IOUSBHostPipe* pipe
     pinfo("Reached the maximum number of attempts. Error = 0x%x.", retVal);
     
     return retVal;
+}
+
+///
+/// [Helper] Perform a data transfer on the bulk endpoint
+///
+/// @param pipe The bulk endpoint
+/// @param buffer A memory descriptor that contains the data of interest
+/// @param length The total number of bytes to transfer
+/// @param timeout Specify the amount of time in milliseconds
+/// @param retries Abort and return an error if the pipe is still stalled after a certain number of attempts
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note This function increases the timeout to 600 ms if the given timeout is less than 600 ms.
+/// @note This function returns an error if the actual number of bytes transferred is not identical to the given `length`.
+/// @note Port: This function in a sense replaces `rtsx_usb_transfer_data()` and `rtsx_usb_bulk_transfer_sglist()` defined in `rtsx_usb.c`.
+///
+IOReturn RealtekUSBCardReaderController::performBulkTransfer(IOUSBHostPipe* pipe, IOMemoryDescriptor* buffer, IOByteCount length, UInt32 timeout, UInt32 retries)
+{
+    auto action = [&]() -> IOReturn
+    {
+        return this->performBulkTransferGated(pipe, buffer, length, timeout, retries);
+    };
+    
+    return IOCommandGateRunAction(this->commandGate, action);
 }
 
 ///
