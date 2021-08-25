@@ -930,7 +930,7 @@ IOReturn RealtekPCICardReaderController::enqueueDMACommand(IODMACommand* command
     {
         UInt64 entry = this->transformIOVMSegment(segments[index]) | HDBAR::kSGOptionValid | HDBAR::kSGOptionTransferData;
         
-        pinfo("[%03d] DMA Bus Address = 0x%08x; Length = %d; Entry = 0x%16llx.",
+        pinfo("[%03d] DMA Bus Address = 0x%08x; Length = %d; Entry = 0x%016llx.",
               index, segments[index].fIOVMAddr, segments[index].fLength, entry);
         
         reinterpret_cast<UInt64*>(segments)[index] = entry;
