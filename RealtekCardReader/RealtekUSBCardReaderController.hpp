@@ -1099,6 +1099,16 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     //
     
     ///
+    /// Stop polling the device status
+    ///
+    void pausePollingThread();
+    
+    ///
+    /// Resume polling the device status
+    ///
+    void resumePollingThread();
+    
+    ///
     /// Invoked when the card event has been processed
     ///
     /// @param parameters Unused parameters

@@ -1937,6 +1937,26 @@ void RealtekUSBCardReaderController::setDeviceProperties()
 //
 
 ///
+/// Stop polling the device status
+///
+void RealtekUSBCardReaderController::pausePollingThread()
+{
+    this->timer->cancelTimeout();
+    
+    this->timer->disable();
+}
+
+///
+/// Resume polling the device status
+///
+void RealtekUSBCardReaderController::resumePollingThread()
+{
+    this->timer->enable();
+    
+    this->timer->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval);
+}
+
+///
 /// Invoked when the card event has been processed
 ///
 /// @param parameters Unused parameters
@@ -2051,7 +2071,7 @@ bool RealtekUSBCardReaderController::setupUSBHostDevice(IOService* provider)
     this->device->retain();
     
     // Take the ownership of the host device
-    pinfo("Taking the onwership of the USB host device...");
+    pinfo("Taking the ownership of the USB host device...");
     
     if (!this->device->open(this))
     {
