@@ -7,12 +7,30 @@
 
 #include "RealtekUSBSDXCSlot.hpp"
 #include "RealtekUSBRegisters.hpp"
+#include "RealtekUSBCardReaderController.hpp"
 
 //
 // MARK: - Meta Class Definitions
 //
 
 OSDefineMetaClassAndStructors(RealtekUSBSDXCSlot, RealtekSDXCSlot);
+
+///
+/// Preprocess the given SD command request
+///
+/// @param request A SD command request
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+///
+IOReturn RealtekUSBSDXCSlot::preprocessRequest(IOSDHostRequest& request)
+{
+    auto controller = OSDynamicCast(RealtekUSBCardReaderController, this->controller);
+    
+    passert(controller != nullptr, "The controller is not valid.");
+    
+    controller->pausePollingThread();
+    
+    return kIOReturnSuccess;
+}
 
 ///
 /// Postprocess the given SD command request
@@ -27,6 +45,12 @@ IOReturn RealtekUSBSDXCSlot::postprocessRequest(IOSDHostRequest& request)
     
     psoftassert(this->controller->writeChipRegister(rCTL, CTL::kFlush, CTL::kFlush) == kIOReturnSuccess,
                 "Failed to flush the FIFO buffer.");
+    
+    auto controller = OSDynamicCast(RealtekUSBCardReaderController, this->controller);
+    
+    passert(controller != nullptr, "The controller is not valid.");
+    
+    controller->resumePollingThread();
     
     return kIOReturnSuccess;
 }

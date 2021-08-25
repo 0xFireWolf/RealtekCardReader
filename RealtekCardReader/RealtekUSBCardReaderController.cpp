@@ -1940,6 +1940,8 @@ void RealtekUSBCardReaderController::pausePollingThread()
     this->timer->cancelTimeout();
     
     this->timer->disable();
+    
+    pinfo("The polling thread has been paused.");
 }
 
 ///
@@ -1950,6 +1952,8 @@ void RealtekUSBCardReaderController::resumePollingThread()
     this->timer->enable();
     
     this->timer->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval);
+    
+    pinfo("The polling thread has been resumed.");
 }
 
 ///

@@ -26,7 +26,15 @@ class RealtekUSBSDXCSlot: public RealtekSDXCSlot
     //
     // MARK: - SD Request Processors
     //
-        
+       
+    ///
+    /// Preprocess the given SD command request
+    ///
+    /// @param request A SD command request
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    ///
+    IOReturn preprocessRequest(IOSDHostRequest& request) override;
+    
     ///
     /// Postprocess the given SD command request
     ///

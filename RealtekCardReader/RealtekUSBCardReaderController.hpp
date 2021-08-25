@@ -1098,6 +1098,7 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     // MARK: - Polling Device Status
     //
     
+public:
     ///
     /// Stop polling the device status
     ///
@@ -1108,6 +1109,7 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     ///
     void resumePollingThread();
     
+protected:    
     ///
     /// Invoked when the card event has been processed
     ///
