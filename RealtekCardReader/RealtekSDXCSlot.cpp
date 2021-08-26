@@ -484,7 +484,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndReadData(IOSDHostCommand& command, IOMe
 {
     using namespace RTSX::COM::Chip;
     
-    pinfo("SDCMD = %d; Arg = 0x%08X; Data Buffer = 0x%08x%08x; Data Length = %llu bytes; Timeout = %d ms.",
+    pinfo("SDCMD = %02d; Arg = 0x%08X; Data Buffer = 0x%08x%08x; Data Length = %llu bytes; Timeout = %d ms.",
           command.getOpcode(), command.getArgument(), KPTR(descriptor), length, timeout);
     
     // Start a command transfer session
@@ -655,7 +655,7 @@ IOReturn RealtekSDXCSlot::runSDCommandAndWriteData(IOSDHostCommand& command, IOM
 {
     using namespace RTSX::COM::Chip;
     
-    pinfo("SDCMD = %d; Arg = 0x%08X; Data Buffer = 0x%08x%08x; Data Length = %llu bytes; Timeout = %d ms.",
+    pinfo("SDCMD = %02d; Arg = 0x%08X; Data Buffer = 0x%08x%08x; Data Length = %llu bytes; Timeout = %d ms.",
           command.getOpcode(), command.getArgument(), KPTR(descriptor), length, timeout);
     
     // Send the SD command
@@ -898,7 +898,7 @@ IOReturn RealtekSDXCSlot::processSDCommandWithInboundSingleBlockDMATransferReque
     
     psoftassert(dataLength <= UINT32_MAX, "The data length should not exceed UINT32_MAX.");
     
-    pinfo("SDCMD = %d; Arg = 0x%08X; Data Length = %llu bytes.", request.command.getOpcode(), request.command.getArgument(), dataLength);
+    pinfo("SDCMD = %02d; Arg = 0x%08X; Data Length = %llu bytes.", request.command.getOpcode(), request.command.getArgument(), dataLength);
     
     // Start a command transfer session
     retVal = this->controller->beginCommandTransfer();
@@ -1064,7 +1064,7 @@ IOReturn RealtekSDXCSlot::processSDCommandWithOutboundSingleBlockDMATransferRequ
     
     psoftassert(dataLength <= UINT32_MAX, "The data length should not exceed UINT32_MAX.");
     
-    pinfo("SDCMD = %d; Arg = 0x%08X; Data Length = %llu bytes.", request.command.getOpcode(), request.command.getArgument(), dataLength);
+    pinfo("SDCMD = %02d; Arg = 0x%08X; Data Length = %llu bytes.", request.command.getOpcode(), request.command.getArgument(), dataLength);
     
     // Start a command transfer session
     retVal = this->controller->beginCommandTransfer();
