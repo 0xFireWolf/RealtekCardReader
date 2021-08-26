@@ -24,6 +24,7 @@
 - Fixed an issue that the maximum segment size for DMA transfers is incorrectly defined for PCIe-based card readers.
 - Fixed a race condition introduced by the polling thread that corrupts the response sent by USB-based card readers.
 - Addressed an issue that UHS-I cards running in SDR50/104 mode are not tuned thus send invalid responses to USB-based card readers.
+- Parse the SD status register value so that System Information can show the speed class of the card.
 
 #### v0.9.5 Beta
 - Rebranded the project.
