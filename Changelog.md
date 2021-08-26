@@ -23,6 +23,7 @@
 - Revise the implementation of processing block requests to fix the regression caused by the new driver stack.
 - Fixed an issue that the maximum segment size for DMA transfers is incorrectly defined for PCIe-based card readers.
 - Fixed a race condition introduced by the polling thread that corrupts the response sent by USB-based card readers.
+- Addressed an issue that UHS-I cards running in SDR50/104 mode are not tuned thus send invalid responses to USB-based card readers.
 
 #### v0.9.5 Beta
 - Rebranded the project.
