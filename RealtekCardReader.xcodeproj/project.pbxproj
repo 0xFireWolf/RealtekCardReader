@@ -84,6 +84,7 @@
 		D5E8E0DB26803DDE00703407 /* RealtekRTS5227Controller.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5E8E0D926803DDE00703407 /* RealtekRTS5227Controller.hpp */; };
 		D5E8E0DE26803DEA00703407 /* RealtekRTS522AController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5E8E0DC26803DEA00703407 /* RealtekRTS522AController.cpp */; };
 		D5E8E0DF26803DEA00703407 /* RealtekRTS522AController.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5E8E0DD26803DEA00703407 /* RealtekRTS522AController.hpp */; };
+		D5EFB14126D72B2F008A22B7 /* OSDictionary.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5EFB13F26D72B2F008A22B7 /* OSDictionary.hpp */; };
 		D5FAD6BB2696CC2700A5A587 /* IOPCIeDevice.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FAD6B92696CC2700A5A587 /* IOPCIeDevice.hpp */; };
 		D5FF56422670B1C500B0143E /* IOSDBlockRequestQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D5FF56402670B1C500B0143E /* IOSDBlockRequestQueue.cpp */; };
 		D5FF56432670B1C500B0143E /* IOSDBlockRequestQueue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D5FF56412670B1C500B0143E /* IOSDBlockRequestQueue.hpp */; };
@@ -181,6 +182,7 @@
 		D5E8E0D926803DDE00703407 /* RealtekRTS5227Controller.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS5227Controller.hpp; sourceTree = "<group>"; };
 		D5E8E0DC26803DEA00703407 /* RealtekRTS522AController.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekRTS522AController.cpp; sourceTree = "<group>"; };
 		D5E8E0DD26803DEA00703407 /* RealtekRTS522AController.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS522AController.hpp; sourceTree = "<group>"; };
+		D5EFB13F26D72B2F008A22B7 /* OSDictionary.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = OSDictionary.hpp; sourceTree = "<group>"; };
 		D5FAD6B92696CC2700A5A587 /* IOPCIeDevice.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOPCIeDevice.hpp; sourceTree = "<group>"; };
 		D5FF56402670B1C500B0143E /* IOSDBlockRequestQueue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOSDBlockRequestQueue.cpp; sourceTree = "<group>"; };
 		D5FF56412670B1C500B0143E /* IOSDBlockRequestQueue.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDBlockRequestQueue.hpp; sourceTree = "<group>"; };
@@ -307,6 +309,7 @@
 				D5BDBCC326C8E4A4002467CA /* IOCommandGate.hpp */,
 				D5BDBCC726C8F8E9002467CA /* IOMemoryDescriptor.hpp */,
 				D5BDBCCB26C9BCE5002467CA /* IODMACommand.hpp */,
+				D5EFB13F26D72B2F008A22B7 /* OSDictionary.hpp */,
 			);
 			name = "IOKit Extensions";
 			sourceTree = "<group>";
@@ -513,6 +516,7 @@
 				D5BDBCC926C8F8E9002467CA /* IOMemoryDescriptor.hpp in Headers */,
 				D5A049FC26D043FC00E953FB /* RealtekCardReaderUserConfigs.hpp in Headers */,
 				D5FF56432670B1C500B0143E /* IOSDBlockRequestQueue.hpp in Headers */,
+				D5EFB14126D72B2F008A22B7 /* OSDictionary.hpp in Headers */,
 				D5E8E0DB26803DDE00703407 /* RealtekRTS5227Controller.hpp in Headers */,
 				D59E0792266DF6B5009E96EE /* IOSDBlockRequest.hpp in Headers */,
 				D5E8E0DF26803DEA00703407 /* RealtekRTS522AController.hpp in Headers */,

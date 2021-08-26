@@ -214,44 +214,6 @@ static inline const char* YESNO(bool value)
     return value ? "Yes" : "No";
 }
 
-static inline bool OSDictionaryAddStringToDictionary(OSDictionary* dictionary, const char* key, const char* value)
-{
-    OSString* v = OSString::withCString(value);
-    
-    if (v == nullptr)
-    {
-        return false;
-    }
-    
-    dictionary->setObject(key, v);
-    
-    v->release();
-    
-    return true;
-}
-
-static inline bool OSDictionaryAddDataToDictionary(OSDictionary* dictionary, const char* key, const void* bytes, IOByteCount length)
-{
-    OSData* data = OSData::withBytes(bytes, static_cast<UInt32>(length));
-    
-    if (data == nullptr)
-    {
-        return false;
-    }
-    
-    dictionary->setObject(key, data);
-    
-    data->release();
-    
-    return true;
-}
-
-template <size_t N>
-static inline bool OSDictionaryAddDataToDictionary(OSDictionary* dictionary, const char* key, const UInt8 (&bytes)[N])
-{
-    return OSDictionaryAddDataToDictionary(dictionary, key, bytes, N);
-}
-
 /*
  * Find Last Set bit
  */
