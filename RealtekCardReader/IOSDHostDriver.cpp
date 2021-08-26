@@ -1448,6 +1448,41 @@ IOReturn IOSDHostDriver::ACMD13(UInt32 rca, UInt8* status, IOByteCount length)
 }
 
 ///
+/// ACMD13: Send the SD status
+///
+/// @param rca The card relative address
+/// @param status The SD status on return
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `mmc_app_sd_status()` defined in `sd_ops.c`.
+/// @note This function allocates an internal 64-byte DMA capable buffer to store the status sent by the card.
+///       The status is then copied to the given `status` buffer.
+///
+IOReturn IOSDHostDriver::ACMD13(UInt32 rca, SSR& status)
+{
+    UInt8 buffer[sizeof(SSR)] = {};
+    
+    IOReturn retVal = this->ACMD13(rca, buffer);
+    
+    if (retVal != kIOReturnSuccess)
+    {
+        perr("Failed to fetch the SD status register value. Error = 0x%x.", retVal);
+        
+        return retVal;
+    }
+    
+    if (!SSR::decode(buffer, status))
+    {
+        perr("Failed to decode the SD status register value.");
+        
+        return kIOReturnInvalid;
+    }
+    
+    pinfo("Fetched and decoded SD status register value successfully.");
+    
+    return kIOReturnSuccess;
+}
+
+///
 /// ACMD41: Send the operating condition register (OCR) value at the probe stage
 ///
 /// @param rocr The OCR value returned by the card

@@ -8,6 +8,7 @@
 #include "IOSDCard.hpp"
 #include "IOSDHostDriver.hpp"
 #include "IOSDHostDriverUserConfigs.hpp"
+#include "OSDictionary.hpp"
 
 //
 // MARK: - Meta Class Definitions
@@ -949,7 +950,7 @@ bool IOSDCard::setUHSBusSpeedMode(SwitchCaps::BusSpeed busSpeed)
 ///
 OSDictionaryPtr IOSDCard::getCardCharacteristics()
 {
-    OSDictionary* dictionary = OSDictionary::withCapacity(8);
+    OSDictionary* dictionary = OSDictionary::withCapacity(11);
 
     char name[8] = {};
     
@@ -971,7 +972,10 @@ OSDictionaryPtr IOSDCard::getCardCharacteristics()
         OSDictionaryAddStringToDictionary(dictionary, "Manufacturing Date", date) &&
         OSDictionaryAddDataToDictionary(dictionary, "Serial Number", &this->cid.serial, sizeof(this->cid.serial)) &&
         OSDictionaryAddDataToDictionary(dictionary, "Manufacturer ID", &this->cid.manufacturer, sizeof(this->cid.manufacturer)) &&
-        OSDictionaryAddDataToDictionary(dictionary, "Application ID", &this->cid.oem, sizeof(this->cid.oem)))
+        OSDictionaryAddDataToDictionary(dictionary, "Application ID", &this->cid.oem, sizeof(this->cid.oem)) &&
+        OSDictionaryAddDataToDictionary(dictionary, "Speed Class", &this->ssr.speedClass, sizeof(this->ssr.speedClass)) &&
+        OSDictionaryAddIntegerToDictionary(dictionary, "UHS Speed Grade", this->ssr.uhsSpeedGrade) &&
+        OSDictionaryAddIntegerToDictionary(dictionary, "Video Speed Class", this->ssr.videoSpeedClass))
     {
         return dictionary;
     }

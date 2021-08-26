@@ -879,13 +879,7 @@ public:
     /// @note This function allocates an internal 64-byte DMA capable buffer to store the status sent by the card.
     ///       The status is then copied to the given `status` buffer.
     ///
-    inline IOReturn ACMD13(UInt32 rca, SSR& status)
-    {
-        // TODO: PARSE SSR
-        // TODO: The Linux driver calculates the allocation unit size, erase timeout and erase offset values from the SSR
-        // TODO: Erase function is not used by the macOS driver at this moment.
-        return this->ACMD13(rca, reinterpret_cast<UInt8*>(&status), sizeof(SSR));
-    }
+    IOReturn ACMD13(UInt32 rca, SSR& status);
     
     ///
     /// ACMD41: Send the operating condition register (OCR) value at the probe stage

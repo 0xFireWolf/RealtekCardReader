@@ -257,7 +257,7 @@ struct PACKED SCR
     /// Decode from the given raw data
     ///
     /// @param data An array of 2 integers encoded in big endian
-    /// @param pscr The parsed SD status register value
+    /// @param pscr The parsed SD configuration register value
     /// @return `true` on success, `false` otherwise.
     ///
     static bool decode(const UInt8* data, SCR& pscr)
@@ -384,6 +384,28 @@ struct PACKED SSR
     
     /// Reserved 39 bytes for manufacturer
     UInt8 reserved6[39];
+    
+    ///
+    /// Decode from the given raw data
+    ///
+    /// @param data The raw SD status register value
+    /// @param pssr The parsed SD status register value
+    /// @return `true` on success, `false` otherwise.
+    ///
+    static bool decode(const UInt8* data, SSR& pssr)
+    {
+        // Note that the driver needs the speed classes only at this moment
+        pssr.speedClass = data[8];
+        
+        pssr.uhsSpeedGrade = (data[14] & 0xF0) >> 4;
+        
+        pssr.videoSpeedClass = data[15];
+        
+        pinfo("Speed Class = %d; UHS Speed Grade = %d; Video Speed Class = %d.",
+              pssr.speedClass, pssr.uhsSpeedGrade, pssr.videoSpeedClass);
+        
+        return true;
+    }
 };
 
 /// Card specific data (Version 1.0) (16 bytes)
