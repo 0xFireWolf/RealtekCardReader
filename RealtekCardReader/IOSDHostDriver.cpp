@@ -1633,119 +1633,113 @@ IOReturn IOSDHostDriver::ACMD51(UInt32 rca, SCR& scr)
 ///
 bool IOSDHostDriver::attachCardAtFrequency(UInt32 frequency)
 {
-    // Start to attach the card
-    pinfo("Trying to initialize the card at %u Hz.", frequency);
-
-    psoftassert(this->card == nullptr, "this->card should be null at this moment.");
-
-    // Initial clock and voltages
-    this->host->setHostInitialClock(frequency);
-
-    UInt32 ocr = this->host->getHostSupportedVoltageRanges();
-    
-    pinfo("Voltage ranges supported by the host: 0x%08x.", ocr);
-    
-    // OCR value returned by the card
-    UInt32 rocr = 0;
-    
-    // Power up the SD bus
-    pinfo("Powering up the host bus...");
-    
-    if (this->powerUp(ocr) != kIOReturnSuccess)
+    do
     {
-        perr("Failed to power up the host bus.");
+        // Start to attach the card
+        pinfo("Trying to initialize the card at %u Hz.", frequency);
 
-        return false;
-    }
-    
-    pinfo("The host bus is now powered up.");
+        psoftassert(this->card == nullptr, "this->card should be null at this moment.");
 
-    // Tell the card to go to the idle state
-    pinfo("Asking the card to go to the idle state...");
-    
-    if (this->CMD0() != kIOReturnSuccess)
-    {
-        perr("Failed to tell the card to go to the idle state.");
+        // Initial clock and voltages
+        this->host->setHostInitialClock(frequency);
 
-        goto error;
-    }
-    
-    pinfo("The card is now in the idle state.");
-
-    // Check whether a SD card is inserted
-    if (this->CMD8(ocr) != kIOReturnSuccess)
-    {
-        perr("The card does not respond to the CMD8.");
-    }
-
-    if (this->ACMD41(rocr) != kIOReturnSuccess)
-    {
-        perr("The card does not respond to the ACMD41.");
-
-        goto error;
-    }
-
-    // Filter out unsupported voltage levels
-    rocr &= ~0x7FFF;
-
-    rocr = this->selectMutualVoltageLevels(rocr);
-
-    if (rocr == 0)
-    {
-        perr("Failed to find a voltage level supported by both the host and the card.");
-
-        return false;
-    }
-    
-    pinfo("Voltage levels supported by both sides = 0x%08x (OCR).", rocr);
-    
-    // Start the card initialization sequence
-    pinfo("Creating the card with the OCR = 0x%08x.", rocr);
-    
-    this->card = IOSDCard::createWithOCR(this, rocr);
-
-    if (this->card == nullptr)
-    {
-        perr("Failed to complete the card initialization sequence.");
-
-        goto error;
-    }
-    
-    if (!this->card->attach(this))
-    {
-        perr("Failed to attach the SD card device.");
+        UInt32 ocr = this->host->getHostSupportedVoltageRanges();
         
-        OSSafeReleaseNULL(this->card);
+        pinfo("Voltage ranges supported by the host: 0x%08x.", ocr);
         
-        goto error;
+        // OCR value returned by the card
+        UInt32 rocr = 0;
+        
+        // Power up the SD bus
+        pinfo("Powering up the host bus...");
+        
+        if (this->powerUp(ocr) != kIOReturnSuccess)
+        {
+            perr("Failed to power up the host bus.");
+
+            return false;
+        }
+        
+        pinfo("The host bus is now powered up.");
+
+        // Tell the card to go to the idle state
+        pinfo("Asking the card to go to the idle state...");
+        
+        if (this->CMD0() != kIOReturnSuccess)
+        {
+            perr("Failed to tell the card to go to the idle state.");
+
+            break;
+        }
+        
+        pinfo("The card is now in the idle state.");
+
+        // Check whether a SD card is inserted
+        if (this->CMD8(ocr) != kIOReturnSuccess)
+        {
+            perr("The card does not respond to the CMD8.");
+        }
+
+        if (this->ACMD41(rocr) != kIOReturnSuccess)
+        {
+            perr("The card does not respond to the ACMD41.");
+
+            break;
+        }
+
+        // Filter out unsupported voltage levels
+        rocr &= ~0x7FFF;
+
+        rocr = this->selectMutualVoltageLevels(rocr);
+
+        if (rocr == 0)
+        {
+            perr("Failed to find a voltage level supported by both the host and the card.");
+
+            return false;
+        }
+        
+        pinfo("Voltage levels supported by both sides = 0x%08x (OCR).", rocr);
+        
+        // Start the card initialization sequence
+        pinfo("Creating the card with the OCR = 0x%08x.", rocr);
+        
+        this->card = IOSDCard::createWithOCR(this, rocr);
+
+        if (this->card == nullptr)
+        {
+            perr("Failed to complete the card initialization sequence.");
+
+            break;
+        }
+        
+        if (!this->card->attach(this))
+        {
+            perr("Failed to attach the SD card device.");
+            
+            OSSafeReleaseNULL(this->card);
+            
+            break;
+        }
+        
+        if (!this->card->start(this))
+        {
+            perr("Failed to start the SD card device.");
+            
+            this->card->detach(this);
+            
+            OSSafeReleaseNULL(this->card);
+            
+            break;
+        }
+        
+        pinfo("The card has been created and initialized.");
+        
+        return true;
     }
+    while (false);
     
-    if (!this->card->start(this))
-    {
-        perr("Failed to start the SD card device.");
-        
-        this->card->detach(this);
-        
-        OSSafeReleaseNULL(this->card);
-        
-        goto error;
-    }
-    
-    // Fetch and publish the card characteristics
-    // so that the System Profiler can recognize the card and show related information
-    this->publishCardCharacteristics();
-    
-    // Sanitize the pending request queue
-    // It is possible that one or two requests are left in the queue
-    // even after the card has been removed from the system.
-    // See `IOSDHostDriver::submitBlockRequest()` for details.
-    this->recyclePendingBlockRequest();
-    
-    pinfo("The card has been created and initialized.");
-    
-    return true;
-    
-error:
+    // Failed to attach the card
     psoftassert(this->powerOff() == kIOReturnSuccess, "Failed to power off the bus.");
     
     return false;
@@ -1819,7 +1813,7 @@ void IOSDHostDriver::publishCardCharacteristics()
     
     if (characteristics != nullptr)
     {
-        this->getHostDevice()->setProperty("Card Characteristics", characteristics);
+        this->host->setProperty("Card Characteristics", characteristics);
         
         OSSafeReleaseNULL(characteristics);
     }
@@ -1875,6 +1869,16 @@ bool IOSDHostDriver::attachCard()
         
         // The card has been initialized
         pinfo("The card has been initialized at %u Hz.", frequency);
+        
+        // Fetch and publish the card characteristics
+        // so that the System Profiler can recognize the card and show related information
+        this->publishCardCharacteristics();
+        
+        // Sanitize the pending request queue
+        // It is possible that one or two requests are left in the queue
+        // even after the card has been removed from the system.
+        // See `IOSDHostDriver::submitBlockRequest()` for details.
+        this->recyclePendingBlockRequest();
         
         psoftassert(this->publishBlockStorageDevice(), "Failed to publish the block storage device");
         
