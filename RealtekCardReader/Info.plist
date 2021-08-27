@@ -55,12 +55,12 @@
 			<integer>1000</integer>
 			<key>IOProviderClass</key>
 			<string>IOUSBHostDevice</string>
-			<key>Physical Interconnect Location</key>
-			<string>Internal</string>
 			<key>Protocol Characteristics</key>
 			<dict>
 				<key>Physical Interconnect</key>
-				<string>USB</string>
+				<string>Secure Digital</string>
+				<key>Physical Interconnect Location</key>
+				<string>Internal</string>
 			</dict>
 			<key>idProduct</key>
 			<integer>297</integer>
@@ -77,12 +77,12 @@
 			<integer>1000</integer>
 			<key>IOProviderClass</key>
 			<string>IOUSBHostDevice</string>
-			<key>Physical Interconnect Location</key>
-			<string>Internal</string>
 			<key>Protocol Characteristics</key>
 			<dict>
 				<key>Physical Interconnect</key>
-				<string>USB</string>
+				<string>Secure Digital</string>
+				<key>Physical Interconnect Location</key>
+				<string>Internal</string>
 			</dict>
 			<key>idProduct</key>
 			<integer>313</integer>
@@ -99,12 +99,12 @@
 			<integer>1000</integer>
 			<key>IOProviderClass</key>
 			<string>IOUSBHostDevice</string>
-			<key>Physical Interconnect Location</key>
-			<string>Internal</string>
 			<key>Protocol Characteristics</key>
 			<dict>
 				<key>Physical Interconnect</key>
-				<string>USB</string>
+				<string>Secure Digital</string>
+				<key>Physical Interconnect Location</key>
+				<string>Internal</string>
 			</dict>
 			<key>idProduct</key>
 			<integer>320</integer>
