@@ -977,7 +977,7 @@ public:
     /// @param completion The completion routine to call once the card insertion event has been processed
     /// @note This function is invoked on the processor workloop thread when a SD card is inserted.
     ///
-    void attachCardV2(IOSDCard::Completion* completion = nullptr);
+    void attachCard(IOSDCard::Completion* completion = nullptr);
     
     ///
     /// Detach the SD card
@@ -985,7 +985,7 @@ public:
     /// @param completion The completion routine to call once the card removal event has been processed
     /// @note This function is invoked on the processor workloop thread when a SD card is removed.
     ///
-    void detachCardV2(IOSDCard::Completion* completion = nullptr);
+    void detachCard(IOSDCard::Completion* completion = nullptr);
     
     //
     // MARK: - Card Events Callbacks

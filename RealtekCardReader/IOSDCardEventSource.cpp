@@ -43,7 +43,7 @@ bool IOSDCardEventSource::checkForWork()
     
     pinfo("Processing the card event...");
     
-    IOSDCard::complete(&this->completion, (*reinterpret_cast<Action>(this->action))(this->owner));
+    (*reinterpret_cast<Action>(this->action))(this->owner, &this->completion);
     
     pinfo("The card event has been processed.");
     

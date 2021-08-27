@@ -1808,7 +1808,7 @@ bool IOSDHostDriver::publishBlockStorageDevice()
 /// @param completion The completion routine to call once the card insertion event has been processed
 /// @note This function is invoked on the processor workloop thread when a SD card is inserted.
 ///
-void IOSDHostDriver::attachCardV2(IOSDCard::Completion* completion)
+void IOSDHostDriver::attachCard(IOSDCard::Completion* completion)
 {
     /// Initial card frequencies in Hz
     static constexpr UInt32 frequencies[] = { KHz2Hz(400), KHz2Hz(300), KHz2Hz(200), KHz2Hz(100) };
@@ -1882,7 +1882,7 @@ void IOSDHostDriver::attachCardV2(IOSDCard::Completion* completion)
 /// @param completion The completion routine to call once the card removal event has been processed
 /// @note This function is invoked on the processor workloop thread when a SD card is removed.
 ///
-void IOSDHostDriver::detachCardV2(IOSDCard::Completion* completion)
+void IOSDHostDriver::detachCard(IOSDCard::Completion* completion)
 {
     pinfo("Detaching the SD card...");
     
@@ -2232,7 +2232,7 @@ void IOSDHostDriver::prepareToSleep()
     this->queueEventSource->disable();
     
     // Detach the card
-    this->detachCardV2();
+    this->detachCard();
     
     // All done
     pinfo("The host driver is ready to sleep.");
@@ -2256,7 +2256,7 @@ void IOSDHostDriver::prepareToWakeUp()
         
         this->queueEventSource->enable();
         
-        this->attachCardV2();
+        this->attachCard();
     }
     else
     {
@@ -2483,7 +2483,7 @@ bool IOSDHostDriver::setupCardEventSources()
     // Card Insertion Event
     pinfo("Creating the card insertion event source...");
     
-    auto attacher = OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::attachCardV2);
+    auto attacher = OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::attachCard);
     
     this->attachCardEventSource = IOSDCardEventSource::createWithAction(this, attacher);
     
@@ -2503,7 +2503,7 @@ bool IOSDHostDriver::setupCardEventSources()
     // Card Removal Event
     pinfo("Creating the card removal event source...");
     
-    auto detacher = OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::detachCardV2);
+    auto detacher = OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::detachCard);
     
     this->detachCardEventSource = IOSDCardEventSource::createWithAction(this, detacher);
     
