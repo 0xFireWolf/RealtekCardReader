@@ -1467,9 +1467,11 @@ public:
     ///
     /// @param target An opaque client-supplied pointer (or the instance pointer for a C++ callback)
     /// @param parameter An opaque client-supplied parameter pointer
-    /// @param success `true` if the card event has been processed without errors, `false` otherwise.
+    /// @param status `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+    /// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+    ///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
     ///
-    using CompletionAction = void (*)(void* target, void* parameter, bool success);
+    using CompletionAction = void (*)(void* target, void* parameter, IOReturn status, OSDictionary* characteristics);
     
     ///
     /// Describe the completion routine to be called when the host driver has processed an asynchronous card event
@@ -1501,14 +1503,16 @@ public:
         ///
         /// Invoke the completion routine
         ///
-        /// @param success Pass `true` if the card event has been processed without errors, `false` otherwise.
+        /// @param status Pass `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+        /// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+        ///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
         /// @warning This function prints a warning message if the action routine is null.
         ///
-        inline void invoke(bool success)
+        inline void invoke(IOReturn status, OSDictionary* characteristics)
         {
             if (this->action != nullptr)
             {
-                (*this->action)(this->target, this->parameter, success);
+                (*this->action)(this->target, this->parameter, status, characteristics);
             }
             else
             {
@@ -1547,14 +1551,16 @@ public:
     /// Invoke the given completion routine
     ///
     /// @param completion A nullable completion routine
-    /// @param success Pass `true` if the card event has been processed without errors, `false` otherwise.
+    /// @param status Pass `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+    /// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+    ///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
     /// @note This function is a noop if the given completion is null.
     ///
-    static inline void complete(Completion* completion, bool success)
+    static inline void complete(Completion* completion, IOReturn status, OSDictionary* characteristics = nullptr)
     {
         if (completion != nullptr)
         {
-            completion->invoke(success);
+            completion->invoke(status, characteristics);
         }
     }
 };
