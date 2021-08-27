@@ -270,8 +270,7 @@
 			children = (
 				D531F20226BDDE5400224998 /* IOKit Extensions */,
 				D531F20126BDDE3600224998 /* Registers */,
-				D531F20326BDDEB800224998 /* SD Host Requests */,
-				D531F20426BDDEDC00224998 /* Others */,
+				D531F20426BDDEDC00224998 /* User Configs */,
 			);
 			name = Definitions;
 			sourceTree = "<group>";
@@ -314,16 +313,7 @@
 			name = "IOKit Extensions";
 			sourceTree = "<group>";
 		};
-		D531F20326BDDEB800224998 /* SD Host Requests */ = {
-			isa = PBXGroup;
-			children = (
-				D59E076A2664B53E009E96EE /* IOSDBusConfig.hpp */,
-				D5BDBCBF26C87F33002467CA /* IOSDHostRequest.hpp */,
-			);
-			name = "SD Host Requests";
-			sourceTree = "<group>";
-		};
-		D531F20426BDDEDC00224998 /* Others */ = {
+		D531F20426BDDEDC00224998 /* User Configs */ = {
 			isa = PBXGroup;
 			children = (
 				D5A049F526D043EE00E953FB /* IOSDHostDriverUserConfigs.cpp */,
@@ -331,7 +321,7 @@
 				D5A049F926D043FC00E953FB /* RealtekCardReaderUserConfigs.cpp */,
 				D5A049FA26D043FC00E953FB /* RealtekCardReaderUserConfigs.hpp */,
 			);
-			name = Others;
+			name = "User Configs";
 			sourceTree = "<group>";
 		};
 		D57FA6A2267C07D90023097C /* Docs */ = {
@@ -475,6 +465,8 @@
 			children = (
 				D59E077526675FB9009E96EE /* IOSDHostDriver.cpp */,
 				D59E077626675FB9009E96EE /* IOSDHostDriver.hpp */,
+				D59E076A2664B53E009E96EE /* IOSDBusConfig.hpp */,
+				D5BDBCBF26C87F33002467CA /* IOSDHostRequest.hpp */,
 				D59E078F266DF6B5009E96EE /* IOSDBlockRequest.cpp */,
 				D59E0790266DF6B5009E96EE /* IOSDBlockRequest.hpp */,
 				D57FA699267B0BB00023097C /* IOSDSimpleBlockRequest.cpp */,
