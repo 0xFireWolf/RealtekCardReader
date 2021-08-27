@@ -386,10 +386,6 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     /// Non-zero if a card event is being processed thus the polling function should pause
     UInt32 cardEventLock;
     
-    /// The completion descriptor that defines the callback routine when the card event is processed
-    DEPRECATE("Replaced by the new completion descriptor.")
-    IOSDCard::Completion completion;
-    
     /// The completion descriptor that defines the callback routine when a card insertion event has been processed
     IOSDCard::Completion cardInsertionCompletion;
     
@@ -1117,15 +1113,6 @@ public:
     void resumePollingThread();
     
 protected:
-    ///
-    /// Invoked when the card event has been processed
-    ///
-    /// @param parameters Unused parameters
-    /// @param success Result of the card event
-    ///
-    DEPRECATE("Replaced by the new completion routine.")
-    void onCardEventProcessedGated(void* parameters, bool success);
-    
     ///
     /// [Completion] Notify the host device when the host driver has processed a card insertion event
     ///

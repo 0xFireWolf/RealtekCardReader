@@ -1957,32 +1957,6 @@ void RealtekUSBCardReaderController::resumePollingThread()
 }
 
 ///
-/// Invoked when the card event has been processed
-///
-/// @param parameters Unused parameters
-/// @param success Result of the card event
-///
-void RealtekUSBCardReaderController::onCardEventProcessedGated(void* parameters, bool success)
-{
-    pinfo("The card event has been processed. Result = %s.", success ? "Success" : "Failed");
-    
-    // Reset the event status
-    this->cardEventLock = 0;
-    
-    // Resume polling the device status
-    if (BootArgs::contains("-rtsxsppp"))
-    {
-        // WARNING: This feature will be removed in later releases
-        // TODO: REMOVE THIS
-        pinfo("User requests to stop polling the device status after the card event has been processed.");
-    }
-    else
-    {
-        this->resumePollingThread();
-    }
-}
-
-///
 /// [Completion] Notify the host device when the host driver has processed a card insertion event
 ///
 /// @param parameter An opaque client-supplied parameter pointer
@@ -2014,6 +1988,8 @@ void RealtekUSBCardReaderController::onSDCardInsertedCompletion(void* parameter,
 ///
 void RealtekUSBCardReaderController::onSDCardRemovedCompletion(void* parameter, IOReturn status, OSDictionary* characteristics)
 {
+    pinfo("The card removal event has been processed. Result = 0x%08x.", status);
+    
     // Remove the card characteristics
     this->removeProperty(kIOSDCardCharacteristics);
 }
@@ -2408,8 +2384,6 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
     this->revision = 0;
     
     this->cardEventLock = 0;
-    
-    this->completion = IOSDCard::Completion::withMemberFunction(this, &RealtekUSBCardReaderController::onCardEventProcessedGated);
     
     this->cardInsertionCompletion = IOSDCard::Completion::withMemberFunction(this, &RealtekUSBCardReaderController::onSDCardInsertedCompletion);
     
