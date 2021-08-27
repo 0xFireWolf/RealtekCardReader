@@ -1912,7 +1912,7 @@ void RealtekUSBCardReaderController::setDeviceProperties()
     {
         UInt32 vendorValue = vendor->unsigned32BitValue();
         
-        psoftassert(this->setProperty("vendor-id", &vendorValue, sizeof(vendorValue) * 8), "Failed to set the vendor ID.");
+        psoftassert(this->setProperty("vendor-id", &vendorValue, sizeof(vendorValue)), "Failed to set the vendor ID.");
     }
     
     OSNumber* device = OSDynamicCast(OSNumber, this->device->getProperty("idProduct"));
@@ -1921,10 +1921,12 @@ void RealtekUSBCardReaderController::setDeviceProperties()
     {
         UInt32 deviceValue = device->unsigned32BitValue();
         
-        psoftassert(this->setProperty("device-id", &deviceValue, sizeof(deviceValue) * 8), "Failed to set the product ID.");
+        psoftassert(this->setProperty("device-id", &deviceValue, sizeof(deviceValue)), "Failed to set the product ID.");
     }
     
-    psoftassert(this->setProperty("revision-id", this->revision, sizeof(UInt32) * 8), "Failed to set the revision ID.");
+    UInt32 revision = this->revision;
+    
+    psoftassert(this->setProperty("revision-id", &revision, sizeof(revision)), "Failed to set the revision ID.");
     
     // The following properties are needed if we patch the USB portion of SPCardReaderReporter
 #ifdef RTSX_USB_PATCH_SPR
