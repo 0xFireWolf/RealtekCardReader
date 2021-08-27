@@ -136,6 +136,13 @@ public:
     // MARK: - Host Properties
     //
     
+private:
+    /// The completion descriptor that defines the callback routine when a card insertion event has been processed
+    IOSDCard::Completion cardInsertionCompletion;
+    
+    /// The completion descriptor that defines the callback routine when a card removal event has been processed
+    IOSDCard::Completion cardRemovalCompletion;
+    
 protected:
     /// The host driver (client)
     IOSDHostDriver* driver;
@@ -164,11 +171,11 @@ protected:
     /// A factory that creates host requests
     IOSDHostRequestFactory factory;
     
-public:
     //
     // MARK: - SD Request Processors
     //
     
+public:
     ///
     /// Preprocess the given SD command request
     ///
@@ -200,6 +207,7 @@ public:
     // MARK: - SD Bus Configurator
     //
     
+public:
     ///
     /// Apply the given I/O configuration
     ///
@@ -222,6 +230,7 @@ public:
     // MARK: - Tuning
     //
     
+public:
     ///
     /// Execute the tuning algorithm
     ///
@@ -235,6 +244,7 @@ public:
     // MARK: - Card Status
     //
     
+public:
     ///
     /// Check whether the card has write protection enabled
     ///
@@ -273,6 +283,7 @@ public:
     // MARK: - Host Capabilities
     //
     
+public:
     ///
     /// Get the current host bus configuration
     ///
@@ -367,6 +378,28 @@ public:
     // MARK: - Card Events Callbacks
     //
     
+private:
+    ///
+    /// [Completion] Notify the host device when the host driver has processed a card insertion event
+    ///
+    /// @param parameter An opaque client-supplied parameter pointer
+    /// @param status `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+    /// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+    ///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
+    ///
+    void onSDCardInsertedCompletion(void* parameter, IOReturn status, OSDictionary* characteristics);
+    
+    ///
+    /// [Completion] Notify the host device when the host driver has processed a card removal event
+    ///
+    /// @param parameter An opaque client-supplied parameter pointer
+    /// @param status `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+    /// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+    ///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
+    ///
+    void onSDCardRemovedCompletion(void* parameter, IOReturn status, OSDictionary* characteristics);
+    
+public:
     ///
     /// [UPCALL] Notify the host device when a SD card is inserted
     ///
@@ -391,6 +424,7 @@ public:
     // MARK: - Power Management
     //
     
+public:
     ///
     /// Adjust the power state in response to system-wide power events
     ///
@@ -404,6 +438,7 @@ public:
     // MARK: - IOService Implementation
     //
     
+public:
     ///
     /// Initialize the host device
     ///

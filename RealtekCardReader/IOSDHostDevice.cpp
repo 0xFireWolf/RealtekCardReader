@@ -47,6 +47,40 @@ IOReturn IOSDHostDevice::postprocessRequest(IOSDHostRequest& request)
 //
 
 ///
+/// [Completion] Notify the host device when the host driver has processed a card insertion event
+///
+/// @param parameter An opaque client-supplied parameter pointer
+/// @param status `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+/// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
+///
+void IOSDHostDevice::onSDCardInsertedCompletion(void* parameter, IOReturn status, OSDictionary* characteristics)
+{
+    // Publish the card characteristics
+    this->setProperty(kIOSDCardCharacteristics, characteristics);
+    
+    // Invoke the completion routine supplied by the controller
+    IOSDCard::complete(reinterpret_cast<IOSDCard::Completion*>(parameter), status, characteristics);
+}
+
+///
+/// [Completion] Notify the host device when the host driver has processed a card removal event
+///
+/// @param parameter An opaque client-supplied parameter pointer
+/// @param status `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+/// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
+///
+void IOSDHostDevice::onSDCardRemovedCompletion(void* parameter, IOReturn status, OSDictionary* characteristics)
+{
+    // Remove the card characteristics
+    this->removeProperty(kIOSDCardCharacteristics);
+    
+    // Invoke the completion routine supplied by the controller
+    IOSDCard::complete(reinterpret_cast<IOSDCard::Completion*>(parameter), status, characteristics);
+}
+
+///
 /// [UPCALL] Notify the host device when a SD card is inserted
 ///
 /// @param completion A nullable completion routine to be invoked when the card is attached
@@ -56,9 +90,11 @@ IOReturn IOSDHostDevice::postprocessRequest(IOSDHostRequest& request)
 ///
 void IOSDHostDevice::onSDCardInsertedGated(IOSDCard::Completion* completion)
 {
-    this->driver->onSDCardInsertedGated(completion);
+    this->cardInsertionCompletion = IOSDCard::Completion::withMemberFunction(this, &IOSDHostDevice::onSDCardInsertedCompletion, completion);
     
-    this->setProperty("Card Present", true);
+    this->driver->onSDCardInsertedGated(&this->cardInsertionCompletion);
+    
+    this->setProperty(kIOSDCardPresent, true);
 }
 
 ///
@@ -71,9 +107,11 @@ void IOSDHostDevice::onSDCardInsertedGated(IOSDCard::Completion* completion)
 ///
 void IOSDHostDevice::onSDCardRemovedGated(IOSDCard::Completion* completion)
 {
-    this->driver->onSDCardRemovedGated(completion);
+    this->cardRemovalCompletion = IOSDCard::Completion::withMemberFunction(this, &IOSDHostDevice::onSDCardRemovedCompletion, completion);
     
-    this->setProperty("Card Present", false);
+    this->driver->onSDCardRemovedGated(&this->cardRemovalCompletion);
+    
+    this->setProperty(kIOSDCardPresent, false);
 }
 
 //
@@ -109,7 +147,7 @@ bool IOSDHostDevice::init(OSDictionary* dictionary)
         return false;
     }
     
-    this->setProperty("Card Present", false);
+    this->setProperty(kIOSDCardPresent, false);
     
     return true;
 }
