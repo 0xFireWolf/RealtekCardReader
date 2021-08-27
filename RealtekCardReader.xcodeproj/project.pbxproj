@@ -155,6 +155,7 @@
 		D5BDBCC326C8E4A4002467CA /* IOCommandGate.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOCommandGate.hpp; sourceTree = "<group>"; };
 		D5BDBCC726C8F8E9002467CA /* IOMemoryDescriptor.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOMemoryDescriptor.hpp; sourceTree = "<group>"; };
 		D5BDBCCB26C9BCE5002467CA /* IODMACommand.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IODMACommand.hpp; sourceTree = "<group>"; };
+		D5C92F4026D9B0540066F383 /* KnownIssues.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = KnownIssues.md; sourceTree = "<group>"; };
 		D5D2EE1925DE007E004B5310 /* RealtekCardReader.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RealtekCardReader.kext; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5D2EE2025DE007E004B5310 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D5D2EE2D25DE01FD004B5310 /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkmod.a; path = MacKernelSDK/Library/x86_64/libkmod.a; sourceTree = "<group>"; };
@@ -328,6 +329,7 @@
 			isa = PBXGroup;
 			children = (
 				D57FA6AB267D3C610023097C /* FAQ.md */,
+				D5C92F4026D9B0540066F383 /* KnownIssues.md */,
 				D5A049FD26D051F800E953FB /* BootArgs.md */,
 			);
 			path = Docs;
