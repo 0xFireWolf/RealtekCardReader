@@ -1144,6 +1144,10 @@ static_assert(sizeof(CSDV1) == 16, "CSD 1.0 should be 16 bytes long.");
 static_assert(sizeof(CSDV2) == 16, "CSD 2.0 should be 16 bytes long.");
 static_assert(sizeof(CSDV3) == 16, "CSD 3.0 should be 16 bytes long.");
 
+/// IORegistry Keys
+static const char* kIOSDCardCharacteristics = "Card Characteristics";
+static const char* kIOSDCardPresent = "Card Present";
+
 /// Represents a generic SD(SC/HC/XC) card
 class IOSDCard: public IOService
 {
