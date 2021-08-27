@@ -387,7 +387,14 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     UInt32 cardEventLock;
     
     /// The completion descriptor that defines the callback routine when the card event is processed
+    DEPRECATE("Replaced by the new completion descriptor.")
     IOSDCard::Completion completion;
+    
+    /// The completion descriptor that defines the callback routine when a card insertion event has been processed
+    IOSDCard::Completion cardInsertionCompletion;
+    
+    /// The completion descriptor that defines the callback routine when a card removal event has been processed
+    IOSDCard::Completion cardRemovalCompletion;
     
     //
     // MARK: - Access Chip Registers (Common, Final)
@@ -1109,14 +1116,35 @@ public:
     ///
     void resumePollingThread();
     
-protected:    
+protected:
     ///
     /// Invoked when the card event has been processed
     ///
     /// @param parameters Unused parameters
     /// @param success Result of the card event
     ///
+    DEPRECATE("Replaced by the new completion routine.")
     void onCardEventProcessedGated(void* parameters, bool success);
+    
+    ///
+    /// [Completion] Notify the host device when the host driver has processed a card insertion event
+    ///
+    /// @param parameter An opaque client-supplied parameter pointer
+    /// @param status `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+    /// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+    ///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
+    ///
+    void onSDCardInsertedCompletion(void* parameter, IOReturn status, OSDictionary* characteristics);
+    
+    ///
+    /// [Completion] Notify the host device when the host driver has processed a card removal event
+    ///
+    /// @param parameter An opaque client-supplied parameter pointer
+    /// @param status `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+    /// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+    ///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
+    ///
+    void onSDCardRemovedCompletion(void* parameter, IOReturn status, OSDictionary* characteristics);
     
     ///
     /// Fetch the device status periodically

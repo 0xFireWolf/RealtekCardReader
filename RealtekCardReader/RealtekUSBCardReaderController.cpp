@@ -1983,6 +1983,42 @@ void RealtekUSBCardReaderController::onCardEventProcessedGated(void* parameters,
 }
 
 ///
+/// [Completion] Notify the host device when the host driver has processed a card insertion event
+///
+/// @param parameter An opaque client-supplied parameter pointer
+/// @param status `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+/// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
+///
+void RealtekUSBCardReaderController::onSDCardInsertedCompletion(void* parameter, IOReturn status, OSDictionary* characteristics)
+{
+    pinfo("The card insertion event has been processed. Result = 0x%08x.", status);
+    
+    // Publish the card characteristics
+    this->setProperty(kIOSDCardCharacteristics, characteristics);
+    
+    // Reset the event status
+    this->cardEventLock = 0;
+    
+    // Resume polling the device status
+    this->resumePollingThread();
+}
+
+///
+/// [Completion] Notify the host device when the host driver has processed a card removal event
+///
+/// @param parameter An opaque client-supplied parameter pointer
+/// @param status `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+/// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
+///
+void RealtekUSBCardReaderController::onSDCardRemovedCompletion(void* parameter, IOReturn status, OSDictionary* characteristics)
+{
+    // Remove the card characteristics
+    this->removeProperty(kIOSDCardCharacteristics);
+}
+
+///
 /// Fetch the device status periodically
 ///
 /// @param sender The timer event source
@@ -2015,11 +2051,11 @@ void RealtekUSBCardReaderController::fetchDeviceStatusGated(IOTimerEventSource* 
         
         if (isCardPresentNow)
         {
-            this->onSDCardInsertedGated(&this->completion);
+            this->onSDCardInsertedGated(&this->cardInsertionCompletion);
         }
         else
         {
-            this->onSDCardRemovedGated(&this->completion);
+            this->onSDCardRemovedGated(&this->cardRemovalCompletion);
         }
         
         // Update the cached status
@@ -2374,6 +2410,10 @@ bool RealtekUSBCardReaderController::init(OSDictionary* dictionary)
     this->cardEventLock = 0;
     
     this->completion = IOSDCard::Completion::withMemberFunction(this, &RealtekUSBCardReaderController::onCardEventProcessedGated);
+    
+    this->cardInsertionCompletion = IOSDCard::Completion::withMemberFunction(this, &RealtekUSBCardReaderController::onSDCardInsertedCompletion);
+    
+    this->cardRemovalCompletion = IOSDCard::Completion::withMemberFunction(this, &RealtekUSBCardReaderController::onSDCardRemovedCompletion);
     
     return true;
 }
