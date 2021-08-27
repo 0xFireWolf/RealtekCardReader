@@ -1992,6 +1992,12 @@ void RealtekUSBCardReaderController::onSDCardRemovedCompletion(void* parameter, 
     
     // Remove the card characteristics
     this->removeProperty(kIOSDCardCharacteristics);
+    
+    // Reset the event status
+    this->cardEventLock = 0;
+    
+    // Resume polling the device status
+    this->resumePollingThread();
 }
 
 ///
