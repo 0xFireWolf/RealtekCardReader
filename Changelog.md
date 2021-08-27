@@ -25,6 +25,7 @@
 - Fixed a race condition introduced by the polling thread that corrupts the response sent by USB-based card readers.
 - Addressed an issue that UHS-I cards running in SDR50/104 mode are not tuned thus send invalid responses to USB-based card readers.
 - Parse the SD status register value so that System Information can show the speed class of the card.
+- System Information now shows the information of cards inserted into USB-based card readers.
 
 #### v0.9.5 Beta
 - Rebranded the project.
