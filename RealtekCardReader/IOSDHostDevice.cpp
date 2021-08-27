@@ -90,9 +90,9 @@ void IOSDHostDevice::onSDCardRemovedCompletion(void* parameter, IOReturn status,
 ///
 void IOSDHostDevice::onSDCardInsertedGated(IOSDCard::Completion* completion)
 {
-    this->cardInsertionCompletion = IOSDCard::Completion::withMemberFunction(this, &IOSDHostDevice::onSDCardInsertedCompletion, completion);
+    auto chainedCompletion = IOSDCard::Completion::withMemberFunction(this, &IOSDHostDevice::onSDCardInsertedCompletion, completion);
     
-    this->driver->onSDCardInsertedGated(&this->cardInsertionCompletion);
+    this->driver->onSDCardInsertedGated(&chainedCompletion);
     
     this->setProperty(kIOSDCardPresent, true);
 }
@@ -107,9 +107,9 @@ void IOSDHostDevice::onSDCardInsertedGated(IOSDCard::Completion* completion)
 ///
 void IOSDHostDevice::onSDCardRemovedGated(IOSDCard::Completion* completion)
 {
-    this->cardRemovalCompletion = IOSDCard::Completion::withMemberFunction(this, &IOSDHostDevice::onSDCardRemovedCompletion, completion);
+    auto chainedCompletion = IOSDCard::Completion::withMemberFunction(this, &IOSDHostDevice::onSDCardRemovedCompletion, completion);
     
-    this->driver->onSDCardRemovedGated(&this->cardRemovalCompletion);
+    this->driver->onSDCardRemovedGated(&chainedCompletion);
     
     this->setProperty(kIOSDCardPresent, false);
 }

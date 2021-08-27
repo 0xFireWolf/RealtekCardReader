@@ -136,13 +136,6 @@ public:
     // MARK: - Host Properties
     //
     
-private:
-    /// The completion descriptor that defines the callback routine when a card insertion event has been processed
-    IOSDCard::Completion cardInsertionCompletion;
-    
-    /// The completion descriptor that defines the callback routine when a card removal event has been processed
-    IOSDCard::Completion cardRemovalCompletion;
-    
 protected:
     /// The host driver (client)
     IOSDHostDriver* driver;
