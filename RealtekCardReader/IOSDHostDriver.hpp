@@ -976,11 +976,13 @@ public:
     ///
     /// @note System Information needs this to present card information.
     ///
+    DEPRECATE("Handled by the host device.")
     void publishCardCharacteristics();
     
     ///
     /// [Helper] Remove the published card characteristics
     ///
+    DEPRECATE("Handled by the host device.")
     void removeCardCharacteristics();
     
     ///
@@ -989,6 +991,7 @@ public:
     /// @return `true` if the card has been initialized and attached successfully.
     /// @note This function is invoked on the processor workloop thread when a SD card is inserted.
     ///
+    DEPRECATE("Replaced by attachCard(IOSDCard::Completion*)")
     bool attachCard();
     
     ///
@@ -997,7 +1000,24 @@ public:
     /// @return `true` if the card has been removed from the system successfully.
     /// @note This function is invoked on the processor workloop thread when a SD card is removed.
     ///
+    DEPRECATE("Replaced by detachCard(IOSDCard::Completion*)")
     bool detachCard();
+    
+    ///
+    /// Attach the SD card
+    ///
+    /// @param completion The completion routine to call once the card insertion event has been processed
+    /// @note This function is invoked on the processor workloop thread when a SD card is inserted.
+    ///
+    void attachCardV2(IOSDCard::Completion* completion = nullptr);
+    
+    ///
+    /// Detach the SD card
+    ///
+    /// @param completion The completion routine to call once the card removal event has been processed
+    /// @note This function is invoked on the processor workloop thread when a SD card is removed.
+    ///
+    void detachCardV2(IOSDCard::Completion* completion = nullptr);
     
     //
     // MARK: - Card Events Callbacks

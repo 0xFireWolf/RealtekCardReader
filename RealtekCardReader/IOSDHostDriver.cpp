@@ -1951,6 +1951,136 @@ bool IOSDHostDriver::detachCard()
     return true;
 }
 
+///
+/// Attach the SD card
+///
+/// @param completion The completion routine to call once the card insertion event has been processed
+/// @note This function is invoked on the processor workloop thread when a SD card is inserted.
+///
+void IOSDHostDriver::attachCardV2(IOSDCard::Completion* completion)
+{
+    /// Initial card frequencies in Hz
+    static constexpr UInt32 frequencies[] = { KHz2Hz(400), KHz2Hz(300), KHz2Hz(200), KHz2Hz(100) };
+
+    pinfo("Attaching the SD card...");
+    
+    ClosedRange<UInt32> range = this->host->getHostClockRange();
+    
+    OSDictionary* characteristics = nullptr;
+    
+    IOReturn status = kIOReturnError;
+    
+    // Try each default frequency
+    for (auto frequency : frequencies)
+    {
+        pinfo("---------------------------------------------------------------------------");
+        
+        // Guard: Ensure that the default frequency is supported
+        if (!range.contains(frequency))
+        {
+            perr("Default frequency %d Hz is not supported by the host device.", frequency);
+            
+            continue;
+        }
+        
+        // Guard: Attempt to initialize the card
+        if (!this->attachCardAtFrequency(frequency))
+        {
+            perr("Failed to initialize the card at %u Hz.", frequency);
+            
+            continue;
+        }
+        
+        // The card has been initialized
+        pinfo("The card has been initialized at %u Hz.", frequency);
+        
+        // Fetch the card characteristics
+        characteristics = this->card->getCardCharacteristics();
+        
+        // Sanitize the pending request queue
+        // It is possible that one or two requests are left in the queue
+        // even after the card has been removed from the system.
+        // See `IOSDHostDriver::submitBlockRequest()` for details.
+        this->recyclePendingBlockRequest();
+        
+        // Setup the block storage device and the rest of the storage subsystem
+        if (this->publishBlockStorageDevice())
+        {
+            status = kIOReturnSuccess;
+            
+            pinfo("The block storage device has been published.");
+        }
+        else
+        {
+            perr("Failed to setup the block storage device.")
+        }
+        
+        break;
+    }
+    
+    IOSDCard::complete(completion, status, characteristics);
+    
+    OSSafeReleaseNULL(characteristics);
+    
+    pinfo("The card insertion event has been processed. Status = 0x%08x.", status);
+}
+
+///
+/// Detach the SD card
+///
+/// @param completion The completion routine to call once the card removal event has been processed
+/// @note This function is invoked on the processor workloop thread when a SD card is removed.
+///
+void IOSDHostDriver::detachCardV2(IOSDCard::Completion* completion)
+{
+    pinfo("Detaching the SD card...");
+    
+    // Stop the block storage device
+    if (this->blockStorageDevice != nullptr)
+    {
+        pinfo("Stopping the block storage device...");
+        
+        this->blockStorageDevice->terminate();
+        
+        this->blockStorageDevice->stop(this);
+
+        this->blockStorageDevice->detach(this);
+        
+        this->blockStorageDevice->release();
+        
+        this->blockStorageDevice = nullptr;
+        
+        pinfo("The block storage device has been stopped.");
+    }
+    
+    // Stop the card device
+    if (this->card != nullptr)
+    {
+        pinfo("Stopping the card device...");
+        
+        this->card->stop(this);
+        
+        this->card->detach(this);
+        
+        this->card->release();
+        
+        this->card = nullptr;
+        
+        pinfo("The card device has been stopped.");
+    }
+    
+    // Recycle all pending requests
+    this->recyclePendingBlockRequest();
+    
+    // Power off the bus
+    psoftassert(this->powerOff() == kIOReturnSuccess, "Failed to power off the bus.");
+    
+    // All done: Notify the client
+    IOSDCard::complete(completion, kIOReturnSuccess);
+    
+    pinfo("The card removal event has been processed. Status = 0x%08x.", kIOReturnSuccess);
+}
+
 //
 // MARK: - Card Events Callbacks
 //
@@ -2251,7 +2381,7 @@ void IOSDHostDriver::prepareToSleep()
     this->queueEventSource->disable();
     
     // Detach the card
-    this->detachCard();
+    this->detachCardV2();
     
     // All done
     pinfo("The host driver is ready to sleep.");
@@ -2275,7 +2405,7 @@ void IOSDHostDriver::prepareToWakeUp()
         
         this->queueEventSource->enable();
         
-        this->attachCard();
+        this->attachCardV2();
     }
     else
     {
@@ -2502,7 +2632,7 @@ bool IOSDHostDriver::setupCardEventSources()
     // Card Insertion Event
     pinfo("Creating the card insertion event source...");
     
-    auto attacher = OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::attachCard);
+    auto attacher = OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::attachCardV2);
     
     this->attachCardEventSource = IOSDCardEventSource::createWithAction(this, attacher);
     
@@ -2522,7 +2652,7 @@ bool IOSDHostDriver::setupCardEventSources()
     // Card Removal Event
     pinfo("Creating the card removal event source...");
     
-    auto detacher = OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::detachCard);
+    auto detacher = OSMemberFunctionCast(IOSDCardEventSource::Action, this, &IOSDHostDriver::detachCardV2);
     
     this->detachCardEventSource = IOSDCardEventSource::createWithAction(this, detacher);
     
