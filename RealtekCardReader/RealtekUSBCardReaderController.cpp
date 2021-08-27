@@ -1904,6 +1904,30 @@ void RealtekUSBCardReaderController::setDeviceProperties()
 {
     pinfo("Setting the USB device properties...");
     
+    // It's hard to patch the USB portion of SPCardReaderReporter,
+    // so let's reuse the patch for PCIe-based card readers for simplicity.
+    OSNumber* vendor = OSDynamicCast(OSNumber, this->device->getProperty("idVendor"));
+    
+    if (vendor != nullptr)
+    {
+        UInt32 vendorValue = vendor->unsigned32BitValue();
+        
+        psoftassert(this->setProperty("vendor-id", &vendorValue, sizeof(vendorValue) * 8), "Failed to set the vendor ID.");
+    }
+    
+    OSNumber* device = OSDynamicCast(OSNumber, this->device->getProperty("idProduct"));
+    
+    if (device != nullptr)
+    {
+        UInt32 deviceValue = device->unsigned32BitValue();
+        
+        psoftassert(this->setProperty("device-id", &deviceValue, sizeof(deviceValue) * 8), "Failed to set the product ID.");
+    }
+    
+    psoftassert(this->setProperty("revision-id", this->revision, sizeof(UInt32) * 8), "Failed to set the revision ID.");
+    
+    // The following properties are needed if we patch the USB portion of SPCardReaderReporter
+#ifdef RTSX_USB_PATCH_SPR
     static const char* keys[] = { "idVendor", "idProduct", "kUSBSerialNumberString" };
     
     OSDictionary* deviceInfo = OSDictionary::withCapacity(3);
@@ -1926,6 +1950,7 @@ void RealtekUSBCardReaderController::setDeviceProperties()
     psoftassert(this->setProperty("Product Revision Level", buffer), "Failed to set the revision level.");
     
     pinfo("USB device properties have been set.");
+#endif
 }
 
 //
