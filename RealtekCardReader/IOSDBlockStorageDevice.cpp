@@ -433,7 +433,9 @@ bool IOSDBlockStorageDevice::start(IOService* provider)
     {
         perr("Failed to fetch the card characteristics.");
         
-        goto error;
+        OSSafeReleaseNULL(this->driver);
+        
+        return false;
     }
     
     // Publish the service to start the storage subsystem
@@ -444,15 +446,6 @@ bool IOSDBlockStorageDevice::start(IOService* provider)
     pinfo("====================================");
     
     return true;
-    
-error:
-    OSSafeReleaseNULL(this->driver);
-    
-    pinfo("============================================");
-    perr("Failed to start the SD block storage device.");
-    pinfo("============================================");
-    
-    return false;
 }
 
 ///

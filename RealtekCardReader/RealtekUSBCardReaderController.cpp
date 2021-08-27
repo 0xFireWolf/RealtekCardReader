@@ -2089,7 +2089,9 @@ bool RealtekUSBCardReaderController::setupUSBHostDevice(IOService* provider)
     {
         perr("Failed to take the ownership of the device.");
         
-        goto error1;
+        OSSafeReleaseNULL(this->device);
+        
+        return false;
     }
     
     pinfo("The card reader controller now owns the host device.");
@@ -2100,7 +2102,11 @@ bool RealtekUSBCardReaderController::setupUSBHostDevice(IOService* provider)
     {
         perr("Failed to set the device configuration index to 0.");
         
-        goto error2;
+        this->device->close(this);
+        
+        OSSafeReleaseNULL(this->device);
+        
+        return false;
     }
     
     // Fetch the first host interface
@@ -2111,20 +2117,16 @@ bool RealtekUSBCardReaderController::setupUSBHostDevice(IOService* provider)
     {
         perr("Failed to fetch the first host interface.");
         
-        goto error2;
+        this->device->close(this);
+        
+        OSSafeReleaseNULL(this->device);
+        
+        return false;
     }
     
     pinfo("The host device has been set up.");
     
     return true;
-    
-error2:
-    this->device->close(this);
-    
-error1:
-    OSSafeReleaseNULL(this->device);
-    
-    return false;
 }
 
 ///
@@ -2155,7 +2157,9 @@ bool RealtekUSBCardReaderController::setupUSBHostInterface()
     {
         perr("Failed to retrieve the input bulk endpoint.");
         
-        goto error1;
+        this->interface->close(this);
+        
+        return false;
     }
     
     this->outputPipe = IOUSBHostInterfaceFindPipe(this->interface, kIOUSBEndpointTypeBulk, kIOUSBEndpointDirectionOut);
@@ -2164,20 +2168,16 @@ bool RealtekUSBCardReaderController::setupUSBHostInterface()
     {
         perr("Failed to retrieve the output bulk endpoint.");
         
-        goto error2;
+        OSSafeReleaseNULL(this->inputPipe);
+        
+        this->interface->close(this);
+        
+        return false;
     }
     
     pinfo("Bulk endpoints have been fetched.");
     
     return true;
-    
-error2:
-    OSSafeReleaseNULL(this->inputPipe);
-    
-error1:
-    this->interface->close(this);
-    
-    return false;
 }
 
 ///

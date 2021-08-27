@@ -1159,6 +1159,9 @@ class IOSDCard: public IOService
     
     using super = IOService;
     
+    /// The specification table
+    static const Pair<SPEC, const char*> kSpecTable[13];
+    
     /// The host driver
     IOSDHostDriver* driver;
     
@@ -1337,49 +1340,11 @@ public:
     /// Get the specification version string
     inline const char* getSpecificationVersion()
     {
-        // SPEC Fields
-        static constexpr SPEC kSpecTable[] =
+        for (const auto& entry : kSpecTable)
         {
-            { 0, 0, 0, 0 }, // Version 1.0 and 1.01
-            { 1, 0, 0, 0 }, // Version 1.10
-            { 2, 0, 0, 0 }, // Version 2.00
-            { 2, 1, 0, 0 }, // Version 3.0X
-            { 2, 1, 1, 0 }, // Version 4.XX
-            { 2, 1, 0, 1 }, // Version 5.XX
-            { 2, 1, 1, 1 }, // Version 5.XX
-            { 2, 1, 0, 2 }, // Version 6.XX
-            { 2, 1, 1, 2 }, // Version 6.XX
-            { 2, 1, 0, 3 }, // Version 7.XX
-            { 2, 1, 1, 3 }, // Version 7.XX
-            { 2, 1, 0, 4 }, // Version 8.XX
-            { 2, 1, 1, 4 }, // Version 8.XX
-        };
-        
-        // SPEC Version Strings
-        static constexpr const char* kSpecString[] =
-        {
-            "1.00",
-            "1.10",
-            "2.00",
-            "3.00",
-            "4.00",
-            "5.00",
-            "5.00",
-            "6.00",
-            "6.00",
-            "7.00",
-            "7.00",
-            "8.00",
-            "8.00",
-        };
-        
-        static_assert(arrsize(kSpecTable) == arrsize(kSpecString), "Inconsistent SPEC tables.");
-        
-        for (auto index = 0; index < arrsize(kSpecTable); index += 1)
-        {
-            if (this->matchesSpecificationLevel(kSpecTable[index]))
+            if (this->matchesSpecificationLevel(entry.first))
             {
-                return kSpecString[index];
+                return entry.second;
             }
         }
         

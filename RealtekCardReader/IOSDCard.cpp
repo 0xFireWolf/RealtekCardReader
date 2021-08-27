@@ -16,6 +16,24 @@
 
 OSDefineMetaClassAndStructors(IOSDCard, IOService);
 
+/// The specification table
+const Pair<SPEC, const char*> IOSDCard::kSpecTable[] =
+{
+    { { 0, 0, 0, 0 }, "1.00" }, // Version 1.0 and 1.01
+    { { 1, 0, 0, 0 }, "1.10" }, // Version 1.10
+    { { 2, 0, 0, 0 }, "2.00" }, // Version 2.00
+    { { 2, 1, 0, 0 }, "3.00" }, // Version 3.0X
+    { { 2, 1, 1, 0 }, "4.00" }, // Version 4.XX
+    { { 2, 1, 0, 1 }, "5.00" }, // Version 5.XX
+    { { 2, 1, 1, 1 }, "5.00" }, // Version 5.XX
+    { { 2, 1, 0, 2 }, "6.00" }, // Version 6.XX
+    { { 2, 1, 1, 2 }, "6.00" }, // Version 6.XX
+    { { 2, 1, 0, 3 }, "7.00" }, // Version 7.XX
+    { { 2, 1, 1, 3 }, "7.00" }, // Version 7.XX
+    { { 2, 1, 0, 4 }, "8.00" }, // Version 8.XX
+    { { 2, 1, 1, 4 }, "8.00" }, // Version 8.XX
+};
+
 ///
 /// Initialize the card with the given OCR register value
 ///

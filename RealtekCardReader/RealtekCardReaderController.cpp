@@ -594,7 +594,7 @@ bool RealtekCardReaderController::setupWorkLoop()
     {
         perr("Failed to create the workloop.");
         
-        goto error;
+        return false;
     }
     
     this->commandGate = IOCommandGate::commandGate(this);
@@ -603,7 +603,9 @@ bool RealtekCardReaderController::setupWorkLoop()
     {
         perr("Failed to create the command gate.");
         
-        goto error;
+        OSSafeReleaseNULL(this->workLoop);
+        
+        return false;
     }
     
     this->workLoop->addEventSource(this->commandGate);
@@ -611,15 +613,6 @@ bool RealtekCardReaderController::setupWorkLoop()
     pinfo("The workloop and the command gate have been created.");
     
     return true;
-    
-error:
-    OSSafeReleaseNULL(this->commandGate);
-    
-    OSSafeReleaseNULL(this->workLoop);
-    
-    pinfo("Failed to create the workloop and the command gate.");
-    
-    return false;
 }
 
 ///

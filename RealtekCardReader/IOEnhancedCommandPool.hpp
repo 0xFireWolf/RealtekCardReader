@@ -213,7 +213,9 @@ public:
         {
             perr("Failed to preallocate an array of commands.");
             
-            goto error1;
+            this->tearDownStorage();
+            
+            return false;
         }
         
         // Guard: Create the internal command pool
@@ -221,18 +223,14 @@ public:
         {
             perr("Failed to create the internal command pool.");
             
-            goto error2;
+            this->tearDownCommands();
+            
+            this->tearDownStorage();
+            
+            return false;
         }
         
         return true;
-        
-    error2:
-        this->tearDownCommands();
-        
-    error1:
-        this->tearDownStorage();
-        
-        return false;
     }
     
     ///
