@@ -879,7 +879,7 @@ UInt64 RealtekPCICardReaderController::transformIOVMSegment(IODMACommand::Segmen
 }
 
 ///
-/// [Helper] Generate a physical scather/gather list from the given DMA command and enqueue all entries into the host data buffer
+/// [Helper] Generate a physical scatter/gather list from the given DMA command and enqueue all entries into the host data buffer
 ///
 /// @param command A non-null, perpared DMA command
 /// @return `kIOReturnSuccess` on success, other values otherwise.
@@ -891,9 +891,9 @@ IOReturn RealtekPCICardReaderController::enqueueDMACommand(IODMACommand* command
     using namespace RTSX::MMIO;
     
     //
-    // Step 1: Generate a physical scather/gather list
+    // Step 1: Generate a physical scatter/gather list
     //
-    pinfo("Generating a scather/gather list from the given DMA command...");
+    pinfo("Generating a scatter/gather list from the given DMA command...");
     
     UInt64 offset = 0;
     
@@ -905,7 +905,7 @@ IOReturn RealtekPCICardReaderController::enqueueDMACommand(IODMACommand* command
     
     if (retVal != kIOReturnSuccess)
     {
-        perr("Failed to generate a scather/gather list from the given DMA command. Error = 0x%x.", retVal);
+        perr("Failed to generate a scatter/gather list from the given DMA command. Error = 0x%x.", retVal);
         
         return retVal;
     }
@@ -917,10 +917,10 @@ IOReturn RealtekPCICardReaderController::enqueueDMACommand(IODMACommand* command
     // and the returned offset should be identical to the length of the memory descriptor.
     psoftassert(command->getMemoryDescriptor()->getLength() == offset, "Detected Inconsistency: Offset != DMA Buffer Length.");
     
-    pinfo("Generated a scather/gather list from the given DMA command. Offset = %llu; Number of entries = %d.", offset, numSegments);
+    pinfo("Generated a scatter/gather list from the given DMA command. Offset = %llu; Number of entries = %d.", offset, numSegments);
     
     //
-    // Step 2: Enqueue each scather/gather list entry
+    // Step 2: Enqueue each scatter/gather list entry
     //
     // Ensure that we can do a trick here to reuse the buffer
     static_assert(sizeof(IODMACommand::Segment32) == sizeof(UInt64),
@@ -956,7 +956,7 @@ IOReturn RealtekPCICardReaderController::enqueueDMACommand(IODMACommand* command
 ///
 IOReturn RealtekPCICardReaderController::performDMATransfer(IODMACommand* command, UInt32 timeout, UInt32 control)
 {
-    // Generate the scather/gather list from the given command
+    // Generate the scatter/gather list from the given command
     // Write all entries in the list to the host data buffer
     pinfo("Processing the DMA command...");
     
@@ -964,7 +964,7 @@ IOReturn RealtekPCICardReaderController::performDMATransfer(IODMACommand* comman
     
     if (retVal != kIOReturnSuccess)
     {
-        perr("Failed to write the scather/gather list generated from the given DMA command to the host data buffer. Error = 0x%x.", retVal);
+        perr("Failed to write the scatter/gather list generated from the given DMA command to the host data buffer. Error = 0x%x.", retVal);
         
         return retVal;
     }
@@ -2414,7 +2414,7 @@ void RealtekPCICardReaderController::interruptHandlerGated(IOInterruptEventSourc
     // Acknowledge the interrupt
     this->writeRegister32(rBIPR, pendingInterrupts.flatten());
     
-    pinfo("Interrupts are ackownledged.");
+    pinfo("Interrupts are acknowledged.");
     
     pinfo("Pending interrupts = 0x%x.", pendingInterrupts.flatten());
     
@@ -2877,7 +2877,7 @@ bool RealtekPCICardReaderController::setupInterrupts()
     
     this->interruptEventSource->enable();
     
-    pinfo("Interrupt event source and its handler have been registerd.");
+    pinfo("Interrupt event source and its handler have been registered.");
     
     return true;
 }

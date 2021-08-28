@@ -830,7 +830,7 @@ protected:
     virtual UInt64 transformIOVMSegment(IODMACommand::Segment32 segment);
     
     ///
-    /// [Helper] Generate a physical scather/gather list from the given DMA command and enqueue all entries into the host data buffer
+    /// [Helper] Generate a physical scatter/gather list from the given DMA command and enqueue all entries into the host data buffer
     ///
     /// @param command A non-null, perpared DMA command
     /// @return `kIOReturnSuccess` on success, other values otherwise.
