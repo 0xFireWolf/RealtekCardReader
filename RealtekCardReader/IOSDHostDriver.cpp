@@ -12,6 +12,7 @@
 #include "IOMemoryDescriptor.hpp"
 #include "IOSDHostDriverUserConfigs.hpp"
 #include "IOCommandGate.hpp"
+#include <IOKit/storage/IOBlockStorageDriver.h>
 
 //
 // MARK: - Meta Class Definitions
@@ -264,7 +265,7 @@ IOReturn IOSDHostDriver::processWriteBlocksRequestSeparately(IOSDBlockRequest* r
 /// Finalize a request that has been processed
 ///
 /// @param request A non-null block request
-/// @note This function is the completion routine registerd with the block request event source.
+/// @note This function is the completion routine registered with the block request event source.
 ///       It deinitializes the given request and puts it back to the block request pool.
 ///
 void IOSDHostDriver::finalizeBlockRequest(IOSDBlockRequest* request)
@@ -1746,63 +1747,6 @@ bool IOSDHostDriver::attachCardAtFrequency(UInt32 frequency)
 }
 
 ///
-/// [Helper] Publish the block storage device
-///
-/// @return `true` on success, `false` otherwise.
-/// @note This function is invoked by `IOSDHostDriver::attachCard()`,
-///       so it runs synchronously with respect to the processor workloop.
-///
-bool IOSDHostDriver::publishBlockStorageDevice()
-{
-    // Initialize and publish the block storage device
-    pinfo("Publishing the block storage device...");
-    
-    IOSDBlockStorageDevice* device = OSTypeAlloc(IOSDBlockStorageDevice);
-
-    if (device == nullptr)
-    {
-        perr("Failed to allocate the block storage device.");
-
-        return false;
-    }
-
-    if (!device->init(nullptr))
-    {
-        perr("Failed to initialize the block storage device.");
-
-        device->release();
-
-        return false;
-    }
-
-    if (!device->attach(this))
-    {
-        perr("Failed to attach the block storage device.");
-
-        device->release();
-
-        return false;
-    }
-
-    if (!device->start(this))
-    {
-        perr("Failed to start the block storage device.");
-
-        device->detach(this);
-
-        device->release();
-
-        return false;
-    }
-
-    this->blockStorageDevice = device;
-    
-    pinfo("The block storage device has been published.");
-    
-    return true;
-}
-
-///
 /// Attach the SD card
 ///
 /// @param completion The completion routine to call once the card insertion event has been processed
@@ -1854,17 +1798,10 @@ void IOSDHostDriver::attachCard(IOSDCard::Completion* completion)
         // See `IOSDHostDriver::submitBlockRequest()` for details.
         this->recyclePendingBlockRequest();
         
-        // Setup the block storage device and the rest of the storage subsystem
-        if (this->publishBlockStorageDevice())
-        {
-            status = kIOReturnSuccess;
-            
-            pinfo("The block storage device has been published.");
-        }
-        else
-        {
-            perr("Failed to setup the block storage device.")
-        }
+        // Notify the block storage device that the media is online
+        this->messageClients(kIOMessageMediaStateHasChanged, reinterpret_cast<void*>(kIOMediaStateOnline));
+        
+        status = kIOReturnSuccess;
         
         break;
     }
@@ -1886,23 +1823,8 @@ void IOSDHostDriver::detachCard(IOSDCard::Completion* completion)
 {
     pinfo("Detaching the SD card...");
     
-    // Stop the block storage device
-    if (this->blockStorageDevice != nullptr)
-    {
-        pinfo("Stopping the block storage device...");
-        
-        this->blockStorageDevice->terminate();
-        
-        this->blockStorageDevice->stop(this);
-
-        this->blockStorageDevice->detach(this);
-        
-        this->blockStorageDevice->release();
-        
-        this->blockStorageDevice = nullptr;
-        
-        pinfo("The block storage device has been stopped.");
-    }
+    // Notify the block storage device that the media is offline
+    this->messageClients(kIOMessageMediaStateHasChanged, reinterpret_cast<void*>(kIOMediaStateOffline));
     
     // Stop the card device
     if (this->card != nullptr)
@@ -2534,6 +2456,52 @@ bool IOSDHostDriver::setupCardEventSources()
     return true;
 }
 
+///
+/// Wait until the block storage device is published
+///
+/// @return `true` on success, `false` otherwise.
+/// @note Upon an unsuccessful return, all resources allocated by this function are released.
+///
+bool IOSDHostDriver::setupBlockStorageDevice()
+{
+    pinfo("Waiting for the block storage device to be published...");
+    
+    OSDictionary* dictionary = IOService::serviceMatching("IOSDBlockStorageDevice");
+    
+    if (dictionary == nullptr)
+    {
+        perr("Failed to create the matching dictionary.");
+        
+        return false;
+    }
+    
+    IOService* service = this->waitForMatchingService(dictionary);
+    
+    if (service == nullptr)
+    {
+        perr("Failed to find the matched service.");
+        
+        return false;
+    }
+        
+    this->blockStorageDevice = OSDynamicCast(IOSDBlockStorageDevice, service);
+    
+    if (this->blockStorageDevice == nullptr)
+    {
+        perr("The matched service is not a valid block storage device.");
+        
+        service->release();
+        
+        return false;
+    }
+    else
+    {
+        pinfo("The block storage device at 0x%08x%08x has been published.", KPTR(this->blockStorageDevice));
+        
+        return true;
+    }
+}
+
 //
 // MARK: - Teardown Routines
 //
@@ -2636,6 +2604,14 @@ void IOSDHostDriver::tearDownCardEventSources()
     }
 }
 
+///
+/// Tear down the block storage device
+///
+void IOSDHostDriver::tearDownBlockStorageDevice()
+{
+    OSSafeReleaseNULL(this->blockStorageDevice);
+}
+
 //
 // MARK: - IOService Implementations
 //
@@ -2713,6 +2689,12 @@ bool IOSDHostDriver::start(IOService* provider)
     {
         goto error7;
     }
+    
+    // Publish the service to start the block storage device
+    this->registerService();
+    
+    // Wait until the block storage device is published
+    this->setupBlockStorageDevice();
     
     pinfo("========================================");
     pinfo("The SD host driver started successfully.");

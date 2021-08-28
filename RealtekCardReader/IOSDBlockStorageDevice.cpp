@@ -6,6 +6,7 @@
 //
 
 #include "IOSDBlockStorageDevice.hpp"
+#include <IOKit/storage/IOBlockStorageDriver.h>
 
 //
 // MARK: - Meta Class Definitions
@@ -75,31 +76,57 @@ bool IOSDBlockStorageDevice::fetchCardCharacteristics()
     return true;
 }
 
+//
+// MARK: - Card Events
+//
+
 ///
-/// Set the properties for the block storage device
+/// Receives a generic message delivered from an attached provider
 ///
-void IOSDBlockStorageDevice::setStorageProperties()
+/// @param type The message type
+/// @param provider The provider from which the message originates
+/// @param argument The message argument
+/// @return The status of the message.
+///
+IOReturn IOSDBlockStorageDevice::message(UInt32 type, IOService* provider, void* argument)
 {
-    OSDictionary* dictionary = OSDictionary::withCapacity(2);
-    
-    OSString* identifier = OSString::withCString("com.apple.iokit.IOSCSIArchitectureModelFamily");
-    
-    OSString* iconFile = OSString::withCString("SD.icns");
-    
-    if (dictionary != nullptr && identifier != nullptr && iconFile != nullptr)
+    // Guard: Check whether the message type is of interest
+    if (type != kIOMessageMediaStateHasChanged)
     {
-        psoftassert(dictionary->setObject("CFBundleIdentifier", identifier), "Failed to set the bundle identifier.");
-        
-        psoftassert(dictionary->setObject("IOBundleResourceFile", iconFile), "Failed to set the icon file name.");
-        
-        psoftassert(this->setProperty(kIOMediaIconKey, dictionary), "Failed to set the storage properties.");
+        return super::message(type, provider, argument);
     }
     
-    OSSafeReleaseNULL(dictionary);
+    // Received a card event notification from the host driver
+    auto state = static_cast<IOMediaState>(reinterpret_cast<uintptr_t>(argument));
     
-    OSSafeReleaseNULL(identifier);
+    switch (state)
+    {
+        case kIOMediaStateOnline:
+        {
+            pinfo("Received a notification that a SD card has been inserted.");
+            
+            psoftassert(this->fetchCardCharacteristics(), "Failed to fetch characteristics of the card inserted.");
+            
+            break;
+        }
+            
+        case kIOMediaStateOffline:
+        {
+            pinfo("Received a notification that a SD card has been removed.");
+            
+            break;
+        }
+            
+        default:
+        {
+            perr("Received a notification with an unsupported media state = %u.", state);
+            
+            break;
+        }
+    }
     
-    OSSafeReleaseNULL(iconFile);
+    // Notify the rest of the storage subsystem
+    return this->messageClients(type, argument);
 }
 
 //
@@ -380,24 +407,6 @@ IOReturn IOSDBlockStorageDevice::doAsyncReadWrite(IOMemoryDescriptor* buffer, UI
 //
 
 ///
-/// Initialize the block storage device
-///
-/// @param dictionary The matching dictionary
-/// @return `true` on success, `false` otherwise.
-///
-bool IOSDBlockStorageDevice::init(OSDictionary* dictionary)
-{
-    if (!super::init(dictionary))
-    {
-        return false;
-    }
-    
-    this->setStorageProperties();
-    
-    return true;
-}
-
-///
 /// Start the block storage device
 ///
 /// @param provider An instance of the host driver
@@ -427,16 +436,6 @@ bool IOSDBlockStorageDevice::start(IOService* provider)
     }
     
     this->driver->retain();
-    
-    // Fetch the card characteristics
-    if (!this->fetchCardCharacteristics())
-    {
-        perr("Failed to fetch the card characteristics.");
-        
-        OSSafeReleaseNULL(this->driver);
-        
-        return false;
-    }
     
     // Publish the service to start the storage subsystem
     this->registerService();

@@ -408,7 +408,7 @@ public:
     /// Finalize a request that has been processed
     ///
     /// @param request A non-null block request
-    /// @note This function is the completion routine registerd with the block request event source.
+    /// @note This function is the completion routine registered with the block request event source.
     ///       It deinitializes the given request and puts it back to the block request pool.
     ///
     void finalizeBlockRequest(IOSDBlockRequest* request);
@@ -963,15 +963,6 @@ public:
     bool attachCardAtFrequency(UInt32 frequency);
     
     ///
-    /// [Helper] Publish the block storage device
-    ///
-    /// @return `true` on success, `false` otherwise.
-    /// @note This function is invoked by `IOSDHostDriver::attachCard()`,
-    ///       so it runs synchronously with respect to the processor workloop.
-    ///
-    bool publishBlockStorageDevice();
-    
-    ///
     /// Attach the SD card
     ///
     /// @param completion The completion routine to call once the card insertion event has been processed
@@ -1184,6 +1175,14 @@ public:
     ///
     bool setupCardEventSources();
     
+    ///
+    /// Wait until the block storage device is published
+    ///
+    /// @return `true` on success, `false` otherwise.
+    /// @note Upon an unsuccessful return, all resources allocated by this function are released.
+    ///
+    bool setupBlockStorageDevice();
+    
     //
     // MARK: - Teardown Routines
     //
@@ -1222,6 +1221,11 @@ public:
     /// Tear down the card event sources
     ///
     void tearDownCardEventSources();
+    
+    ///
+    /// Tear down the block storage device
+    ///
+    void tearDownBlockStorageDevice();
     
     //
     // MARK: - IOService Implementations

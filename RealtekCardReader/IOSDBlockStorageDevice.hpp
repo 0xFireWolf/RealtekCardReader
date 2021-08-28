@@ -26,6 +26,7 @@ class IOSDBlockStorageDevice: public IOBlockStorageDevice
     // MARK: - Private Properties
     //
     
+private:
     /// The host driver (provider)
     IOSDHostDriver* driver;
     
@@ -51,6 +52,7 @@ class IOSDBlockStorageDevice: public IOBlockStorageDevice
     // MARK: - Card Characteristics
     //
     
+private:
     ///
     /// Fetch the card characteristics
     ///
@@ -58,16 +60,26 @@ class IOSDBlockStorageDevice: public IOBlockStorageDevice
     ///
     bool fetchCardCharacteristics();
     
-    ///
-    /// Set the properties for the block storage device
-    ///
-    void setStorageProperties();
+    //
+    // MARK: - Card Events
+    //
     
 public:
+    ///
+    /// Receives a generic message delivered from an attached provider
+    ///
+    /// @param type The message type
+    /// @param provider The provider from which the message originates
+    /// @param argument The message argument
+    /// @return The status of the message.
+    ///
+    IOReturn message(UInt32 type, IOService* provider, void* argument = nullptr) override;
+    
     //
     // MARK: - Block Storage Protocol Implementations
     //
     
+public:
     ///
     /// Eject the SD card
     ///
@@ -197,14 +209,7 @@ public:
     // MARK: - IOService Implementations
     //
     
-    ///
-    /// Initialize the block storage device
-    ///
-    /// @param dictionary The matching dictionary
-    /// @return `true` on success, `false` otherwise.
-    ///
-    bool init(OSDictionary* dictionary = nullptr) override;
-    
+public:    
     ///
     /// Start the block storage device
     ///
