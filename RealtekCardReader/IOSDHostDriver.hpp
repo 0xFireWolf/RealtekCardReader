@@ -105,12 +105,11 @@ class IOSDHostDriver: public IOService
     /// The SD card (NULL if not inserted)
     IOSDCard* card;
     
-public:
-    
     //
     // MARK: - Pool Management
     //
     
+private:
     ///
     /// Return the given block request to the pool where it belongs
     ///
@@ -157,6 +156,7 @@ public:
     // MARK: - Submit Block I/O Requests
     //
     
+private:
     ///
     /// Submit the given request to the queue
     ///
@@ -170,6 +170,7 @@ public:
     ///
     IOReturn submitBlockRequest(IOSDBlockRequest::Processor processor, IOMemoryDescriptor* buffer, UInt64 block, UInt64 nblocks, IOStorageAttributes* attributes, IOStorageCompletion* completion);
     
+public:
     ///
     /// Submit a request to read a single block
     ///
@@ -246,6 +247,7 @@ public:
     // MARK: - Process Block I/O Requests
     //
     
+private:
     ///
     /// [Helper] Transform the given starting block number to the argument of CMD17/18/24/25 if necessary
     ///
@@ -417,6 +419,7 @@ public:
     // MARK: - Query Host Properties
     //
     
+public:
     ///
     /// Check whether the host supports the High Speed mode
     ///
@@ -471,6 +474,7 @@ public:
     
     // TODO: RETUNE ENABLE/DISABLE????
     
+private:
     ///
     /// [Shared] Set the bus config
     ///
@@ -496,6 +500,7 @@ public:
     ///
     IOReturn setChipSelect(IOSDBusConfig::ChipSelect chipSelect);
     
+public:
     ///
     /// Set the bus speed mode
     ///
@@ -525,6 +530,7 @@ public:
     ///
     IOReturn setBusWidth(IOSDBusConfig::BusWidth width);
     
+private:
     ///
     /// Set the signal voltage
     ///
@@ -542,6 +548,7 @@ public:
     ///
     IOReturn setInitialSignalVoltage();
     
+public:
     ///
     /// Set the signal voltage for the Ultra High Speed mode
     ///
@@ -588,6 +595,7 @@ public:
     // MARK: - SD Request Center
     //
     
+private:
     ///
     /// [Helper] Send the given SD command request and wait for the response
     ///
@@ -607,6 +615,7 @@ public:
     ///
     IOReturn waitForAppRequest(IOSDHostRequest& request, UInt32 rca);
     
+public:
     ///
     /// CMD0: Reset all cards to the idle state
     ///
@@ -951,6 +960,7 @@ public:
     // MARK: - Card Management
     //
     
+private:
     ///
     /// [Helper] Use the given frequency to communicate with the card and try to attach it
     ///
@@ -982,6 +992,7 @@ public:
     // MARK: - Card Events Callbacks
     //
     
+public:
     ///
     /// [UPCALL] Notify the host driver when a SD card is inserted
     ///
@@ -1004,6 +1015,7 @@ public:
     // MARK: - Query Card Information and Status
     //
     
+public:
     ///
     /// Check whether the card has write protection enabled
     ///
@@ -1097,6 +1109,7 @@ public:
     // MARK: - Power Management
     //
     
+private:
     ///
     /// Prepare to enter the sleep state
     ///
@@ -1107,6 +1120,7 @@ public:
     ///
     void prepareToWakeUp();
     
+public:
     ///
     /// Adjust the power state in response to system-wide power events
     ///
@@ -1120,6 +1134,7 @@ public:
     // MARK: - Startup Routines
     //
     
+private:
     ///
     /// Setup the power management
     ///
@@ -1187,6 +1202,7 @@ public:
     // MARK: - Teardown Routines
     //
     
+private:
     ///
     /// Tear down the power management
     ///
@@ -1231,6 +1247,7 @@ public:
     // MARK: - IOService Implementations
     //
     
+public:
     ///
     /// Start the host driver
     ///
