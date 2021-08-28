@@ -264,9 +264,8 @@ IOReturn RealtekUSBCardReaderController::writeChipRegister(UInt16 address, UInt8
 ///
 IOReturn RealtekUSBCardReaderController::readChipRegistersSequentially(UInt16 address, UInt16 count, UInt8* destination)
 {
-    // TODO: The linux driver separates the operation into two parts, aligned read and unaligned read.
-    // TODO: Does IOUSBHostPipe::io() require an aligned buffer length?
-    
+    // Warning: Note that the Linux driver separates the operation into two parts, aligned read and unaligned read.
+    // The host device always passes an aligned `count` at this moment.
     // The transfer routine will run in a gated context
     auto action = [&]() -> IOReturn
     {
@@ -303,9 +302,8 @@ IOReturn RealtekUSBCardReaderController::readChipRegistersSequentially(UInt16 ad
 ///
 IOReturn RealtekUSBCardReaderController::writeChipRegistersSequentially(UInt16 address, UInt16 count, const UInt8* source)
 {
-    // TODO: The linux driver aligns the total number of bytes to a 4 bytes boundary
-    // TODO: Does IOUSBHostPipe::io() require an aligned buffer length?
-    
+    // Warning: Note that the Linux driver separates the operation into two parts, aligned read and unaligned read.
+    // The host device always passes an aligned `count` at this moment.
     // The transfer routine will run in a gated context
     auto action = [&]() -> IOReturn
     {

@@ -97,9 +97,6 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     // MARK: - Constants: Host Command & Data Buffer
     //
     
-    // TODO: Introduce a namespace `HostBuffer`
-    // TODO: HostBuffer::Offset, HostBuffer::kSize, HostBuffer::kMaxNumCommands
-    
     /// Special host buffer offset
     enum Offset: IOByteCount
     {
