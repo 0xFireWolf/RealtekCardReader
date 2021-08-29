@@ -1624,6 +1624,17 @@ IOReturn IOSDHostDriver::ACMD51(UInt32 rca, SCR& scr)
 //
 
 ///
+/// [Helper] Notify the block storage device that the media state has changed
+///
+/// @param state The new state of the media
+/// @return The status returned by the block storage device.
+///
+IOReturn IOSDHostDriver::notifyBlockStorageDevice(IOMediaState state)
+{
+    return this->blockStorageDevice->message(kIOMessageMediaStateHasChanged, this, reinterpret_cast<void*>(state));
+}
+
+///
 /// [Helper] Use the given frequency to communicate with the card and try to attach it
 ///
 /// @param frequency The initial frequency in Hz
@@ -1799,18 +1810,17 @@ void IOSDHostDriver::attachCard(IOSDCard::Completion* completion)
         this->recyclePendingBlockRequest();
         
         // Notify the block storage device that the media is online
-        this->messageClients(kIOMessageMediaStateHasChanged, reinterpret_cast<void*>(kIOMediaStateOnline));
-        
-        status = kIOReturnSuccess;
+        status = this->notifyBlockStorageDevice(kIOMediaStateOnline);
         
         break;
     }
     
+    pinfo("The card insertion event has been processed. Status = 0x%08x.", status);
+    
+    // All done: Notify the client
     IOSDCard::complete(completion, status, characteristics);
     
     OSSafeReleaseNULL(characteristics);
-    
-    pinfo("The card insertion event has been processed. Status = 0x%08x.", status);
 }
 
 ///
@@ -1824,7 +1834,7 @@ void IOSDHostDriver::detachCard(IOSDCard::Completion* completion)
     pinfo("Detaching the SD card...");
     
     // Notify the block storage device that the media is offline
-    this->messageClients(kIOMessageMediaStateHasChanged, reinterpret_cast<void*>(kIOMediaStateOffline));
+    IOReturn status = this->notifyBlockStorageDevice(kIOMediaStateOffline);
     
     // Stop the card device
     if (this->card != nullptr)
@@ -1848,10 +1858,10 @@ void IOSDHostDriver::detachCard(IOSDCard::Completion* completion)
     // Power off the bus
     psoftassert(this->powerOff() == kIOReturnSuccess, "Failed to power off the bus.");
     
-    // All done: Notify the client
-    IOSDCard::complete(completion, kIOReturnSuccess);
+    pinfo("The card removal event has been processed. Status = 0x%08x.", status);
     
-    pinfo("The card removal event has been processed. Status = 0x%08x.", kIOReturnSuccess);
+    // All done: Notify the client
+    IOSDCard::complete(completion, status);
 }
 
 //

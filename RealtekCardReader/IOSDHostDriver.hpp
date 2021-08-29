@@ -10,6 +10,7 @@
 
 #include <IOKit/IOCommandGate.h>
 #include <IOKit/IOSubMemoryDescriptor.h>
+#include <IOKit/storage/IOBlockStorageDriver.h>
 #include "IOEnhancedCommandPool.hpp"
 #include "IOSDHostDevice.hpp"
 #include "IOSDHostRequest.hpp"
@@ -961,6 +962,14 @@ public:
     //
     
 private:
+    ///
+    /// [Helper] Notify the block storage device that the media state has changed
+    ///
+    /// @param state The new state of the media
+    /// @return The status returned by the block storage device.
+    ///
+    IOReturn notifyBlockStorageDevice(IOMediaState state);
+    
     ///
     /// [Helper] Use the given frequency to communicate with the card and try to attach it
     ///
