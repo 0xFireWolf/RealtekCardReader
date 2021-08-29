@@ -1962,9 +1962,18 @@ void RealtekUSBCardReaderController::setDeviceProperties()
 ///
 void RealtekUSBCardReaderController::pausePollingThread()
 {
-    this->timer->cancelTimeout();
+    // Note that the timer is recurrent, so all accesses to the timer must be coordinated
+    // Otherwise it is possible that the callback function schedules the next call after the client pauses the polling thread
+    auto action = [&]() -> IOReturn
+    {
+        this->timer->cancelTimeout();
+        
+        this->timer->disable();
+        
+        return kIOReturnSuccess;
+    };
     
-    this->timer->disable();
+    IOCommandGateRunAction(this->commandGate, action);
     
     pinfo("The polling thread has been paused.");
 }
@@ -1974,9 +1983,17 @@ void RealtekUSBCardReaderController::pausePollingThread()
 ///
 void RealtekUSBCardReaderController::resumePollingThread()
 {
-    this->timer->enable();
+    // For consistency, let's protect ourselves even though it is not needed
+    auto action = [&]() -> IOReturn
+    {
+        this->timer->enable();
+        
+        this->timer->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval);
+        
+        return kIOReturnSuccess;
+    };
     
-    this->timer->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval);
+    IOCommandGateRunAction(this->commandGate, action);
     
     pinfo("The polling thread has been resumed.");
 }
@@ -1994,6 +2011,8 @@ void RealtekUSBCardReaderController::onSDCardEventProcessedCompletion(void* para
     pinfo("The card event has been processed. Result = 0x%08x.", status);
     
     // Reset the event status
+    // The lock variable is modified by one thread only at a time
+    // When this function is invoked, the polling thread is paused
     this->cardEventLock = 0;
     
     // Resume polling the device status
@@ -2042,20 +2061,14 @@ void RealtekUSBCardReaderController::fetchDeviceStatusGated(IOTimerEventSource* 
         
         // Update the cached status
         this->isCardPresentBefore = isCardPresentNow;
+        
+        return;
     }
     
     // Check whether the controller is terminated
     if (this->isInactive())
     {
         pinfo("The controller is inactive. Will stop polling the device status.");
-        
-        return;
-    }
-    
-    // Check whether a card event is being processed
-    if (this->cardEventLock != 0)
-    {
-        pinfo("A card event is being processed. Will pause polling the device status.");
         
         return;
     }
@@ -2305,7 +2318,7 @@ void RealtekUSBCardReaderController::tearDownPollingTimer()
 {
     if (this->timer != nullptr)
     {
-        this->timer->cancelTimeout();
+        this->pausePollingThread();
         
         this->workLoop->removeEventSource(this->timer);
         
