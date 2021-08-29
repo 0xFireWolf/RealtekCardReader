@@ -56,8 +56,15 @@ IOReturn IOSDHostDevice::postprocessRequest(IOSDHostRequest& request)
 ///
 void IOSDHostDevice::onSDCardInsertedCompletion(void* parameter, IOReturn status, OSDictionary* characteristics)
 {
+    pinfo("The card insertion event has been processed. Result = 0x%08x.", status);
+    
     // Publish the card characteristics
-    this->setProperty(kIOSDCardCharacteristics, characteristics);
+    if (status == kIOReturnSuccess && characteristics != nullptr)
+    {
+        this->setProperty(kIOSDCardCharacteristics, characteristics);
+        
+        pinfo("The card characteristics have been published.");
+    }
     
     // Invoke the completion routine supplied by the controller
     IOSDCard::complete(reinterpret_cast<IOSDCard::Completion*>(parameter), status, characteristics);
@@ -73,6 +80,8 @@ void IOSDHostDevice::onSDCardInsertedCompletion(void* parameter, IOReturn status
 ///
 void IOSDHostDevice::onSDCardRemovedCompletion(void* parameter, IOReturn status, OSDictionary* characteristics)
 {
+    pinfo("The card removal event has been processed. Result = 0x%08x.", status);
+    
     // Remove the card characteristics
     this->removeProperty(kIOSDCardCharacteristics);
     
