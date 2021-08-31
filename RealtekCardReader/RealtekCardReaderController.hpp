@@ -1617,6 +1617,37 @@ protected:
     ///
     void onSDCardRemovedGated(IOSDCard::Completion* completion = nullptr);
     
+private:
+    ///
+    /// Helper interrupt service routine that runs synchronously when a SD card is inserted
+    ///
+    /// @return `kIOReturnSuccess` if the card has been initialized and attached successfully, other values otherwise.
+    /// @note This interrupt service routine runs in a gated context.
+    /// @note This function simply invokes the asynchronous interrupt service routine `onSDCardInsertedGated()` and
+    ///       calls `IOCommandGate::commandSleep()` to wait until the host driver finishes processing the event.
+    ///
+    IOReturn onSDCardInsertedSyncGated();
+    
+    ///
+    /// Helper interrupt service routine that runs synchronously when a SD card is removed
+    ///
+    /// @return `kIOReturnSuccess` if the card has been detached and removed successfully, other values otherwise.
+    /// @note This interrupt service routine runs in a gated context.
+    /// @note This function simply invokes the asynchronous interrupt service routine `onSDCardRemovedGated()` and
+    ///       calls `IOCommandGate::commandSleep()` to wait until the host driver finishes processing the event.
+    ///
+    IOReturn onSDCardRemovedSyncGated();
+    
+    ///
+    /// The completion action used by synchronous card interrupt service routines
+    ///
+    /// @param parameter An opaque client-supplied parameter pointer
+    /// @param status `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
+    /// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
+    ///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
+    ///
+    void onSDCardEventProcessedSyncCompletion(void* parameter, IOReturn status, OSDictionary* characteristics);
+    
     //
     // MARK: - Startup Routines
     //
