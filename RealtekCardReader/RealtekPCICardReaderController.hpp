@@ -608,7 +608,15 @@ public:
     ///         `kIOReturnTimeout` if timed out;
     ///         `kIOReturnError` if the new register value is not `value`.
     ///
-    IOReturn writeChipRegisters(const ChipRegValuePairs& pairs);
+    inline IOReturn writeChipRegisters(const ChipRegValuePairs& pairs)
+    {
+        auto action = [&](ChipRegValuePair pair) -> IOReturn
+        {
+            return this->writeChipRegister(pair.address, pair.mask, pair.value);
+        };
+        
+        return pairs.forEachUntil(action, kIOReturnSuccess);
+    }
     
     //
     // MARK: - Access Physical Layer Registers (Default, Overridable)
@@ -643,7 +651,17 @@ protected:
     /// @param pairs An array of registers and their values
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
-    IOReturn writePhysRegisters(const PhysRegValuePair* pairs, size_t count);
+    inline IOReturn writePhysRegisters(const PhysRegValuePair* pairs, size_t count)
+    {
+        pinfo("Writing %lu PHY registers...", count);
+        
+        auto action = [&](const PhysRegValuePair& pair) -> IOReturn
+        {
+            return this->writePhysRegister(pair.address, pair.value);
+        };
+        
+        return forEachUntil(pairs, pairs + count, action, kIOReturnSuccess);
+    }
     
     ///
     /// Write to multiple physical layer registers conveniently
@@ -657,19 +675,40 @@ protected:
         return this->writePhysRegisters(pairs, N);
     }
     
-    /// The type of a function that modifies the given physical register value
-    using PhysRegValueModifier = UInt16 (*)(UInt16, const void*);
-    
     ///
     /// Modify a physical layer register conveniently
     ///
     /// @param address The register address
-    /// @param modifier A modifier that takes the current register value and return the new value
-    /// @param context A nullable context that will be passed to the modifier function
+    /// @param modifier A modifier that takes the current register value and returns the new value
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     /// @note Port: This function replaces `rtsx_pci_update_phy()` defined in `rtsx_pci.h`.
+    /// @note Signature of the modifier: `UInt16 operator()(UInt16)`.
     ///
-    IOReturn modifyPhysRegister(UInt8 address, PhysRegValueModifier modifier, const void* context = nullptr);
+    template <typename Modifier>
+    IOReturn modifyPhysRegister(UInt8 address, Modifier modifier)
+    {
+        UInt16 regVal = 0;
+        
+        // Guard: Read the current register value
+        IOReturn retVal = this->readPhysRegister(address, regVal);
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to read the current register value.");
+            
+            return retVal;
+        }
+        
+        // Guard: Write the new register value
+        retVal = this->writePhysRegister(address, modifier(regVal));
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to write the new register value.");
+        }
+        
+        return retVal;
+    }
     
     ///
     /// Set a bit at the given index in a physical layer register conveniently
@@ -678,7 +717,19 @@ protected:
     /// @param index The zero-based bit index
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
-    IOReturn setPhysRegisterBitAtIndex(UInt8 address, UInt32 index);
+    inline IOReturn setPhysRegisterBitAtIndex(UInt8 address, UInt32 index)
+    {
+        // The given bit index must be valid
+        passert(index < sizeof(UInt16) * 8, "The given bit index %d is invalid.", index);
+        
+        // Modify the register value
+        auto modifier = [&](UInt16 regVal) -> UInt16
+        {
+            return regVal | 1 << index;
+        };
+        
+        return this->modifyPhysRegister(address, modifier);
+    }
     
     ///
     /// Clear a bit at the given index in a physical layer register conveniently
@@ -687,7 +738,19 @@ protected:
     /// @param index The zero-based bit index
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
-    IOReturn clearPhysRegisterBitAtIndex(UInt8 address, UInt32 index);
+    inline IOReturn clearPhysRegisterBitAtIndex(UInt8 address, UInt32 index)
+    {
+        // The given bit index must be valid
+        passert(index < sizeof(UInt16) * 8, "The given bit index %d is invalid.", index);
+        
+        // Modify the register value
+        auto modifier = [&](UInt16 regVal) -> UInt16
+        {
+            return regVal & ~(1 << index);
+        };
+        
+        return this->modifyPhysRegister(address, modifier);
+    }
     
     ///
     /// Append the given value to a physical layer register conveniently
@@ -698,7 +761,15 @@ protected:
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     /// @note Port: This function replaces `rtsx_pci_update_phy()` defined in `rtsx_pci.h`.
     ///
-    IOReturn appendPhysRegister(UInt8 address, UInt16 mask, UInt16 append);
+    inline IOReturn appendPhysRegister(UInt8 address, UInt16 mask, UInt16 append)
+    {
+        auto modifier = [&](UInt16 regVal) -> UInt16
+        {
+            return (regVal & mask) | append;
+        };
+        
+        return this->modifyPhysRegister(address, modifier);
+    }
     
     ///
     /// Append each given value to the corresponding physical layer register conveniently
@@ -707,7 +778,15 @@ protected:
     /// @param count The number of elements in the array
     /// @return `kIOReturnSuccess` on success, `kIOReturnTimeout` if timed out, `kIOReturnError` otherwise.
     ///
-    IOReturn appendPhysRegisters(const PhysRegMaskValuePair* pairs, size_t count);
+    inline IOReturn appendPhysRegisters(const PhysRegMaskValuePair* pairs, size_t count)
+    {
+        auto action = [&](const PhysRegMaskValuePair& pair) -> IOReturn
+        {
+            return this->appendPhysRegister(pair.address, pair.mask, pair.value);
+        };
+        
+        return forEachUntil(pairs, pairs + count, action, kIOReturnSuccess);
+    }
     
     ///
     /// Append each given value to the corresponding physical layer register conveniently

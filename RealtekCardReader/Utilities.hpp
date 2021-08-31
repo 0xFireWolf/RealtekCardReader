@@ -58,6 +58,31 @@ constexpr size_t arrsize(const T (&array)[N])
     return N;
 }
 
+template <typename InputIterator, typename Action>
+void forEach(InputIterator begin, InputIterator end, Action action)
+{
+    for (InputIterator current = begin; current != end; current++)
+    {
+        action(*current);
+    }
+}
+
+template <typename InputIterator, typename Action, typename Result>
+Result forEachUntil(InputIterator begin, InputIterator end, Action action, Result expected)
+{
+    for (InputIterator current = begin; current != end; current++)
+    {
+        Result result = action(*current);
+        
+        if (result != expected)
+        {
+            return result;
+        }
+    }
+    
+    return expected;
+}
+
 template <typename T1, typename T2>
 struct Pair
 {
