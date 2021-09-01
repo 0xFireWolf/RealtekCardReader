@@ -60,4 +60,3 @@
 
 #### v0.9.0 Beta
 - Initial version for public beta testing.
-
