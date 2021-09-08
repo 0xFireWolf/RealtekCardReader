@@ -2254,6 +2254,8 @@ bool RealtekUSBCardReaderController::setupPollingTimer()
         return false;
     }
     
+    this->timer->disable();
+    
     if (this->workLoop->addEventSource(this->timer) != kIOReturnSuccess)
     {
         perr("Failed to add the timer event source to the work loop.");
@@ -2483,7 +2485,7 @@ bool RealtekUSBCardReaderController::start(IOService* provider)
     // Enable the polling timer
     pinfo("User requests to poll for the device status every %u milliseconds.", UserConfigs::UCR::DeviceStatusPollingInterval);
     
-    psoftassert(this->timer->setTimeoutMS(UserConfigs::UCR::DeviceStatusPollingInterval) == kIOReturnSuccess, "Failed to enable the polling timer.");
+    this->resumePollingThread();
     
     // Register the service so that the reporter can see the device
     this->registerService();
