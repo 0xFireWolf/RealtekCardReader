@@ -11,6 +11,10 @@ This page documents all known issues found during developments and reported by u
 - **Description:** Cards are not recognized and the kernel log reports a bunch of timeout errors.
 - **Workaround:** N/A as kernel logs provided by users are incomplete. 
 
+#### Card Initialization Failures on RTL8411B
+- **Category:** Device Support
+- **Description:** Cards cannot be initialized due to the early probe failure (ACMD41).
+
 ### USB Card Readers
 
 ### All Card Readers
