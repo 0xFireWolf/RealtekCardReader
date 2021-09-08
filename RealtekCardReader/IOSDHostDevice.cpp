@@ -101,6 +101,8 @@ void IOSDHostDevice::onSDCardInsertedGated(IOSDCard::Completion* completion)
 {
     auto chainedCompletion = IOSDCard::Completion::withMemberFunction(this, &IOSDHostDevice::onSDCardInsertedCompletion, completion);
     
+    passert(this->driver != nullptr, "The host driver should not be null.");
+    
     this->driver->onSDCardInsertedGated(&chainedCompletion);
     
     this->setProperty(kIOSDCardPresent, true);
@@ -117,6 +119,8 @@ void IOSDHostDevice::onSDCardInsertedGated(IOSDCard::Completion* completion)
 void IOSDHostDevice::onSDCardRemovedGated(IOSDCard::Completion* completion)
 {
     auto chainedCompletion = IOSDCard::Completion::withMemberFunction(this, &IOSDHostDevice::onSDCardRemovedCompletion, completion);
+    
+    passert(this->driver != nullptr, "The host driver should not be null.");
     
     this->driver->onSDCardRemovedGated(&chainedCompletion);
     
