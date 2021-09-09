@@ -3,6 +3,7 @@
 #### v0.9.7 Beta
 - ~~Fixed an issue that the card is not mounted after the computer wakes up when sleeps with the card inserted.~~
 - Fixed a race condition that may resume the polling thread even though the client requests to pause it.
+- Fixed an issue that the driver cannot be loaded on macOS Mojave. (Thanks @reelgirly https://github.com/0xFireWolf/RealtekCardReader/issues/11)
 
 #### v0.9.6 Beta
 - Added support for RTS5260.

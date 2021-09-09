@@ -119,7 +119,7 @@ static inline void pbuf(const void* buffer, size_t length, size_t column = 8)
 
 static inline void pbuf(IOMemoryDescriptor* descriptor, size_t length, size_t column = 8)
 {
-    auto buffer = IOMallocZero(length);
+    auto buffer = IOMalloc(length);
     
     psoftassert(descriptor->readBytes(0, buffer, length) == length, "Failed to read the memory descriptor contents.");
     
@@ -130,7 +130,7 @@ static inline void pbuf(IOMemoryDescriptor* descriptor, size_t length, size_t co
 
 static inline void pdma(IODMACommand* dma, IOByteCount length, IOByteCount column)
 {
-    auto buffer = IOMallocZero(length);
+    auto buffer = IOMalloc(length);
     
     psoftassert(dma->readBytes(0, buffer, length) == length, "Failed to read the DMA contents.");
     

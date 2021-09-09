@@ -98,7 +98,7 @@ private:
     ///
     bool setupStorage(IOItemCount capacity)
     {
-        this->commands = IONewZero(Command*, capacity);
+        this->commands = IONew(Command*, capacity);
         
         this->capacity = capacity;
         
