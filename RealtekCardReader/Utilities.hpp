@@ -51,6 +51,12 @@
 
 static constexpr IOPMPowerFlags kIOPMPowerOff = 0;
 
+/// Kernel major version
+extern const int version_major;
+
+/// Kernel minor version
+extern const int version_minor;
+
 /// Get the number of elements in an array
 template <typename T, size_t N>
 constexpr size_t arrsize(const T (&array)[N])
