@@ -15,7 +15,7 @@
 OSDefineMetaClassAndStructors(RealtekRTS5260Controller, RealtekPCICardReaderController);
 
 //
-// MARK: - Driving Tables for RTS5227 and RTS522A
+// MARK: - Driving Tables for RTS5260
 //
 
 /// SD 3.0 drive table (1.8V)
@@ -380,6 +380,7 @@ IOReturn RealtekRTS5260Controller::disableOvercurrentProtection()
     
     return this->writeChipRegister(OCP::rCTL, OCP::CTL::kSDDetectionAndInterruptMask, OCP::CTL::kSDDisableDetectionAndInterruptValue);
 }
+
 ///
 /// Clear the overcurrent protection status
 ///
