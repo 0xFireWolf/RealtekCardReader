@@ -15,6 +15,11 @@ This page documents all known issues found during developments and reported by u
 - **Category:** Device Support
 - **Description:** Cards cannot be initialized due to the early probe failure (ACMD41).
 
+#### Card Tuning Failures on RTS5260
+- **Category:** Device Support
+- **Description:** UHS-I SDHC/XC cards cannot be tuned due to the CMD19 failures.
+- **Workaround:** Add the boot argument `-iosd3v3` to initialize all cards at 3.3V.
+
 ### USB Card Readers
 
 ### All Card Readers
