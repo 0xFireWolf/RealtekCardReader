@@ -42,6 +42,11 @@
 #define pinfof(fmt, ...) {}
 #endif
 
+#define pmesg(fmt, ...) \
+{                       \
+    OSLog(MODULE "%s PInfo: " fmt "\n", __PRETTY_FUNCTION__, ##__VA_ARGS__); \
+};
+
 #define perr(fmt, ...) \
 {                      \
     OSLog(MODULE "%s Error: " fmt "\n", __PRETTY_FUNCTION__, ##__VA_ARGS__); \
