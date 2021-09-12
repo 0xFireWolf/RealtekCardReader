@@ -45,6 +45,13 @@
  */
 #define NONNULL __attribute__((nonnull))
 
+/**
+ *  Compiler hints regarding branching
+ *  (Until Apple's Clang supports C++20's [[unlikely]] and [[likely]] attributes)
+ */
+#define LIKELY(x) __builtin_expect(!!(x), 1)
+#define UNLIKELY(x) __builtin_expect(!!(x), 0)
+
 //
 // MARK: - Convenient Helpers
 //
