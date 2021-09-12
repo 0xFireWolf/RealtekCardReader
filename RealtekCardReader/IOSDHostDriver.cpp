@@ -214,23 +214,31 @@ IOReturn IOSDHostDriver::processWriteBlocksRequest(IOSDBlockRequest* request)
         return this->processWriteBlocksRequestSeparately(request);
     }
     
-    // Issue the ACMD23 to set the number of pre-erased blocks
-    pinfo("Issuing an ACMD23 to set the number of pre-erased blocks...");
-    
-    passert(request->getNumBlocks() <= ((1 << 23) - 1), "The number of blocks should be less than 2^23 - 1.");
-    
-    auto preq = this->host->getRequestFactory().ACMD23(static_cast<UInt32>(request->getNumBlocks()));
-    
-    IOReturn retVal = this->waitForAppRequest(preq, this->card->getRCA());
-    
-    if (retVal != kIOReturnSuccess)
+    // Guard: Check if the driver should issue the ACMD23 for the incoming request
+    if (!UserConfigs::Card::NoACMD23)
     {
-        perr("Failed to issue the ACMD23 to set the number of pre-erased blocks. Error = 0x%x.", retVal);
+        // Issue the ACMD23 to set the number of pre-erased blocks
+        pinfo("Issuing an ACMD23 to set the number of pre-erased blocks...");
         
-        return retVal;
+        passert(request->getNumBlocks() <= ((1 << 23) - 1), "The number of blocks should be less than 2^23 - 1.");
+        
+        auto preq = this->host->getRequestFactory().ACMD23(static_cast<UInt32>(request->getNumBlocks()));
+        
+        IOReturn retVal = this->waitForAppRequest(preq, this->card->getRCA());
+        
+        if (retVal != kIOReturnSuccess)
+        {
+            perr("Failed to issue the ACMD23 to set the number of pre-erased blocks. Error = 0x%x.", retVal);
+            
+            return retVal;
+        }
+        
+        pinfo("The ACMD23 has been issued.");
     }
-    
-    pinfo("The ACMD23 has been issued.");
+    else
+    {
+        pinfo("User requests not to issue the ACMD23 before the CMD25.");
+    }
     
     // Process the block request
     pinfo("Processing the request that writes multiple blocks...");
@@ -443,6 +451,8 @@ IOReturn IOSDHostDriver::setBusConfig()
 {
     const IOSDBusConfig& config = this->host->getHostBusConfig();
 
+    pinfo("Setting the bus configuration...");
+    
     config.print();
 
     return this->host->setBusConfig(config);

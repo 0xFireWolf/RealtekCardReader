@@ -23,6 +23,9 @@ namespace UserConfigs::Card
     /// `True` if the driver should separate each CMD18/25 request into multiple CMD17/24 ones
     bool SeparateAccessBlocksRequest = BootArgs::contains("-iosdsabr");
     
+    /// `True` if the driver should not issue the ACMD23 command when processing CMD25 requests
+    bool NoACMD23 = BootArgs::contains("-iosdnoacmd23");
+    
     /// Specify the maximum number of attempts to retry an application command
     UInt32 ACMDMaxNumAttempts = max(BootArgs::get("iosdamna", 2), 1);
 }

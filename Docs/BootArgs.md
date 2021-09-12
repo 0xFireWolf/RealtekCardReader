@@ -31,6 +31,11 @@ For example, if the name is `rtsxabcd` and the value is `10`, `<Name>=<Value>` b
     - Value Type: `Boolean`
     - Default Value: `false`
     - Description: Add this boot argument to separate each CMD18/25 request into multiple CMD17/24 ones, so the host driver will not access multiple blocks on the card in one shot.
+- NoACMD23
+    - Boot Argument: `-iosdnoacmd23`
+    - Value Type: `Boolean`
+    - Default Value: `false`
+    - Description: Add this boot argument to ask the host driver not to issue the ACMD23 before sending the CMD25 to the card. When the driver processes a multi-block write (CMD25) request, the specification recommends to issue an ACMD23 to pre-erase blocks to be written to improve the write performance. By default, the host driver always sends the ACMD23 before the CMD25. Use this boot argument if you observe any write performance degradation.
 - ACMDMaxNumAttempts
     - Boot Argument: `iosdamna`
     - Value Type: `UInt32`

@@ -25,6 +25,9 @@ namespace UserConfigs::Card
     /// `True` if the driver should separate each CMD18/25 request into multiple CMD17/24 ones
     extern bool SeparateAccessBlocksRequest;
     
+    /// `True` if the driver should not issue the ACMD23 command when processing CMD25 requests
+    extern bool NoACMD23;
+    
     /// Specify the maximum number of attempts to retry an application command
     extern UInt32 ACMDMaxNumAttempts;
 }
