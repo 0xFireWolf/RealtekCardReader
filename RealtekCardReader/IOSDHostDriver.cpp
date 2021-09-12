@@ -144,7 +144,7 @@ IOReturn IOSDHostDriver::processReadBlockRequest(IOSDBlockRequest* request)
 IOReturn IOSDHostDriver::processReadBlocksRequest(IOSDBlockRequest* request)
 {
     // Guard: Check if the driver should separate the incoming request
-    if (UserConfigs::Card::SeparateAccessBlocksRequest)
+    if (UNLIKELY(UserConfigs::Card::SeparateAccessBlocksRequest))
     {
         pinfo("User requests to separate the CMD18 request into multiple CMD17 ones.");
         
@@ -207,7 +207,7 @@ IOReturn IOSDHostDriver::processWriteBlockRequest(IOSDBlockRequest* request)
 IOReturn IOSDHostDriver::processWriteBlocksRequest(IOSDBlockRequest* request)
 {
     // Guard: Check if the driver should separate the incoming request
-    if (UserConfigs::Card::SeparateAccessBlocksRequest)
+    if (UNLIKELY(UserConfigs::Card::SeparateAccessBlocksRequest))
     {
         pinfo("User requests to separate the CMD25 request into multiple CMD24 ones.");
         
@@ -215,7 +215,7 @@ IOReturn IOSDHostDriver::processWriteBlocksRequest(IOSDBlockRequest* request)
     }
     
     // Guard: Check if the driver should issue the ACMD23 for the incoming request
-    if (!UserConfigs::Card::NoACMD23)
+    if (LIKELY(!UserConfigs::Card::NoACMD23))
     {
         // Issue the ACMD23 to set the number of pre-erased blocks
         pinfo("Issuing an ACMD23 to set the number of pre-erased blocks...");

@@ -89,7 +89,7 @@ bool IOSDCard::init(IOSDHostDriver* driver, UInt32 ocr)
     }
     
     // Check whether users request to initialize the card at 3.3V
-    if (UserConfigs::Card::InitAt3v3)
+    if (UNLIKELY(UserConfigs::Card::InitAt3v3))
     {
         pinfo("User requests to initialize the card at 3.3V. Will not request the card to switch to 1.8V.");
         
@@ -285,7 +285,7 @@ bool IOSDCard::init(IOSDHostDriver* driver, UInt32 ocr)
     }
     
     // Guard: Check whether the user requests to initialize the card at the default speed mode
-    if (UserConfigs::Card::InitAtDefaultSpeed)
+    if (UNLIKELY(UserConfigs::Card::InitAtDefaultSpeed))
     {
         pinfo("User requests to initialize the card at the default speed mode.");
         
@@ -298,7 +298,7 @@ bool IOSDCard::init(IOSDHostDriver* driver, UInt32 ocr)
         pinfo("Both the host and the card support the ultra high speed mode.");
 
         // Guard: Check whether the user requests to initialize the card at the high speed mode
-        if (!UserConfigs::Card::InitAtHighSpeed)
+        if (LIKELY(!UserConfigs::Card::InitAtHighSpeed))
         {
             return this->initUltraHighSpeedMode();
         }
