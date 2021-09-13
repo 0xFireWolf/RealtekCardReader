@@ -416,20 +416,6 @@ public:
     virtual void onSDCardRemovedGated(IOSDCard::Completion* completion = nullptr, IOSDCard::EventOptions options = 0);
     
     //
-    // MARK: - Power Management
-    //
-    
-public:
-    ///
-    /// Adjust the power state in response to system-wide power events
-    ///
-    /// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to
-    /// @param whatDevice A pointer to the power management object which registered to manage power for this device
-    /// @return `kIOPMAckImplied` always.
-    ///
-    IOReturn setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice) override;
-    
-    //
     // MARK: - IOService Implementation
     //
     
@@ -441,21 +427,6 @@ public:
     /// @return `true` on success, `false` otherwise.
     ///
     bool init(OSDictionary* dictionary = nullptr) override;
-    
-    ///
-    /// Start the host device
-    ///
-    /// @param provider An instance of card reader controller
-    /// @return `true` on success, `false` otherwise.
-    ///
-    bool start(IOService* provider) override;
-    
-    ///
-    /// Stop the host device
-    ///
-    /// @param provider An instance of card reader controller
-    ///
-    void stop(IOService* provider) override;
 };
 
 #endif /* IOSDHostDevice_hpp */

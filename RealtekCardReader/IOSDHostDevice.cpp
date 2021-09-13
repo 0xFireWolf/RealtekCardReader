@@ -130,22 +130,6 @@ void IOSDHostDevice::onSDCardRemovedGated(IOSDCard::Completion* completion, IOSD
 }
 
 //
-// MARK: - Power Management
-//
-
-///
-/// Adjust the power state in response to system-wide power events
-///
-/// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to
-/// @param whatDevice A pointer to the power management object which registered to manage power for this device
-/// @return `kIOPMAckImplied` always.
-///
-IOReturn IOSDHostDevice::setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice)
-{
-    return kIOPMAckImplied;
-}
-
-//
 // MARK: - IOService Implementation
 //
 
@@ -165,46 +149,4 @@ bool IOSDHostDevice::init(OSDictionary* dictionary)
     this->setProperty(kIOSDCardPresent, false);
     
     return true;
-}
-
-///
-/// Start the host device
-///
-/// @param provider An instance of card reader controller
-/// @return `true` on success, `false` otherwise.
-///
-bool IOSDHostDevice::start(IOService* provider)
-{
-    pinfo("Starting the host device...");
-    
-    if (!super::start(provider))
-    {
-        return false;
-    }
-    
-    pinfo("Setting up the power management...");
-    
-    this->PMinit();
-    
-    provider->joinPMtree(this);
-    
-    static IOPMPowerState kPowerStates[] =
-    {
-        { kIOPMPowerStateVersion1, kIOPMPowerOff, kIOPMPowerOff, kIOPMPowerOff, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { kIOPMPowerStateVersion1, kIOPMPowerOn | kIOPMDeviceUsable | kIOPMInitialDeviceState, kIOPMPowerOn, kIOPMPowerOn, 0, 0, 0, 0, 0, 0, 0, 0 },
-    };
-    
-    return this->registerPowerDriver(this, kPowerStates, arrsize(kPowerStates)) == kIOPMNoErr;
-}
-
-///
-/// Stop the host device
-///
-/// @param provider An instance of card reader controller
-///
-void IOSDHostDevice::stop(IOService* provider)
-{
-    this->PMstop();
-    
-    super::stop(provider);
 }
