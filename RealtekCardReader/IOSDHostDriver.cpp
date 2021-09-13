@@ -2164,103 +2164,8 @@ IOReturn IOSDHostDriver::getCardSerialNumber(UInt32& serial)
 }
 
 //
-// MARK: - Power Management
-//
-
-///
-/// Prepare to enter the sleep state
-///
-void IOSDHostDriver::prepareToSleep()
-{
-    pinfo("Prepare to sleep...");
-    
-    // Disable the queue event source so that the processor work loop will stop processing requests
-    this->queueEventSource->disable();
-    
-    // Detach the card
-    this->detachCard();
-    
-    // All done
-    pinfo("The host driver is ready to sleep.");
-}
-
-///
-/// Prepare to wake up from sleep
-///
-void IOSDHostDriver::prepareToWakeUp()
-{
-    pinfo("Prepare to wake up...");
-    
-    bool present = false;
-    
-    this->isCardPresent(present);
-    
-    if (present)
-    {
-        // Attach the card
-        pinfo("The card is present when the computer wakes up.");
-        
-        this->queueEventSource->enable();
-        
-        this->attachCard();
-    }
-    else
-    {
-        pinfo("The card is not present when the computer wakes up.");
-    }
-    
-    // All done
-    pinfo("The host driver is ready.");
-}
-
-///
-/// Adjust the power state in response to system-wide power events
-///
-/// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to
-/// @param whatDevice A pointer to the power management object which registered to manage power for this device
-/// @return `kIOPMAckImplied` always.
-///
-IOReturn IOSDHostDriver::setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice)
-{
-    pinfo("Setting the power state from %u to %lu.", this->getPowerState(), powerStateOrdinal);
-    
-    if (powerStateOrdinal == 0)
-    {
-        this->prepareToSleep();
-    }
-    else
-    {
-        this->prepareToWakeUp();
-    }
-    
-    pinfo("The power state has been set to %lu.", powerStateOrdinal);
-    
-    return kIOPMAckImplied;
-}
-
-//
 // MARK: - Startup Routines
 //
-
-///
-/// Setup the power management
-///
-/// @return `true` on success, `false` otherwise.
-///
-bool IOSDHostDriver::setupPowerManagement()
-{
-    static IOPMPowerState kPowerStates[] =
-    {
-        { kIOPMPowerStateVersion1, kIOPMPowerOff, kIOPMPowerOff, kIOPMPowerOff, 0, 0, 0, 0, 0, 0, 0, 0 },
-        { kIOPMPowerStateVersion1, kIOPMPowerOn | kIOPMDeviceUsable | kIOPMInitialDeviceState, kIOPMPowerOn, kIOPMPowerOn, 0, 0, 0, 0, 0, 0, 0, 0 },
-    };
-    
-    this->PMinit();
-    
-    this->host->joinPMtree(this);
-    
-    return this->registerPowerDriver(this, kPowerStates, arrsize(kPowerStates)) == kIOPMNoErr;
-}
 
 ///
 /// Setup the shared work loop to protect the pool and the queue
@@ -2531,14 +2436,6 @@ bool IOSDHostDriver::setupBlockStorageDevice()
 //
 
 ///
-/// Tear down the power management
-///
-void IOSDHostDriver::tearDownPowerManagement()
-{
-    this->PMstop();
-}
-
-///
 /// Tear down the shared workloop
 ///
 void IOSDHostDriver::tearDownSharedWorkLoop()
@@ -2672,46 +2569,40 @@ bool IOSDHostDriver::start(IOService* provider)
     
     this->host->retain();
     
-    // Setup the power managememt
-    if (!this->setupPowerManagement())
-    {
-        goto error1;
-    }
-    
     // Setup the shared work loop
     if (!this->setupSharedWorkLoop())
     {
-        goto error2;
+        goto error1;
     }
     
     // Create the block request pool
     if (!this->setupBlockRequestPool())
     {
-        goto error3;
+        goto error2;
     }
     
     // Create the request queue
     if (!this->setupBlockRequestQueue())
     {
-        goto error4;
+        goto error3;
     }
     
     // Create the processor work loop
     if (!this->setupProcessorWorkLoop())
     {
-        goto error5;
+        goto error4;
     }
     
     // Create the block request event source
     if (!this->setupBlockRequestEventSource())
     {
-        goto error6;
+        goto error5;
     }
     
     // Create the card insertion and removal event sources
     if (!this->setupCardEventSources())
     {
-        goto error7;
+        goto error6;
     }
     
     // Publish the service to start the block storage device
@@ -2726,23 +2617,20 @@ bool IOSDHostDriver::start(IOService* provider)
     
     return true;
     
-error7:
+error6:
     this->tearDownBlockRequestEventSource();
     
-error6:
+error5:
     this->tearDownProcessorWorkLoop();
     
-error5:
+error4:
     this->tearDownBlockRequestQueue();
     
-error4:
+error3:
     this->tearDownBlockRequestPool();
     
-error3:
-    this->tearDownSharedWorkLoop();
-
 error2:
-    this->tearDownPowerManagement();
+    this->tearDownSharedWorkLoop();
     
 error1:
     OSSafeReleaseNULL(this->host);
@@ -2774,8 +2662,6 @@ void IOSDHostDriver::stop(IOService* provider)
     this->tearDownBlockRequestPool();
     
     this->tearDownSharedWorkLoop();
-    
-    this->tearDownPowerManagement();
     
     OSSafeReleaseNULL(this->host);
     
