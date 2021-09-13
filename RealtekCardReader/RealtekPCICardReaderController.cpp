@@ -2131,6 +2131,9 @@ void RealtekPCICardReaderController::prepareToSleep()
 {
     pinfo("Prepare to sleep...");
     
+    // Detach the card if present
+    super::prepareToSleep();
+    
     // Turn off the LED
     psoftassert(this->turnOffLED() == kIOReturnSuccess, "Failed to turn off the LED.");
     

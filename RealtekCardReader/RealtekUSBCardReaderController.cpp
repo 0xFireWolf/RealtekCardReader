@@ -1678,6 +1678,9 @@ void RealtekUSBCardReaderController::prepareToSleep()
 {
     this->pausePollingThread();
     
+    // Detach the card if present
+    super::prepareToSleep();
+    
     pinfo("The hardware is ready to sleep.");
 }
 
