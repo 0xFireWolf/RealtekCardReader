@@ -22,6 +22,9 @@ class IOSDCardEventSource: public IOEventSource
     /// The completion routine
     IOSDCard::Completion completion;
     
+    /// An optional value passed to the event handler
+    IOSDCard::EventOptions options;
+    
     ///
     /// Check whether an action needs to perform to handle the card event
     ///
@@ -35,15 +38,17 @@ public:
     ///
     /// @param owner The owner of the event source
     /// @param completion A non-null completion routine to be invoked when the card event has been processed
+    /// @param options An optional value passed to the event handler
     ///
-    using Action = void (*)(OSObject* owner, IOSDCard::Completion* completion);
+    using Action = void (*)(OSObject* owner, IOSDCard::Completion* completion, IOSDCard::EventOptions options);
     
     ///
     /// Enable the event source
     ///
     /// @param completion A nullable completion routine to be invoked when the card event has been processed
+    /// @param options An optional value passed to the host driver
     ///
-    void enable(IOSDCard::Completion* completion);
+    void enable(IOSDCard::Completion* completion, IOSDCard::EventOptions options);
 
     ///
     /// Disable the event source

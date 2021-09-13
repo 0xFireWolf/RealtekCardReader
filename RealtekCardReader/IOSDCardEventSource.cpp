@@ -43,7 +43,7 @@ bool IOSDCardEventSource::checkForWork()
     
     pinfo("Processing the card event...");
     
-    (*reinterpret_cast<Action>(this->action))(this->owner, &this->completion);
+    (*reinterpret_cast<Action>(this->action))(this->owner, &this->completion, this->options);
     
     pinfo("The card event has been processed.");
     
@@ -54,8 +54,9 @@ bool IOSDCardEventSource::checkForWork()
 /// Enable the event source
 ///
 /// @param completion A nullable completion routine to be invoked when the card event has been processed
+/// @param options An optional value passed to the host driver
 ///
-void IOSDCardEventSource::enable(IOSDCard::Completion* completion)
+void IOSDCardEventSource::enable(IOSDCard::Completion* completion, IOSDCard::EventOptions options)
 {
     super::enable();
     
@@ -63,6 +64,8 @@ void IOSDCardEventSource::enable(IOSDCard::Completion* completion)
     {
         this->completion = *completion;
     }
+    
+    this->options = options;
 }
 
 ///
