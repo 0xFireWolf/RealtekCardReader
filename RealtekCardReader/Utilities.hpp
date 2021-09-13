@@ -64,6 +64,9 @@ extern const int version_major;
 /// Kernel minor version
 extern const int version_minor;
 
+/// Kernel revision
+extern const int version_revision;
+
 /// Get the number of elements in an array
 template <typename T, size_t N>
 constexpr size_t arrsize(const T (&array)[N])
