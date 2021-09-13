@@ -526,43 +526,46 @@ IOReturn RealtekCardReaderController::setPowerState(unsigned long powerStateOrdi
 /// Helper interrupt service routine when a SD card is inserted
 ///
 /// @param completion A nullable completion routine to be invoked when the card is attached
+/// @param options An optional value passed to the host driver
 /// @note This interrupt service routine runs in a gated context.
 /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
 ///             This function is invoked by the polling thread when a SD card has been inserted to the USB card reader.
 ///
-void RealtekCardReaderController::onSDCardInsertedGated(IOSDCard::Completion* completion)
+void RealtekCardReaderController::onSDCardInsertedGated(IOSDCard::Completion* completion, IOSDCard::EventOptions options)
 {
     // Notify the host device
     pinfo("A SD card is inserted.");
     
-    this->slot->onSDCardInsertedGated(completion);
+    this->slot->onSDCardInsertedGated(completion, options);
 }
 
 ///
 /// Helper interrupt service routine when a SD card is removed
 ///
 /// @param completion A nullable completion routine to be invoked when the card is detached
+/// @param options An optional value passed to the host driver
 /// @note This interrupt service routine runs in a gated context.
 /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
 ///             This function is invoked by the polling thread when a SD card has been removed from the USB card reader.
 ///
-void RealtekCardReaderController::onSDCardRemovedGated(IOSDCard::Completion* completion)
+void RealtekCardReaderController::onSDCardRemovedGated(IOSDCard::Completion* completion, IOSDCard::EventOptions options)
 {
     // Notify the host device
     pinfo("The SD card has been removed.");
     
-    this->slot->onSDCardRemovedGated(completion);
+    this->slot->onSDCardRemovedGated(completion, options);
 }
 
 ///
 /// Helper interrupt service routine that runs synchronously when a SD card is inserted
 ///
+/// @param options An optional value passed to the host driver
 /// @return `kIOReturnSuccess` if the card has been initialized and attached successfully, other values otherwise.
 /// @note This interrupt service routine runs in a gated context.
 /// @note This function simply invokes the asynchronous interrupt service routine `onSDCardInsertedGated()` and
 ///       calls `IOCommandGate::commandSleep()` to wait until the host driver finishes processing the event.
 ///
-IOReturn RealtekCardReaderController::onSDCardInsertedSyncGated()
+IOReturn RealtekCardReaderController::onSDCardInsertedSyncGated(IOSDCard::EventOptions options)
 {
     pinfo("A SD card is inserted. Waiting until the host driver finishes processing the event.");
     
@@ -570,7 +573,7 @@ IOReturn RealtekCardReaderController::onSDCardInsertedSyncGated()
     
     auto completion = IOSDCard::Completion::withMemberFunction(this, &RealtekCardReaderController::onSDCardEventProcessedSyncCompletion, &status);
     
-    this->onSDCardInsertedGated(&completion);
+    this->onSDCardInsertedGated(&completion, options);
     
     this->commandGate->commandSleep(&status);
     
@@ -582,12 +585,13 @@ IOReturn RealtekCardReaderController::onSDCardInsertedSyncGated()
 ///
 /// Helper interrupt service routine that runs synchronously when a SD card is removed
 ///
+/// @param options An optional value passed to the host driver
 /// @return `kIOReturnSuccess` if the card has been detached and removed successfully, other values otherwise.
 /// @note This interrupt service routine runs in a gated context.
 /// @note This function simply invokes the asynchronous interrupt service routine `onSDCardRemovedGated()` and
 ///       calls `IOCommandGate::commandSleep()` to wait until the host driver finishes processing the event.
 ///
-IOReturn RealtekCardReaderController::onSDCardRemovedSyncGated()
+IOReturn RealtekCardReaderController::onSDCardRemovedSyncGated(IOSDCard::EventOptions options)
 {
     pinfo("The SD card has been removed. Waiting until the host driver finishes processing the event.");
     
@@ -595,7 +599,7 @@ IOReturn RealtekCardReaderController::onSDCardRemovedSyncGated()
     
     auto completion = IOSDCard::Completion::withMemberFunction(this, &RealtekCardReaderController::onSDCardEventProcessedSyncCompletion, &status);
     
-    this->onSDCardRemovedGated(&completion);
+    this->onSDCardRemovedGated(&completion, options);
     
     this->commandGate->commandSleep(&status);
     

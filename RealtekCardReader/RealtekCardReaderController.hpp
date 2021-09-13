@@ -1601,42 +1601,46 @@ protected:
     /// Helper interrupt service routine when a SD card is inserted
     ///
     /// @param completion A nullable completion routine to be invoked when the card is attached
+    /// @param options An optional value passed to the host driver
     /// @note This interrupt service routine runs in a gated context.
     /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
     ///             This function is invoked by the polling thread when a SD card has been inserted to the USB card reader.
     ///
-    void onSDCardInsertedGated(IOSDCard::Completion* completion = nullptr);
+    void onSDCardInsertedGated(IOSDCard::Completion* completion = nullptr, IOSDCard::EventOptions options = 0);
     
     ///
     /// Helper interrupt service routine when a SD card is removed
     ///
     /// @param completion A nullable completion routine to be invoked when the card is detached
+    /// @param options An optional value passed to the host driver
     /// @note This interrupt service routine runs in a gated context.
     /// @note Port: This function replaces `rtsx_pci_card_detect()` defined in `rtsx_psr.c` but has a completely different design and implementation.
     ///             This function is invoked by the polling thread when a SD card has been removed from the USB card reader.
     ///
-    void onSDCardRemovedGated(IOSDCard::Completion* completion = nullptr);
+    void onSDCardRemovedGated(IOSDCard::Completion* completion = nullptr, IOSDCard::EventOptions options = 0);
     
 private:
     ///
     /// Helper interrupt service routine that runs synchronously when a SD card is inserted
     ///
+    /// @param options An optional value passed to the host driver
     /// @return `kIOReturnSuccess` if the card has been initialized and attached successfully, other values otherwise.
     /// @note This interrupt service routine runs in a gated context.
     /// @note This function simply invokes the asynchronous interrupt service routine `onSDCardInsertedGated()` and
     ///       calls `IOCommandGate::commandSleep()` to wait until the host driver finishes processing the event.
     ///
-    IOReturn onSDCardInsertedSyncGated();
+    IOReturn onSDCardInsertedSyncGated(IOSDCard::EventOptions options = 0);
     
     ///
     /// Helper interrupt service routine that runs synchronously when a SD card is removed
     ///
+    /// @param options An optional value passed to the host driver
     /// @return `kIOReturnSuccess` if the card has been detached and removed successfully, other values otherwise.
     /// @note This interrupt service routine runs in a gated context.
     /// @note This function simply invokes the asynchronous interrupt service routine `onSDCardRemovedGated()` and
     ///       calls `IOCommandGate::commandSleep()` to wait until the host driver finishes processing the event.
     ///
-    IOReturn onSDCardRemovedSyncGated();
+    IOReturn onSDCardRemovedSyncGated(IOSDCard::EventOptions options = 0);
     
     ///
     /// The completion action used by synchronous card interrupt service routines
