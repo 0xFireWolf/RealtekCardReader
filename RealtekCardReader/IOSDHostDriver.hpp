@@ -985,17 +985,19 @@ private:
     /// Attach the SD card
     ///
     /// @param completion The completion routine to call once the card insertion event has been processed
+    /// @param options An optional value passed to the card event handler
     /// @note This function is invoked on the processor workloop thread when a SD card is inserted.
     ///
-    void attachCard(IOSDCard::Completion* completion = nullptr);
+    void attachCard(IOSDCard::Completion* completion = nullptr, IOSDCard::EventOptions options = 0);
     
     ///
     /// Detach the SD card
     ///
     /// @param completion The completion routine to call once the card removal event has been processed
+    /// @param options An optional value passed to the card event handler
     /// @note This function is invoked on the processor workloop thread when a SD card is removed.
     ///
-    void detachCard(IOSDCard::Completion* completion = nullptr);
+    void detachCard(IOSDCard::Completion* completion = nullptr, IOSDCard::EventOptions options = 0);
     
     //
     // MARK: - Card Events Callbacks
@@ -1006,19 +1008,21 @@ public:
     /// [UPCALL] Notify the host driver when a SD card is inserted
     ///
     /// @param completion A nullable completion routine to be invoked when the card is attached
+    /// @param options An optional value passed to the host driver
     /// @note This callback function runs in a gated context provided by the underlying card reader controller.
     ///       The host device should implement this function without any blocking operations.
     ///
-    void onSDCardInsertedGated(IOSDCard::Completion* completion = nullptr);
+    void onSDCardInsertedGated(IOSDCard::Completion* completion = nullptr, IOSDCard::EventOptions options = 0);
     
     ///
     /// [UPCALL] Notify the host driver when a SD card is removed
     ///
     /// @param completion A nullable completion routine to be invoked when the card is detached
+    /// @param options An optional value passed to the host driver
     /// @note This callback function runs in a gated context provided by the underlying card reader controller.
     ///       The host device should implement this function without any blocking operations.
     ///
-    void onSDCardRemovedGated(IOSDCard::Completion* completion = nullptr);
+    void onSDCardRemovedGated(IOSDCard::Completion* completion = nullptr, IOSDCard::EventOptions options = 0);
     
     //
     // MARK: - Query Card Information and Status

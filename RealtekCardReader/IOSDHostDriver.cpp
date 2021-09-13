@@ -1771,14 +1771,15 @@ bool IOSDHostDriver::attachCardAtFrequency(UInt32 frequency)
 /// Attach the SD card
 ///
 /// @param completion The completion routine to call once the card insertion event has been processed
+/// @param options An optional value passed to the card event handler
 /// @note This function is invoked on the processor workloop thread when a SD card is inserted.
 ///
-void IOSDHostDriver::attachCard(IOSDCard::Completion* completion)
+void IOSDHostDriver::attachCard(IOSDCard::Completion* completion, IOSDCard::EventOptions options)
 {
     /// Initial card frequencies in Hz
     static constexpr UInt32 frequencies[] = { KHz2Hz(400), KHz2Hz(300), KHz2Hz(200), KHz2Hz(100) };
 
-    pinfo("Attaching the SD card...");
+    pinfo("Attaching the SD card with completion at 0x%08x%08x and event options %u...", KPTR(completion), options.flatten());
     
     ClosedRange<UInt32> range = this->host->getHostClockRange();
     
@@ -1837,11 +1838,12 @@ void IOSDHostDriver::attachCard(IOSDCard::Completion* completion)
 /// Detach the SD card
 ///
 /// @param completion The completion routine to call once the card removal event has been processed
+/// @param options An optional value passed to the card event handler
 /// @note This function is invoked on the processor workloop thread when a SD card is removed.
 ///
-void IOSDHostDriver::detachCard(IOSDCard::Completion* completion)
+void IOSDHostDriver::detachCard(IOSDCard::Completion* completion, IOSDCard::EventOptions options)
 {
-    pinfo("Detaching the SD card...");
+    pinfo("Detaching the SD card with completion at 0x%08x%08x and event options %u...", KPTR(completion), options.flatten());
     
     // Notify the block storage device that the media is offline
     IOReturn status = this->notifyBlockStorageDevice(kIOMediaStateOffline);
@@ -1882,16 +1884,17 @@ void IOSDHostDriver::detachCard(IOSDCard::Completion* completion)
 /// [UPCALL] Notify the host driver when a SD card is inserted
 ///
 /// @param completion A nullable completion routine to be invoked when the card is attached
+/// @param options An optional value passed to the host driver
 /// @note This callback function runs in a gated context provided by the underlying card reader controller.
 ///       The host device should implement this function without any blocking operations.
 ///
-void IOSDHostDriver::onSDCardInsertedGated(IOSDCard::Completion* completion)
+void IOSDHostDriver::onSDCardInsertedGated(IOSDCard::Completion* completion, IOSDCard::EventOptions options)
 {
     // Make sure that the detach event source is disabled
     this->detachCardEventSource->disable();
     
     // Notify the processor work loop to attach the card
-    this->attachCardEventSource->enable(completion);
+    this->attachCardEventSource->enable(completion, options);
     
     // Enable the queue event source to accept incoming block requests
     this->queueEventSource->enable();
@@ -1901,10 +1904,11 @@ void IOSDHostDriver::onSDCardInsertedGated(IOSDCard::Completion* completion)
 /// [UPCALL] Notify the host driver when a SD card is removed
 ///
 /// @param completion A nullable completion routine to be invoked when the card is detached
+/// @param options An optional value passed to the host driver
 /// @note This callback function runs in a gated context provided by the underlying card reader controller.
 ///       The host device should implement this function without any blocking operations.
 ///
-void IOSDHostDriver::onSDCardRemovedGated(IOSDCard::Completion* completion)
+void IOSDHostDriver::onSDCardRemovedGated(IOSDCard::Completion* completion, IOSDCard::EventOptions options)
 {
     // Disable the queue event source so that the processor work loop will stop processing requests
     this->queueEventSource->disable();
@@ -1913,7 +1917,7 @@ void IOSDHostDriver::onSDCardRemovedGated(IOSDCard::Completion* completion)
     this->attachCardEventSource->disable();
     
     // Notify the processor work loop to detach the card
-    this->detachCardEventSource->enable(completion);
+    this->detachCardEventSource->enable(completion, options);
 }
 
 //
