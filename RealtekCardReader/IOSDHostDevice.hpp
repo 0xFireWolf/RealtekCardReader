@@ -397,21 +397,23 @@ public:
     /// [UPCALL] Notify the host device when a SD card is inserted
     ///
     /// @param completion A nullable completion routine to be invoked when the card is attached
+    /// @param options An optional value passed to the host driver
     /// @note This callback function runs in a gated context provided by the underlying card reader controller.
     ///       The host device should implement this function without any blocking operations.
     ///       A default implementation that notifies the host driver is provided.
     ///
-    virtual void onSDCardInsertedGated(IOSDCard::Completion* completion = nullptr);
+    virtual void onSDCardInsertedGated(IOSDCard::Completion* completion = nullptr, IOSDCard::EventOptions options = 0);
     
     ///
     /// [UPCALL] Notify the host device when a SD card is removed
     ///
     /// @param completion A nullable completion routine to be invoked when the card is detached
+    /// @param options An optional value passed to the host driver
     /// @note This callback function runs in a gated context provided by the underlying card reader controller.
     ///       The host device should implement this function without any blocking operations.
     ///       A default implementation that notifies the host driver is provided.
     ///
-    virtual void onSDCardRemovedGated(IOSDCard::Completion* completion = nullptr);
+    virtual void onSDCardRemovedGated(IOSDCard::Completion* completion = nullptr, IOSDCard::EventOptions options = 0);
     
     //
     // MARK: - Power Management

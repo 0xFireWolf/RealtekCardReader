@@ -93,17 +93,18 @@ void IOSDHostDevice::onSDCardRemovedCompletion(void* parameter, IOReturn status,
 /// [UPCALL] Notify the host device when a SD card is inserted
 ///
 /// @param completion A nullable completion routine to be invoked when the card is attached
+/// @param options An optional value passed to the host driver
 /// @note This callback function runs in a gated context provided by the underlying card reader controller.
 ///       The host device should implement this function without any blocking operations.
 ///       A default implementation that notifies the host driver is provided.
 ///
-void IOSDHostDevice::onSDCardInsertedGated(IOSDCard::Completion* completion)
+void IOSDHostDevice::onSDCardInsertedGated(IOSDCard::Completion* completion, IOSDCard::EventOptions options)
 {
     auto chainedCompletion = IOSDCard::Completion::withMemberFunction(this, &IOSDHostDevice::onSDCardInsertedCompletion, completion);
     
     passert(this->driver != nullptr, "The host driver should not be null.");
     
-    this->driver->onSDCardInsertedGated(&chainedCompletion);
+    this->driver->onSDCardInsertedGated(&chainedCompletion, options);
     
     this->setProperty(kIOSDCardPresent, true);
 }
@@ -112,17 +113,18 @@ void IOSDHostDevice::onSDCardInsertedGated(IOSDCard::Completion* completion)
 /// [UPCALL] Notify the host device when a SD card is removed
 ///
 /// @param completion A nullable completion routine to be invoked when the card is attached
+/// @param options An optional value passed to the host driver
 /// @note This callback function runs in a gated context provided by the underlying card reader controller.
 ///       The host device should implement this function without any blocking operations.
 ///       A default implementation that notifies the host driver is provided.
 ///
-void IOSDHostDevice::onSDCardRemovedGated(IOSDCard::Completion* completion)
+void IOSDHostDevice::onSDCardRemovedGated(IOSDCard::Completion* completion, IOSDCard::EventOptions options)
 {
     auto chainedCompletion = IOSDCard::Completion::withMemberFunction(this, &IOSDHostDevice::onSDCardRemovedCompletion, completion);
     
     passert(this->driver != nullptr, "The host driver should not be null.");
     
-    this->driver->onSDCardRemovedGated(&chainedCompletion);
+    this->driver->onSDCardRemovedGated(&chainedCompletion, options);
     
     this->setProperty(kIOSDCardPresent, false);
 }
