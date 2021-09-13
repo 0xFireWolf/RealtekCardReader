@@ -185,6 +185,20 @@ struct PACKED CID
         
         return true;
     }
+    
+    /// Equatable IMP
+    friend bool operator==(const CID& lhs, const CID& rhs)
+    {
+        return memcmp(&lhs, &rhs, sizeof(CID)) == 0;
+    }
+    
+    /// Check whether the card identification data is empty
+    inline bool isEmpty() const
+    {
+        auto uint64s = reinterpret_cast<const UInt64*>(this);
+        
+        return uint64s[0] == 0 && uint64s[1] == 0;
+    }
 };
 
 /// SD configuration register value (8 bytes)
@@ -1532,6 +1546,23 @@ public:
             completion->invoke(status, characteristics);
         }
     }
+    
+    ///
+    /// Type of the card event options
+    ///
+    using EventOptions = BitOptions<UInt32>;
+    
+    ///
+    /// Enumerate all card event options that can be passed to the handler at the host driver layer
+    ///
+    enum EventOption: UInt32
+    {
+        /// Indicate that the card event handler is invoked by the interrupt service routine
+        kInterruptContext = 0,
+        
+        /// Indicate that the card event handler is invoked by the power management routine
+        kPowerManagementContext = 1,
+    };
 };
 
 #endif /* IOSDCard_hpp */
