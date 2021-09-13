@@ -2173,10 +2173,18 @@ void RealtekPCICardReaderController::prepareToWakeUp()
     psoftassert(this->writeChipRegister(rHSSTA, HSSTA::kMask, HSSTA::kHostWakeup) == kIOReturnSuccess, "Failed to set the host sleep state.");
     
     // Initialize the hardware
-    psoftassert(this->initHardwareCommon() == kIOReturnSuccess, "Failed to initialize the hardware.");
-    
-    // All done
-    pinfo("The hardware is ready.");
+    if (this->initHardwareCommon() == kIOReturnSuccess)
+    {
+        // Attach the card if present
+        super::prepareToWakeUp();
+        
+        // All done
+        pinfo("The hardware is ready.");
+    }
+    else
+    {
+        perr("Failed to initialize the hardware after the computer wakes up.");
+    }
 }
 
 //

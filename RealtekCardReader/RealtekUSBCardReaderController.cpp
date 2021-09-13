@@ -1693,11 +1693,24 @@ void RealtekUSBCardReaderController::prepareToWakeUp()
 {
     pinfo("Prepare to wake up...");
     
-    psoftassert(this->resetHardware() == kIOReturnSuccess, "Failed to reset the hardware.");
-    
-    pinfo("The hardware is ready.");
-    
-    this->resumePollingThread();
+    // The builtin USB card reader disconnects from the system when the computer sleeps
+    // and reconnects when the computer wakes up on some platforms.
+    // (The kernel will stop the driver when the computer wakes up and
+    //  starts a new instance of this driver when the card reader is up.)
+    // If the driver fails to reset the hardware, then this is the sign of such a behavior.
+    if (this->resetHardware() == kIOReturnSuccess)
+    {
+        // Attach the card if present
+        super::prepareToWakeUp();
+        
+        this->resumePollingThread();
+        
+        pinfo("The hardware is ready.");
+    }
+    else
+    {
+        perr("Failed to reset the hardware when the driver wakes up.");
+    }
 }
 
 //
