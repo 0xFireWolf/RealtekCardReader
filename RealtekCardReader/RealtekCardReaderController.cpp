@@ -495,6 +495,62 @@ IOReturn RealtekCardReaderController::switchCardClock(UInt32 cardClock, SSCDepth
 //
 
 ///
+/// Prepare to enter the sleep state
+///
+/// @note The base class provides an implementation that detaches the card.
+///       Concrete controllers must call this function before turning off the card reader.
+///
+void RealtekCardReaderController::prepareToSleep()
+{
+    pinfo("Prepare to sleep...");
+    
+    // Notify the upper layer to detach the card if present
+    auto action = [&]() -> IOReturn
+    {
+        return this->onSDCardRemovedSyncGated(IOSDCard::EventOption::kPowerManagementContext);
+    };
+    
+    psoftassert(IOCommandGateRunAction(this->commandGate, action) == kIOReturnSuccess,
+                "Failed to detach the card and power off the bus.");
+    
+    // All done
+    pinfo("The hardware is ready to sleep.");
+}
+
+///
+/// Prepare to wake up from sleep
+///
+/// @note The base class provides an implementation that attaches the card if present.
+///       Concrete controllers must turn on the card reader before calling this function.
+///
+void RealtekCardReaderController::prepareToWakeUp()
+{
+    pinfo("Prepare to wake up...");
+    
+    if (this->isCardPresent())
+    {
+        // Notify the host device
+        pinfo("Detected a card when the controller wakes up. Will notify the host device.");
+        
+        auto action = [&]() -> IOReturn
+        {
+            this->onSDCardInsertedSyncGated(IOSDCard::EventOption::kPowerManagementContext);
+            
+            return kIOReturnSuccess;
+        };
+        
+        IOCommandGateRunAction(this->commandGate, action);
+    }
+    else
+    {
+        pinfo("The card is not present when the controller wakes up.");
+    }
+    
+    // All done
+    pinfo("The hardware is ready.");
+}
+
+///
 /// Adjust the power state in response to system-wide power events
 ///
 /// @param powerStateOrdinal The number in the power state array of the state the driver is being instructed to switch to

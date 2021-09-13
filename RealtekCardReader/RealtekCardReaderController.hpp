@@ -1575,12 +1575,18 @@ protected:
     ///
     /// Prepare to enter the sleep state
     ///
-    virtual void prepareToSleep() = 0;
+    /// @note The base class provides an implementation that detaches the card.
+    ///       Concrete controllers must call this function before turning off the card reader.
+    ///
+    virtual void prepareToSleep();
     
     ///
     /// Prepare to wake up from sleep
     ///
-    virtual void prepareToWakeUp() = 0;
+    /// @note The base class provides an implementation that attaches the card if present.
+    ///       Concrete controllers must turn on the card reader before calling this function.
+    ///
+    virtual void prepareToWakeUp();
     
 public:
     ///
