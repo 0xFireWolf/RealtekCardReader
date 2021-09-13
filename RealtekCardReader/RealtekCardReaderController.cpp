@@ -9,6 +9,7 @@
 #include "RealtekCommonRegisters.hpp"
 #include "RealtekSDXCSlot.hpp"
 #include "Utilities.hpp"
+#include "ProjectVersion.hpp"
 
 //
 // MARK: - Meta Class Definitions
@@ -833,6 +834,10 @@ bool RealtekCardReaderController::start(IOService* provider)
     pinfo("=======================================================");
     pinfo("Starting the Realtek PCIe/USB card reader controller...");
     pinfo("=======================================================");
+    
+    pmesg("RealtekCardReader %s (%s) starts on Darwin %d.%d.%d.", VERSION, HASH, version_major, version_minor, version_revision);
+    pmesg("Build Date: %s.", TIME);
+    pmesg("Copyright (C) FireWolf @ FireWolf Pl. All Rights Reserved.");
     
     // Start the super class
     if (!super::start(provider))

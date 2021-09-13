@@ -3220,6 +3220,8 @@ error1:
 ///
 void RealtekPCICardReaderController::stop(IOService* provider)
 {
+    pinfo("Stopping the card reader controller...");
+    
     this->destroyCardInitTimer();
     
     this->destroyCardSlot();
@@ -3235,6 +3237,8 @@ void RealtekPCICardReaderController::stop(IOService* provider)
     this->device->setBusMasterEnable(false);
     
     OSSafeReleaseNULL(this->device);
+    
+    pinfo("The card reader controller has stopped.");
     
     super::stop(provider);
 }

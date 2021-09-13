@@ -2518,6 +2518,8 @@ error1:
 ///
 void RealtekUSBCardReaderController::stop(IOService* provider)
 {
+    pinfo("Stopping the card reader controller...");
+    
     this->destroyCardSlot();
     
     this->tearDownPollingTimer();
@@ -2527,6 +2529,8 @@ void RealtekUSBCardReaderController::stop(IOService* provider)
     this->tearDownUSBHostInterface();
     
     this->tearDownUSBHostDevice();
+    
+    pinfo("The card reader controller has stopped.");
     
     super::stop(provider);
 }

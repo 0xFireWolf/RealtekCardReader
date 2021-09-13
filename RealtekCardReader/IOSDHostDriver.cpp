@@ -2761,6 +2761,8 @@ error1:
 ///
 void IOSDHostDriver::stop(IOService* provider)
 {
+    pinfo("Stopping the SD host driver...");
+    
     this->tearDownCardEventSources();
     
     this->tearDownBlockRequestEventSource();
@@ -2776,6 +2778,8 @@ void IOSDHostDriver::stop(IOService* provider)
     this->tearDownPowerManagement();
     
     OSSafeReleaseNULL(this->host);
+    
+    pinfo("The SD host driver has stopped.");
     
     super::stop(provider);
 }
