@@ -192,6 +192,11 @@ struct PACKED CID
         return memcmp(&lhs, &rhs, sizeof(CID)) == 0;
     }
     
+    friend bool operator!=(const CID& lhs, const CID& rhs)
+    {
+        return !(lhs == rhs);
+    }
+    
     /// Check whether the card identification data is empty
     inline bool isEmpty() const
     {
