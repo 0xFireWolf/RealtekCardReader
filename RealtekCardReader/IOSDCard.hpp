@@ -199,6 +199,16 @@ struct PACKED CID
         
         return uint64s[0] == 0 && uint64s[1] == 0;
     }
+    
+    /// Reset the card identification data to zeros
+    inline void reset()
+    {
+        auto uint64s = reinterpret_cast<UInt64*>(this);
+        
+        uint64s[0] = 0;
+        
+        uint64s[1] = 0;
+    }
 };
 
 /// SD configuration register value (8 bytes)
