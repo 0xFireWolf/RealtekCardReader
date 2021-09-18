@@ -640,6 +640,14 @@ protected:
     /// Flags passed to each data transfer operation
     DataTransferFlags dataTransferFlags;
     
+    ///
+    /// The current card status
+    ///
+    /// @note `true` if the card is present before the computer sleeps, `false` otherwise.
+    ///       Other values are reserved at this moment.
+    ///
+    UInt32 currentCardStatus;
+    
     //
     // MARK: - Query UHS-I Capabilities
     //
@@ -1657,6 +1665,38 @@ private:
     ///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
     ///
     void onSDCardEventProcessedSyncCompletion(void* parameter, IOReturn status, OSDictionary* characteristics);
+    
+    ///
+    /// Helper interrupt service routine that runs synchronously when a SD card is inserted
+    ///
+    /// @param options An optional value passed to the host driver
+    /// @return `kIOReturnSuccess` if the card has been initialized and attached successfully, other values otherwise.
+    ///
+    inline IOReturn onSDCardInsertedSync(IOSDCard::EventOptions options = 0)
+    {
+        auto action = [&]() -> IOReturn
+        {
+            return this->onSDCardInsertedSyncGated(options);
+        };
+        
+        return IOCommandGateRunAction(this->commandGate, action);
+    }
+    
+    ///
+    /// Helper interrupt service routine that runs synchronously when a SD card is removed
+    ///
+    /// @param options An optional value passed to the host driver
+    /// @return `kIOReturnSuccess` if the card has been detached and removed successfully, other values otherwise.
+    ///
+    inline IOReturn onSDCardRemovedSync(IOSDCard::EventOptions options = 0)
+    {
+        auto action = [&]() -> IOReturn
+        {
+            return this->onSDCardRemovedSyncGated(options);
+        };
+        
+        return IOCommandGateRunAction(this->commandGate, action);
+    }
     
     //
     // MARK: - Startup Routines

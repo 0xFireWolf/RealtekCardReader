@@ -504,13 +504,15 @@ void RealtekCardReaderController::prepareToSleep()
 {
     pinfo("Prepare to sleep...");
     
-    // Notify the upper layer to detach the card if present
-    auto action = [&]() -> IOReturn
-    {
-        return this->onSDCardRemovedSyncGated(IOSDCard::EventOption::kPowerManagementContext);
-    };
+    // Fetch the current card status
+    this->currentCardStatus = this->isCardPresent();
     
-    psoftassert(IOCommandGateRunAction(this->commandGate, action) == kIOReturnSuccess,
+    pinfo("The card is present when the controller prepares to sleep: %s.", YESNO(this->currentCardStatus));
+    
+    // Notify the upper layer to detach the card if present
+    // Note that even if the card is not present,
+    // the host driver still needs to power off the bus.
+    psoftassert(this->onSDCardRemovedSync(IOSDCard::EventOption::kPowerManagementContext) == kIOReturnSuccess,
                 "Failed to detach the card and power off the bus.");
     
     // All done
@@ -529,21 +531,24 @@ void RealtekCardReaderController::prepareToWakeUp()
     
     if (this->isCardPresent())
     {
-        // Notify the host device
+        // Notify the host device to re-attach the card
         pinfo("Detected a card when the controller wakes up. Will notify the host device.");
         
-        auto action = [&]() -> IOReturn
-        {
-            this->onSDCardInsertedSyncGated(IOSDCard::EventOption::kPowerManagementContext);
-            
-            return kIOReturnSuccess;
-        };
+        psoftassert(this->onSDCardInsertedSync(IOSDCard::EventOption::kPowerManagementContext) == kIOReturnSuccess,
+                    "Failed to attach the card when the controller wakes up.");
+    }
+    else if (this->currentCardStatus)
+    {
+        // Notify the host device to detach the card that had been removed while the computer was sleeping
+        pinfo("The card was present when the controller slept but had been removed before the controller waked up.");
         
-        IOCommandGateRunAction(this->commandGate, action);
+        // In this case, pretend that we are the interrupt service routine
+        psoftassert(this->onSDCardRemovedSync(IOSDCard::EventOption::kInterruptContext) == kIOReturnSuccess,
+                    "Failed to detach the card when the controller wakes up.");
     }
     else
     {
-        pinfo("The card is not present when the controller wakes up.");
+        pinfo("The card was not present when the controller slept and is not present when the controller wakes up.");
     }
     
     // All done
@@ -875,6 +880,8 @@ bool RealtekCardReaderController::init(OSDictionary* dictionary)
     this->tuningConfig.reset();
     
     this->dataTransferFlags.reset();
+    
+    this->currentCardStatus = 0;
     
     return true;
 }
