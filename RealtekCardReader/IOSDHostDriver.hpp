@@ -106,6 +106,13 @@ class IOSDHostDriver: public IOService
     /// The SD card (NULL if not inserted)
     IOSDCard* card;
     
+    ///
+    /// The identification data of the card inserted before the computer sleeps
+    ///
+    /// @note `pcid` is zeroed if no card is inserted when the computer sleeps
+    ///
+    CID pcid;
+    
     //
     // MARK: - Pool Management
     //

@@ -1820,8 +1820,54 @@ void IOSDHostDriver::attachCard(IOSDCard::Completion* completion, IOSDCard::Even
         // See `IOSDHostDriver::submitBlockRequest()` for details.
         this->recyclePendingBlockRequest();
         
-        // Notify the block storage device that the media is online
-        status = this->notifyBlockStorageDevice(kIOMediaStateOnline);
+        // Check whether the host driver is initializing the card to service the interrupt
+        if (!options.contains(IOSDCard::EventOption::kPowerManagementContext))
+        {
+            // Notify the block storage device that the media is online
+            pinfo("The attach event handler is invoked by the interrupt service routine.");
+            
+            status = this->notifyBlockStorageDevice(kIOMediaStateOnline);
+            
+            break;
+        }
+        
+        // The host driver is re-attaches the card when the computer wakes up
+        pinfo("The attach event handler is invoked by the power management routine.");
+        
+        // Guard: Check whether users change the card when the computer is sleeping
+        // -----------------------------------------------------------------------
+        // | Scenario # |   Before Sleep   |   During Sleep   |   After  Sleep   |
+        // -----------------------------------------------------------------------
+        // | Scenario 1 | No Card Inserted |    No  Action    | No Card Inserted |
+        // | Scenario 2 | No Card Inserted |   Inserts Card   |   Attach  Card   |
+        // | Scenario 3 | Card #1 Inserted |    No  Action    |  Attach Card #1  |
+        // | Scenario 4 | Card #1 Inserted |    Swaps Card    |  Attach Card #2  |
+        // -----------------------------------------------------------------------
+        
+        // Scenario 2
+        if (this->pcid.isEmpty())
+        {
+            pinfo("User inserted a card when the computer was sleeping.");
+            
+            status = this->notifyBlockStorageDevice(kIOMediaStateOnline);
+            
+            break;
+        }
+        
+        // Scenario 3
+        if (this->pcid == this->card->getCID())
+        {
+            pinfo("Attached the card inserted before the computer slept.");
+            
+            status = kIOReturnSuccess;
+            
+            break;
+        }
+        
+        // Scenario 4
+        pinfo("User swapped the card when the computer was sleeping.");
+        
+        status = this->blockStorageDevice->message(kIOMessageMediaParametersHaveChanged, this);
         
         break;
     }
@@ -1846,11 +1892,21 @@ void IOSDHostDriver::detachCard(IOSDCard::Completion* completion, IOSDCard::Even
     pinfo("Detaching the SD card with completion at 0x%08x%08x and event options %u...", KPTR(completion), options.flatten());
     
     // Notify the block storage device that the media is offline
-    IOReturn status = this->notifyBlockStorageDevice(kIOMediaStateOffline);
+    IOReturn status = kIOReturnSuccess;
+    
+    if (!options.contains(IOSDCard::EventOption::kPowerManagementContext))
+    {
+        pinfo("The detach event handler is invoked by the interrupt service routine.");
+        
+        status = this->notifyBlockStorageDevice(kIOMediaStateOffline);
+    }
     
     // Stop the card device
     if (this->card != nullptr)
     {
+        // Cache the card identification data when the computer sleeps
+        this->pcid = this->card->getCID();
+        
         pinfo("Stopping the card device...");
         
         this->card->stop(this);
@@ -1862,6 +1918,13 @@ void IOSDHostDriver::detachCard(IOSDCard::Completion* completion, IOSDCard::Even
         this->card = nullptr;
         
         pinfo("The card device has been stopped.");
+    }
+    else
+    {
+        // The card is not present when the computer sleeps/wakes up
+        pinfo("The card device is not present or has already been stopped.");
+        
+        this->pcid.reset();
     }
     
     // Recycle all pending requests
