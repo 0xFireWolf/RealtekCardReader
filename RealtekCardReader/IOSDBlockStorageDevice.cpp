@@ -91,6 +91,13 @@ bool IOSDBlockStorageDevice::fetchCardCharacteristics()
 IOReturn IOSDBlockStorageDevice::message(UInt32 type, IOService* provider, void* argument)
 {
     // Guard: Check whether the message type is of interest
+    if (type == kIOMessageMediaParametersHaveChanged)
+    {
+        pinfo("Received a notification that the media parameters have changed.");
+        
+        return this->messageClients(type, argument);
+    }
+    
     if (type != kIOMessageMediaStateHasChanged)
     {
         return super::message(type, provider, argument);
