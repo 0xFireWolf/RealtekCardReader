@@ -989,6 +989,17 @@ private:
     bool attachCardAtFrequency(UInt32 frequency);
     
     ///
+    /// [Helper] Use the given frequency to communicate with the card and try to attach it
+    ///
+    /// @param frequency The initial frequency in Hz
+    /// @return `true` on success, `false` otherwise.
+    /// @note Port: This function replaces `mmc_rescan_try_freq()` defined in `core.c` and `mmc_attach_sd()` in `sd.c`.
+    /// @note This function is invoked by `IOSDHostDriver::attachCard()`,
+    ///       so it runs synchronously with respect to the processor workloop.
+    ///
+    bool attachCardAtFrequencyV2(UInt32 frequency);
+    
+    ///
     /// Attach the SD card
     ///
     /// @param completion The completion routine to call once the card insertion event has been processed
