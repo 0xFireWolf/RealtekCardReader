@@ -986,7 +986,19 @@ private:
     /// @note This function is invoked by `IOSDHostDriver::attachCard()`,
     ///       so it runs synchronously with respect to the processor workloop.
     ///
+    DEPRECATE("Replaced by attachCardAtFrequencyV2.")
     bool attachCardAtFrequency(UInt32 frequency);
+    
+    ///
+    /// [Helper] Use the given frequency to probe the card prior to the initialization process
+    ///
+    /// @param frequency The initial frequency in Hz
+    /// @param rocr The OCR value to be used to initialize the card on return
+    /// @return `true` on success, `false` otherwise.
+    /// @note Upon a successful return, the host bus power is on and the card is ready to be initialized, otherwise the power is off.
+    /// @note Port: This function replaces the code block in `mmc_rescan_try_freq()` defined in `core.c` and `mmc_attach_sd()` in `sd.c`.
+    ///
+    bool probeCardAtFrequency(UInt32 frequency, UInt32& rocr);
     
     ///
     /// [Helper] Use the given frequency to communicate with the card and try to attach it

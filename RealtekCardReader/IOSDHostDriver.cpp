@@ -1653,6 +1653,7 @@ IOReturn IOSDHostDriver::notifyBlockStorageDevice(IOMediaState state)
 /// @note This function is invoked by `IOSDHostDriver::attachCard()`,
 ///       so it runs synchronously with respect to the processor workloop.
 ///
+DEPRECATE("Replaced by attachCardAtFrequencyV2.")
 bool IOSDHostDriver::attachCardAtFrequency(UInt32 frequency)
 {
     do
@@ -1768,6 +1769,76 @@ bool IOSDHostDriver::attachCardAtFrequency(UInt32 frequency)
 }
 
 ///
+/// [Helper] Use the given frequency to probe the card prior to the initialization process
+///
+/// @param frequency The initial frequency in Hz
+/// @param rocr The OCR value returned by the card at the probe stage
+/// @return `true` on success, `false` otherwise.
+/// @note Upon a successful return, the host bus power is on and the card is ready to be initialized, otherwise the power is off.
+/// @note Port: This function replaces the code block in `mmc_rescan_try_freq()` defined in `core.c` and `mmc_attach_sd()` in `sd.c`.
+///
+bool IOSDHostDriver::probeCardAtFrequency(UInt32 frequency, UInt32& rocr)
+{
+    // Get the initial clock and voltages
+    this->host->setHostInitialClock(frequency);
+
+    UInt32 ocr = this->host->getHostSupportedVoltageRanges();
+    
+    pinfo("Voltage ranges supported by the host: 0x%08x.", ocr);
+    
+    // Power up the SD bus
+    pinfo("Powering up the host bus...");
+    
+    if (this->powerUp(ocr) != kIOReturnSuccess)
+    {
+        perr("Failed to power up the host bus.");
+
+        return false;
+    }
+    
+    pinfo("The host bus is now powered up.");
+
+    // Inquire the SD card
+    do
+    {
+        // Tell the card to go to the idle state
+        pinfo("Asking the card to go to the idle state...");
+        
+        if (this->CMD0() != kIOReturnSuccess)
+        {
+            perr("Failed to tell the card to go to the idle state.");
+
+            break;
+        }
+        
+        pinfo("The card is now in the idle state.");
+
+        // Check whether a SD card is inserted
+        // Note that MMC cards are not supported
+        if (this->CMD8(ocr) != kIOReturnSuccess)
+        {
+            perr("The card does not respond to the CMD8.");
+        }
+
+        if (this->ACMD41(rocr) != kIOReturnSuccess)
+        {
+            perr("The card does not respond to the ACMD41.");
+
+            break;
+        }
+        
+        // Successfully probed the card
+        return true;
+    }
+    while (false);
+    
+    // Failed to probe the card
+    psoftassert(this->powerOff() == kIOReturnSuccess, "Failed to power off the bus.");
+    
+    return false;
+}
+
+///
 /// [Helper] Use the given frequency to communicate with the card and try to attach it
 ///
 /// @param frequency The initial frequency in Hz
@@ -1778,7 +1849,83 @@ bool IOSDHostDriver::attachCardAtFrequency(UInt32 frequency)
 ///
 bool IOSDHostDriver::attachCardAtFrequencyV2(UInt32 frequency)
 {
-    // TODO: IMP THIS
+    // Step 1: Setup the card instance
+    passert(this->card == nullptr, "this->card should be null at this moment.");
+    
+    if (!this->setupCard())
+    {
+        perr("Failed to setup the card instance.");
+        
+        return false;
+    }
+    
+    // Step 2: Probe and initialize the card
+    while (true)
+    {
+        // Step 2.1: Probe the card at the given frequency
+        pinfo("Trying to probe the card at %u Hz.", frequency);
+        
+        UInt32 rocr = 0;
+        
+        if (!this->probeCardAtFrequency(frequency, rocr))
+        {
+            perr("Failed to probe the card at %u Hz.", frequency);
+            
+            break;
+        }
+        
+        pinfo("Probed the card at %u Hz successfully. OCR returned by the card = 0x%08x.", frequency, rocr);
+        
+        // Step 2.2: Filter out unsupported voltage levels
+        rocr &= ~0x7FFF;
+
+        rocr = this->selectMutualVoltageLevels(rocr);
+
+        if (rocr == 0)
+        {
+            perr("Failed to find a voltage level supported by both the host and the card.");
+
+            break;
+        }
+        
+        pinfo("Voltage levels supported by both sides = 0x%08x (OCR).", rocr);
+        
+        // Step 2.3: Start the card initialization process
+        IOReturn retVal = card->initializeCard(rocr);
+        
+        // Guard Case 1: Success
+        if (retVal == kIOReturnSuccess)
+        {
+            pinfo("The card has been initialized successfully.");
+            
+            return true;
+        }
+        
+        // Guard Case 2: Need to try the next lower speed mode
+        if (retVal == kIOReturnNotResponding)
+        {
+            perr("Failed to initialize the card. Will try the next available lower speed mode.");
+            
+            psoftassert(this->powerOff() == kIOReturnSuccess, "Failed to power off the bus.");
+            
+            continue;
+        }
+        
+        // Guard Case 3: Abort
+        if (retVal == kIOReturnError)
+        {
+            perr("Failed to initialize the card. Will abort the card initialization process.");
+            
+            break;
+        }
+        
+        pfatal("Unrecognized return value 0x%08x from IOSDCard::initializeCard().", retVal);
+    }
+    
+    // Step 3: Tear down the card instance on error
+    psoftassert(this->powerOff() == kIOReturnSuccess, "Failed to power off the bus.");
+    
+    this->tearDownCard();
     
     return false;
 }
