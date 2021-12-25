@@ -37,6 +37,12 @@
 		D595F849269E5FEB005893B8 /* RealtekUSBSDXCSlot.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D595F847269E5FEB005893B8 /* RealtekUSBSDXCSlot.hpp */; };
 		D595F84C269E6415005893B8 /* RealtekPCISDXCSlot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D595F84A269E6415005893B8 /* RealtekPCISDXCSlot.cpp */; };
 		D595F84D269E6415005893B8 /* RealtekPCISDXCSlot.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D595F84B269E6415005893B8 /* RealtekPCISDXCSlot.hpp */; };
+		D59612482776B4B500FE0179 /* IOSDCard-OCR.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59612462776B4B500FE0179 /* IOSDCard-OCR.hpp */; };
+		D596124C2776B4D100FE0179 /* IOSDCard-CID.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D596124A2776B4D100FE0179 /* IOSDCard-CID.hpp */; };
+		D59612502776B4E800FE0179 /* IOSDCard-SCR.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D596124E2776B4E800FE0179 /* IOSDCard-SCR.hpp */; };
+		D59612542776B4F000FE0179 /* IOSDCard-SSR.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59612522776B4F000FE0179 /* IOSDCard-SSR.hpp */; };
+		D59612582776B50800FE0179 /* IOSDCard-CSD.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59612562776B50800FE0179 /* IOSDCard-CSD.hpp */; };
+		D596125C2776B52200FE0179 /* IOSDCard-SwitchCaps.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D596125A2776B52200FE0179 /* IOSDCard-SwitchCaps.hpp */; };
 		D59B34B42651C23F004C3348 /* RealtekRTS5249SeriesController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59B34B22651C23F004C3348 /* RealtekRTS5249SeriesController.cpp */; };
 		D59B34B52651C23F004C3348 /* RealtekRTS5249SeriesController.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59B34B32651C23F004C3348 /* RealtekRTS5249SeriesController.hpp */; };
 		D59E076C2664B53E009E96EE /* IOSDBusConfig.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59E076A2664B53E009E96EE /* IOSDBusConfig.hpp */; };
@@ -131,6 +137,12 @@
 		D595F847269E5FEB005893B8 /* RealtekUSBSDXCSlot.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekUSBSDXCSlot.hpp; sourceTree = "<group>"; };
 		D595F84A269E6415005893B8 /* RealtekPCISDXCSlot.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekPCISDXCSlot.cpp; sourceTree = "<group>"; };
 		D595F84B269E6415005893B8 /* RealtekPCISDXCSlot.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekPCISDXCSlot.hpp; sourceTree = "<group>"; };
+		D59612462776B4B500FE0179 /* IOSDCard-OCR.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "IOSDCard-OCR.hpp"; sourceTree = "<group>"; };
+		D596124A2776B4D100FE0179 /* IOSDCard-CID.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "IOSDCard-CID.hpp"; sourceTree = "<group>"; };
+		D596124E2776B4E800FE0179 /* IOSDCard-SCR.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "IOSDCard-SCR.hpp"; sourceTree = "<group>"; };
+		D59612522776B4F000FE0179 /* IOSDCard-SSR.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "IOSDCard-SSR.hpp"; sourceTree = "<group>"; };
+		D59612562776B50800FE0179 /* IOSDCard-CSD.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "IOSDCard-CSD.hpp"; sourceTree = "<group>"; };
+		D596125A2776B52200FE0179 /* IOSDCard-SwitchCaps.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = "IOSDCard-SwitchCaps.hpp"; sourceTree = "<group>"; };
 		D59B34B22651C23F004C3348 /* RealtekRTS5249SeriesController.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RealtekRTS5249SeriesController.cpp; sourceTree = "<group>"; };
 		D59B34B32651C23F004C3348 /* RealtekRTS5249SeriesController.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RealtekRTS5249SeriesController.hpp; sourceTree = "<group>"; };
 		D59E076A2664B53E009E96EE /* IOSDBusConfig.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOSDBusConfig.hpp; sourceTree = "<group>"; };
@@ -475,14 +487,20 @@
 				D57FA69A267B0BB00023097C /* IOSDSimpleBlockRequest.hpp */,
 				D57FA69D267B0BBE0023097C /* IOSDComplexBlockRequest.cpp */,
 				D57FA69E267B0BBE0023097C /* IOSDComplexBlockRequest.hpp */,
-				D5FF56402670B1C500B0143E /* IOSDBlockRequestQueue.cpp */,
-				D5FF56412670B1C500B0143E /* IOSDBlockRequestQueue.hpp */,
 				D5FF56442671484600B0143E /* IOSDBlockRequestEventSource.cpp */,
 				D5FF56452671484600B0143E /* IOSDBlockRequestEventSource.hpp */,
+				D5FF56402670B1C500B0143E /* IOSDBlockRequestQueue.cpp */,
+				D5FF56412670B1C500B0143E /* IOSDBlockRequestQueue.hpp */,
 				D5FF564926715FBE00B0143E /* IOSDCardEventSource.cpp */,
 				D5FF564A26715FBE00B0143E /* IOSDCardEventSource.hpp */,
 				D59E077D2669F153009E96EE /* IOSDCard.cpp */,
 				D59E077E2669F153009E96EE /* IOSDCard.hpp */,
+				D596124A2776B4D100FE0179 /* IOSDCard-CID.hpp */,
+				D59612562776B50800FE0179 /* IOSDCard-CSD.hpp */,
+				D59612462776B4B500FE0179 /* IOSDCard-OCR.hpp */,
+				D596124E2776B4E800FE0179 /* IOSDCard-SCR.hpp */,
+				D59612522776B4F000FE0179 /* IOSDCard-SSR.hpp */,
+				D596125A2776B52200FE0179 /* IOSDCard-SwitchCaps.hpp */,
 			);
 			name = "Host Drivers";
 			sourceTree = "<group>";
@@ -498,11 +516,13 @@
 				D5D2EE7B25DE4CE1004B5310 /* RealtekPCIRegisters.hpp in Headers */,
 				D57FA6A6267C1F340023097C /* RealtekRTS5209Controller.hpp in Headers */,
 				D5BDBCC126C87F33002467CA /* IOSDHostRequest.hpp in Headers */,
+				D59612482776B4B500FE0179 /* IOSDCard-OCR.hpp in Headers */,
 				D595F825269B7EC7005893B8 /* IOUSBHostInterface.hpp in Headers */,
 				D59E0784266C09E0009E96EE /* IOSDHostDevice.hpp in Headers */,
 				D595F84D269E6415005893B8 /* RealtekPCISDXCSlot.hpp in Headers */,
 				D5D2EE7525DE4714004B5310 /* Debug.hpp in Headers */,
 				D595F849269E5FEB005893B8 /* RealtekUSBSDXCSlot.hpp in Headers */,
+				D59612542776B4F000FE0179 /* IOSDCard-SSR.hpp in Headers */,
 				D5E8E0CB267FF26000703407 /* RealtekRTS5286Controller.hpp in Headers */,
 				D5FF564C26715FBE00B0143E /* IOSDCardEventSource.hpp in Headers */,
 				D595F821269AB554005893B8 /* RealtekUSBRegisters.hpp in Headers */,
@@ -514,6 +534,7 @@
 				D5E8E0DB26803DDE00703407 /* RealtekRTS5227Controller.hpp in Headers */,
 				D59E0792266DF6B5009E96EE /* IOSDBlockRequest.hpp in Headers */,
 				D5E8E0DF26803DEA00703407 /* RealtekRTS522AController.hpp in Headers */,
+				D59612582776B50800FE0179 /* IOSDCard-CSD.hpp in Headers */,
 				D5D2EE9F25E0B639004B5310 /* BitOptions.hpp in Headers */,
 				D5D2EE3725DE0358004B5310 /* RealtekRTS525AController.hpp in Headers */,
 				D5FAD6BB2696CC2700A5A587 /* IOPCIeDevice.hpp in Headers */,
@@ -521,6 +542,7 @@
 				D5BDBCBD26C85EB2002467CA /* IOEnhancedCommandPool.hpp in Headers */,
 				D59E077C266841FA009E96EE /* IOSDBlockStorageDevice.hpp in Headers */,
 				D5E8E0CF267FF26900703407 /* RealtekRTS5287Controller.hpp in Headers */,
+				D596125C2776B52200FE0179 /* IOSDCard-SwitchCaps.hpp in Headers */,
 				D5FF56472671484600B0143E /* IOSDBlockRequestEventSource.hpp in Headers */,
 				D51D6FA02660BE3800871FA3 /* RealtekSDXCSlot.hpp in Headers */,
 				D59E077826675FB9009E96EE /* IOSDHostDriver.hpp in Headers */,
@@ -531,11 +553,13 @@
 				D5BDBCC526C8E4A4002467CA /* IOCommandGate.hpp in Headers */,
 				D5BDBCCD26C9BCE5002467CA /* IODMACommand.hpp in Headers */,
 				D57FA69C267B0BB00023097C /* IOSDSimpleBlockRequest.hpp in Headers */,
+				D59612502776B4E800FE0179 /* IOSDCard-SCR.hpp in Headers */,
 				D5FF5654267225D800B0143E /* WolfsSDXC.hpp in Headers */,
 				D5096F0B26A132C00065BE70 /* RealtekRTS5260Controller.hpp in Headers */,
 				D5096F0F26A2A15C0065BE70 /* IOUSBHostDevice.hpp in Headers */,
 				D59E078E266C0FD3009E96EE /* ClosedRange.hpp in Headers */,
 				D59E076C2664B53E009E96EE /* IOSDBusConfig.hpp in Headers */,
+				D596124C2776B4D100FE0179 /* IOSDCard-CID.hpp in Headers */,
 				D59E07802669F153009E96EE /* IOSDCard.hpp in Headers */,
 				D5D2EE8925DF1316004B5310 /* RealtekPCICardReaderController.hpp in Headers */,
 				D57B48BD25EB315C000D3E67 /* RealtekRTS5249Controller.hpp in Headers */,
