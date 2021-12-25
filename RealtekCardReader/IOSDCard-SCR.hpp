@@ -15,6 +15,11 @@
 struct PACKED SPEC
 {
     UInt8 spec, spec3, spec4, spec5;
+    
+    friend bool operator==(const SPEC& lhs, const SPEC& rhs)
+    {
+        return *reinterpret_cast<const UInt32*>(&lhs) == *reinterpret_cast<const UInt32*>(&rhs);
+    }
 };
 
 /// SD configuration register value (8 bytes)
@@ -84,6 +89,16 @@ struct PACKED SCR
     UInt32 reserved1;
     
     ///
+    /// Extract the card specification level from the SCR register value
+    ///
+    /// @return The card specification level
+    ///
+    inline SPEC getCardSpecLevel() const
+    {
+        return { this->spec, this->spec3, this->spec4, this->spec5 };
+    }
+    
+    ///
     /// Decode from the given raw data
     ///
     /// @param data An array of 2 integers encoded in big endian
@@ -128,6 +143,7 @@ struct PACKED SCR
     }
 };
 
-static_assert(sizeof(SCR) ==  8, "SCR should be  8 bytes long.");
+static_assert(sizeof(SPEC) == sizeof(UInt32), "SPEC should be 4 bytes long.");
+static_assert(sizeof(SCR) ==  8, "SCR should be 8 bytes long.");
 
 #endif /* IOSDCard_SCR_hpp */

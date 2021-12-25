@@ -204,21 +204,14 @@ public:
         }
     }
     
-    /// Check whether the card matches the given specification version
-    inline bool matchesSpecificationLevel(const SPEC& spec)
-    {
-        return this->scr.spec  == spec.spec  &&
-               this->scr.spec3 == spec.spec3 &&
-               this->scr.spec4 == spec.spec4 &&
-               this->scr.spec5 == spec.spec5;
-    }
-    
     /// Get the specification version string
     inline const char* getSpecificationVersion()
     {
+        SPEC spec = this->scr.getCardSpecLevel();
+        
         for (const auto& entry : kSpecTable)
         {
-            if (this->matchesSpecificationLevel(entry.first))
+            if (spec == entry.first)
             {
                 return entry.second;
             }
