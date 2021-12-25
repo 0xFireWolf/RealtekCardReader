@@ -1010,6 +1010,7 @@ OSDictionaryPtr IOSDCard::getCardCharacteristics()
 /// @param ocr The OCR value that contains the voltage level supported by the host and the card
 /// @return A non-null card instance on success, `nullptr` otherwise.
 ///
+DEPRECATE("Replaced by setupCard() and initializeCard().")
 IOSDCard* IOSDCard::createWithOCR(IOSDHostDriver* driver, UInt32 ocr)
 {
     auto card = OSTypeAlloc(IOSDCard);
@@ -1031,4 +1032,51 @@ IOSDCard* IOSDCard::createWithOCR(IOSDHostDriver* driver, UInt32 ocr)
     }
     
     return card;
+}
+
+//
+// MARK: - IOService Implementations
+//
+
+///
+/// Start the SD card
+///
+/// @param provider An instance of the host driver
+/// @return `true` on success, `false` otherwise.
+///
+bool IOSDCard::start(IOService* provider)
+{
+    // Start the super class
+    if (!super::start(provider))
+    {
+        perr("Failed to start the super class.");
+        
+        return false;
+    }
+    
+    // Get the host driver
+    this->driver = OSDynamicCast(IOSDHostDriver, provider);
+    
+    if (this->driver == nullptr)
+    {
+        perr("The provider is not a valid host driver.");
+        
+        return false;
+    }
+    
+    this->driver->retain();
+    
+    return true;
+}
+
+///
+/// Stop the SD card
+///
+/// @param provider An instance of the host driver
+///
+void IOSDCard::stop(IOService* provider)
+{
+    OSSafeReleaseNULL(this->driver);
+    
+    super::stop(provider);
 }

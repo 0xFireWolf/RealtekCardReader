@@ -419,6 +419,26 @@ public:
         /// Indicate that the card event handler is invoked by the power management routine
         kPowerManagementContext = 1,
     };
+    
+    //
+    // MARK: - IOService Implementations
+    //
+    
+public:
+    ///
+    /// Start the SD card
+    ///
+    /// @param provider An instance of the host driver
+    /// @return `true` on success, `false` otherwise.
+    ///
+    bool start(IOService* provider) override;
+    
+    ///
+    /// Stop the SD card
+    ///
+    /// @param provider An instance of the host driver
+    ///
+    void stop(IOService* provider) override;
 };
 
 #endif /* IOSDCard_hpp */
