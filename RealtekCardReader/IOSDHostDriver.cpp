@@ -2510,6 +2510,60 @@ bool IOSDHostDriver::setupBlockStorageDevice()
     }
 }
 
+///
+/// Setup the SD card instance
+///
+/// @return `true` on success, `false` otherwise.
+/// @note Upon an unsuccessful return, all resources allocated by this function are released.
+/// @note This startup routine is used by `IOSDHostDriver::attachCardAtFrequency()`.
+///
+bool IOSDHostDriver::setupCard()
+{
+    pinfo("Creating the SD card instance...");
+    
+    this->card = OSTypeAlloc(IOSDCard);
+    
+    if (this->card == nullptr)
+    {
+        perr("Failed to allocate the card instance.");
+        
+        return false;
+    }
+    
+    if (!this->card->IOService::init()) // TODO: Remove `IOService::` once the custom init() is removed
+    {
+        perr("Failed to initiaize the card instance.");
+        
+        OSSafeReleaseNULL(this->card);
+        
+        return false;
+    }
+    
+    if (!this->card->attach(this))
+    {
+        perr("Failed to attach the card instance.");
+        
+        OSSafeReleaseNULL(this->card);
+        
+        return false;
+    }
+    
+    if (!this->card->start(this))
+    {
+        perr("Failed to start the card instance.");
+        
+        this->card->detach(this);
+        
+        OSSafeReleaseNULL(this->card);
+        
+        return false;
+    }
+    
+    pinfo("The SD card instance has been created successfully.");
+    
+    return true;
+}
+
 //
 // MARK: - Teardown Routines
 //
@@ -2610,6 +2664,27 @@ void IOSDHostDriver::tearDownCardEventSources()
 void IOSDHostDriver::tearDownBlockStorageDevice()
 {
     OSSafeReleaseNULL(this->blockStorageDevice);
+}
+
+///
+/// Tear down the SD card instance
+///
+/// @note This startup routine is used by `IOSDHostDriver::attachCardAtFrequency()`.
+///
+void IOSDHostDriver::tearDownCard()
+{
+    pinfo("Stopping the SD card instance...");
+    
+    if (this->card != nullptr)
+    {
+        this->card->stop(this);
+        
+        this->card->detach(this);
+        
+        OSSafeReleaseNULL(this->card);
+    }
+    
+    pinfo("The SD card instance has been destroyed.");
 }
 
 //

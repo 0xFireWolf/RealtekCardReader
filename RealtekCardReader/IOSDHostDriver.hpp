@@ -1197,6 +1197,15 @@ private:
     ///
     bool setupBlockStorageDevice();
     
+    ///
+    /// Setup the SD card instance
+    ///
+    /// @return `true` on success, `false` otherwise.
+    /// @note Upon an unsuccessful return, all resources allocated by this function are released.
+    /// @note This startup routine is used by `IOSDHostDriver::attachCardAtFrequency()`.
+    ///
+    bool setupCard();
+    
     //
     // MARK: - Teardown Routines
     //
@@ -1236,6 +1245,13 @@ private:
     /// Tear down the block storage device
     ///
     void tearDownBlockStorageDevice();
+    
+    ///
+    /// Tear down the SD card instance
+    ///
+    /// @note This startup routine is used by `IOSDHostDriver::attachCardAtFrequency()`.
+    ///
+    void tearDownCard();
     
     //
     // MARK: - IOService Implementations
