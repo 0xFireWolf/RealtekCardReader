@@ -88,136 +88,43 @@ private:
     /// The card relative address
     UInt32 rca;
     
-    ///
-    /// Initialize the card with the given OCR register value
-    ///
-    /// @param driver The host driver
-    /// @param ocr The current operating condition register value
-    /// @return `true` on success, `false` otherwise.
-    /// @note Port: This function replaces `mmc_sd_init_card()` defined in `sd.c`.
-    ///
-    DEPRECATE("Replaced by initializeCard().")
-    bool init(IOSDHostDriver* driver, UInt32 ocr);
-    
-    ///
-    /// [Helper] Initialize the card with Default Speed Mode enabled
-    ///
-    /// @return `true` on success, `false` otherwise.
-    /// @note Port: This function replaces the default speed portion of `mmc_sd_init_card()` defined in `sd.c`.
-    ///
-    bool initDefaultSpeedMode();
-    
-    ///
-    /// [Helper] Initialize the card with High Speed Mode enabled
-    ///
-    /// @return `true` on success, `false` otherwise.
-    /// @note Port: This function replaces the high speed portion of `mmc_sd_init_card()` defined in `sd.c`.
-    ///
-    bool initHighSpeedMode();
-    
-    ///
-    /// [Helper] Initialize the card with UHS-I Mode enabled
-    ///
-    /// @return `true` on success, `false` otherwise.
-    /// @note Port: This function replaces `mmc_sd_init_uhs_card()` defined in `sd.c`.
-    ///
-    bool initUltraHighSpeedMode();
-    
-    ///
-    /// [Helper] Read the card switch capabilities
-    ///
-    /// @return `true` on success, `false` otherwise.
-    /// @note Port: This function replaces `mmc_read_switch()` defined in `sd.c`.
-    ///
-    bool readSwitchCapabilities();
-    
-    ///
-    /// [Helper] Enable the 4-bit wide bus for data transfer
-    ///
-    /// @return `true` on success, `false` otherwise.
-    ///
-    bool enable4BitWideBus();
-    
-    ///
-    /// [Helper] Enable the signal voltage for the UHS-I mode
-    ///
-    /// @param ocr The current operating condition register value
-    /// @return `true` on success, `false` otherwise.
-    /// @note Port: This function replaces `mmc_set_uhs_voltage()` defined in `core.c`.
-    ///
-    bool enableUltraHighSpeedSignalVoltage(UInt32 ocr);
-    
-    ///
-    /// [Helper] Select the bus speed for the UHS-I mode
-    ///
-    /// @return The bus speed supported by both the card and the host.
-    /// @note Port: This function replaces `sd_update_bus_speed_mode()` defined in `sd.c`.
-    ///
-    SwitchCaps::BusSpeed selectUltraHighSpeedBusSpeed();
-    
-    ///
-    /// [Helper] Set the driver strength for the UHS-I card
-    ///
-    /// @param busSpeed The bus speed
-    /// @return `true` on success, `false` otherwise.
-    /// @note Port: This function replaces `sd_select_driver_type()` defined in `sd.c`.
-    /// @note This function is a part of the UHS-I card initialization routine `initUltraHighSpeedMode()`.
-    ///
-    bool setUHSDriverType(SwitchCaps::BusSpeed busSpeed);
-    
-    ///
-    /// [Helper] Set the current limit for the UHS-I card
-    ///
-    /// @param busSpeed The bus speed
-    /// @return `true` on success, `false` otherwise.
-    /// @note Port: This function replaces `sd_set_current_limit()` defined in `sd.c`.
-    /// @note This function is a part of the UHS-I card initialization routine `initUltraHighSpeedMode()`.
-    ///
-    bool setUHSCurrentLimit(SwitchCaps::BusSpeed busSpeed);
-    
-    ///
-    /// [Helper] Set the bus speed for the UHS-I card
-    ///
-    /// @param busSpeed The bus speed
-    /// @return `true` on success, `false` otherwise.
-    /// @note Port: This function replaces `sd_set_bus_speed_mode()` defined in `sd.c`.
-    /// @note This function is a part of the UHS-I card initialization routine `initUltraHighSpeedMode()`.
-    ///
-    bool setUHSBusSpeedMode(SwitchCaps::BusSpeed busSpeed);
+    //
+    // MARK: - Query Card Properties
+    //
     
 public:
     /// Get the card identification data
-    inline const CID& getCID()
+    inline const CID& getCID() const
     {
         return this->cid;
     }
     
     /// Get the card specification data
-    inline const CSD& getCSD()
+    inline const CSD& getCSD() const
     {
         return this->csd;
     }
     
     /// Get the SD configuration data
-    inline const SCR& getSCR()
+    inline const SCR& getSCR() const
     {
         return this->scr;
     }
     
     /// Get the SD status data
-    inline const SSR& getSSR()
+    inline const SSR& getSSR() const
     {
         return this->ssr;
     }
     
     /// Get the card relative address
-    inline UInt32 getRCA()
+    inline UInt32 getRCA() const
     {
         return this->rca;
     }
     
     /// Get the card type
-    inline const char* getCardType()
+    inline const char* getCardType() const
     {
         if (!this->csd.isBlockAddressed)
         {
@@ -235,7 +142,7 @@ public:
     }
     
     /// Get the specification version string
-    inline const char* getSpecificationVersion()
+    inline const char* getSpecificationVersion() const
     {
         SPEC spec = this->scr.getCardSpecLevel();
         
@@ -257,7 +164,7 @@ public:
     /// @param length The buffer length
     /// @return `true` on success, `false` if the buffer is NULL or too small.
     ///
-    inline bool getCardName(char* name, IOByteCount length)
+    inline bool getCardName(char* name, IOByteCount length) const
     {
         if (name == nullptr || length < 8)
         {
@@ -278,7 +185,7 @@ public:
     /// @param length The buffer length
     /// @return `true` on success, `false` if the buffer is NULL or too small.
     ///
-    inline bool getCardRevision(char* revision, IOByteCount length)
+    inline bool getCardRevision(char* revision, IOByteCount length) const
     {
         if (revision == nullptr || length < 8)
         {
@@ -299,7 +206,7 @@ public:
     /// @param length The buffer length
     /// @return `true` on success, `false` if the buffer is NULL or too small.
     ///
-    inline bool getCardProductionDate(char* date, IOByteCount length)
+    inline bool getCardProductionDate(char* date, IOByteCount length) const
     {
         if (date == nullptr || length < 8)
         {
@@ -319,7 +226,7 @@ public:
     /// @return A dictionary that contains card characteristics which can be recognized by the System Profiler.
     /// @note The caller is responsible for releasing the returned dictionary.
     ///
-    OSDictionaryPtr getCardCharacteristics();
+    OSDictionaryPtr getCardCharacteristics() const;
     
     ///
     /// Create the card and initialize it with the given OCR value
@@ -330,6 +237,10 @@ public:
     ///
     DEPRECATE("Replaced by setupCard() and initializeCard().")
     static IOSDCard* createWithOCR(IOSDHostDriver* driver, UInt32 ocr);
+    
+    //
+    // MARK: - Card Event Utilities
+    //
     
     ///
     /// Type of a completion routine that is called once an asynchronous card event is processed by the host driver
@@ -455,6 +366,103 @@ public:
     //
     
 private:
+    ///
+    /// Initialize the card with the given OCR register value
+    ///
+    /// @param driver The host driver
+    /// @param ocr The current operating condition register value
+    /// @return `true` on success, `false` otherwise.
+    /// @note Port: This function replaces `mmc_sd_init_card()` defined in `sd.c`.
+    ///
+    DEPRECATE("Replaced by initializeCard().")
+    bool init(IOSDHostDriver* driver, UInt32 ocr);
+    
+    ///
+    /// [Helper] Initialize the card with Default Speed Mode enabled
+    ///
+    /// @return `true` on success, `false` otherwise.
+    /// @note Port: This function replaces the default speed portion of `mmc_sd_init_card()` defined in `sd.c`.
+    ///
+    bool initDefaultSpeedMode();
+    
+    ///
+    /// [Helper] Initialize the card with High Speed Mode enabled
+    ///
+    /// @return `true` on success, `false` otherwise.
+    /// @note Port: This function replaces the high speed portion of `mmc_sd_init_card()` defined in `sd.c`.
+    ///
+    bool initHighSpeedMode();
+    
+    ///
+    /// [Helper] Initialize the card with UHS-I Mode enabled
+    ///
+    /// @return `true` on success, `false` otherwise.
+    /// @note Port: This function replaces `mmc_sd_init_uhs_card()` defined in `sd.c`.
+    ///
+    bool initUltraHighSpeedMode();
+    
+    ///
+    /// [Helper] Read the card switch capabilities
+    ///
+    /// @return `true` on success, `false` otherwise.
+    /// @note Port: This function replaces `mmc_read_switch()` defined in `sd.c`.
+    ///
+    bool readSwitchCapabilities();
+    
+    ///
+    /// [Helper] Enable the 4-bit wide bus for data transfer
+    ///
+    /// @return `true` on success, `false` otherwise.
+    ///
+    bool enable4BitWideBus();
+    
+    ///
+    /// [Helper] Enable the signal voltage for the UHS-I mode
+    ///
+    /// @param ocr The current operating condition register value
+    /// @return `true` on success, `false` otherwise.
+    /// @note Port: This function replaces `mmc_set_uhs_voltage()` defined in `core.c`.
+    ///
+    bool enableUltraHighSpeedSignalVoltage(UInt32 ocr);
+    
+    ///
+    /// [Helper] Select the bus speed for the UHS-I mode
+    ///
+    /// @return The bus speed supported by both the card and the host.
+    /// @note Port: This function replaces `sd_update_bus_speed_mode()` defined in `sd.c`.
+    ///
+    SwitchCaps::BusSpeed selectUltraHighSpeedBusSpeed();
+    
+    ///
+    /// [Helper] Set the driver strength for the UHS-I card
+    ///
+    /// @param busSpeed The bus speed
+    /// @return `true` on success, `false` otherwise.
+    /// @note Port: This function replaces `sd_select_driver_type()` defined in `sd.c`.
+    /// @note This function is a part of the UHS-I card initialization routine `initUltraHighSpeedMode()`.
+    ///
+    bool setUHSDriverType(SwitchCaps::BusSpeed busSpeed);
+    
+    ///
+    /// [Helper] Set the current limit for the UHS-I card
+    ///
+    /// @param busSpeed The bus speed
+    /// @return `true` on success, `false` otherwise.
+    /// @note Port: This function replaces `sd_set_current_limit()` defined in `sd.c`.
+    /// @note This function is a part of the UHS-I card initialization routine `initUltraHighSpeedMode()`.
+    ///
+    bool setUHSCurrentLimit(SwitchCaps::BusSpeed busSpeed);
+    
+    ///
+    /// [Helper] Set the bus speed for the UHS-I card
+    ///
+    /// @param busSpeed The bus speed
+    /// @return `true` on success, `false` otherwise.
+    /// @note Port: This function replaces `sd_set_bus_speed_mode()` defined in `sd.c`.
+    /// @note This function is a part of the UHS-I card initialization routine `initUltraHighSpeedMode()`.
+    ///
+    bool setUHSBusSpeedMode(SwitchCaps::BusSpeed busSpeed);
+    
     ///
     /// [Helper] Initialize the card at the default speed mode
     ///

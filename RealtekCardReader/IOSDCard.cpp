@@ -16,6 +16,10 @@
 
 OSDefineMetaClassAndStructors(IOSDCard, IOService);
 
+//
+// MARK: - Constants and Definitions
+//
+
 /// The specification table
 const Pair<SPEC, const char*> IOSDCard::kSpecTable[] =
 {
@@ -33,6 +37,57 @@ const Pair<SPEC, const char*> IOSDCard::kSpecTable[] =
     { { 2, 1, 0, 4 }, "8.00" }, // Version 8.XX
     { { 2, 1, 1, 4 }, "8.00" }, // Version 8.XX
 };
+
+//
+// MARK: - Query Card Properties
+//
+
+///
+/// Get the card characteristics
+///
+/// @return A dictionary that contains card characteristics which can be recognized by the System Profiler.
+/// @note The caller is responsible for releasing the returned dictionary.
+///
+OSDictionaryPtr IOSDCard::getCardCharacteristics() const
+{
+    OSDictionary* dictionary = OSDictionary::withCapacity(11);
+
+    char name[8] = {};
+    
+    char revision[8] = {};
+    
+    char date[8] = {};
+    
+    passert(this->getCardName(name, sizeof(name)), "Should be able to get the card name.");
+    
+    passert(this->getCardRevision(revision, sizeof(revision)), "Should be able to get the card revision.");
+    
+    passert(this->getCardProductionDate(date, sizeof(date)), "Should be able to get the card production date.");
+    
+    if (dictionary != nullptr &&
+        OSDictionaryAddStringToDictionary(dictionary, "Card Type", this->getCardType()) &&
+        OSDictionaryAddStringToDictionary(dictionary, "Specification Version", this->getSpecificationVersion()) &&
+        OSDictionaryAddStringToDictionary(dictionary, "Product Name", name) &&
+        OSDictionaryAddStringToDictionary(dictionary, "Product Revision Level", revision) &&
+        OSDictionaryAddStringToDictionary(dictionary, "Manufacturing Date", date) &&
+        OSDictionaryAddDataToDictionary(dictionary, "Serial Number", &this->cid.serial, sizeof(this->cid.serial)) &&
+        OSDictionaryAddDataToDictionary(dictionary, "Manufacturer ID", &this->cid.manufacturer, sizeof(this->cid.manufacturer)) &&
+        OSDictionaryAddDataToDictionary(dictionary, "Application ID", &this->cid.oem, sizeof(this->cid.oem)) &&
+        OSDictionaryAddDataToDictionary(dictionary, "Speed Class", &this->ssr.speedClass, sizeof(this->ssr.speedClass)) &&
+        OSDictionaryAddIntegerToDictionary(dictionary, "UHS Speed Grade", this->ssr.uhsSpeedGrade) &&
+        OSDictionaryAddIntegerToDictionary(dictionary, "Video Speed Class", this->ssr.videoSpeedClass))
+    {
+        return dictionary;
+    }
+    
+    OSSafeReleaseNULL(dictionary);
+    
+    return nullptr;
+}
+
+//
+// MARK: - Card Initialization Process
+//
 
 ///
 /// Initialize the card with the given OCR register value
@@ -972,49 +1027,6 @@ bool IOSDCard::setUHSBusSpeedMode(SwitchCaps::BusSpeed busSpeed)
 }
 
 ///
-/// Get the card characteristics
-///
-/// @return A dictionary that contains card characteristics which can be recognized by the System Profiler.
-/// @note The caller is responsible for releasing the returned dictionary.
-///
-OSDictionaryPtr IOSDCard::getCardCharacteristics()
-{
-    OSDictionary* dictionary = OSDictionary::withCapacity(11);
-
-    char name[8] = {};
-    
-    char revision[8] = {};
-    
-    char date[8] = {};
-    
-    passert(this->getCardName(name, sizeof(name)), "Should be able to get the card name.");
-    
-    passert(this->getCardRevision(revision, sizeof(revision)), "Should be able to get the card revision.");
-    
-    passert(this->getCardProductionDate(date, sizeof(date)), "Should be able to get the card production date.");
-    
-    if (dictionary != nullptr &&
-        OSDictionaryAddStringToDictionary(dictionary, "Card Type", this->getCardType()) &&
-        OSDictionaryAddStringToDictionary(dictionary, "Specification Version", this->getSpecificationVersion()) &&
-        OSDictionaryAddStringToDictionary(dictionary, "Product Name", name) &&
-        OSDictionaryAddStringToDictionary(dictionary, "Product Revision Level", revision) &&
-        OSDictionaryAddStringToDictionary(dictionary, "Manufacturing Date", date) &&
-        OSDictionaryAddDataToDictionary(dictionary, "Serial Number", &this->cid.serial, sizeof(this->cid.serial)) &&
-        OSDictionaryAddDataToDictionary(dictionary, "Manufacturer ID", &this->cid.manufacturer, sizeof(this->cid.manufacturer)) &&
-        OSDictionaryAddDataToDictionary(dictionary, "Application ID", &this->cid.oem, sizeof(this->cid.oem)) &&
-        OSDictionaryAddDataToDictionary(dictionary, "Speed Class", &this->ssr.speedClass, sizeof(this->ssr.speedClass)) &&
-        OSDictionaryAddIntegerToDictionary(dictionary, "UHS Speed Grade", this->ssr.uhsSpeedGrade) &&
-        OSDictionaryAddIntegerToDictionary(dictionary, "Video Speed Class", this->ssr.videoSpeedClass))
-    {
-        return dictionary;
-    }
-    
-    OSSafeReleaseNULL(dictionary);
-    
-    return nullptr;
-}
-
-///
 /// Create the card and initialize it with the given OCR value
 ///
 /// @param driver The non-null host driver
@@ -1044,10 +1056,6 @@ IOSDCard* IOSDCard::createWithOCR(IOSDHostDriver* driver, UInt32 ocr)
     
     return card;
 }
-
-//
-// MARK: - Card Initialization Process
-//
 
 ///
 /// [Helper] Initialize the card at the default speed mode
