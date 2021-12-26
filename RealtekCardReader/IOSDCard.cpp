@@ -42,6 +42,7 @@ const Pair<SPEC, const char*> IOSDCard::kSpecTable[] =
 /// @return `true` on success, `false` otherwise.
 /// @note Port: This function replaces `mmc_sd_init_card()` defined in `sd.c`.
 ///
+DEPRECATE("Replaced by initializeCard().")
 bool IOSDCard::init(IOSDHostDriver* driver, UInt32 ocr)
 {
     if (!super::init())
@@ -781,8 +782,18 @@ SwitchCaps::BusSpeed IOSDCard::selectUltraHighSpeedBusSpeed()
     pfatal("Should never reach at here. The host and/or card capabilities are invalid.");
 }
 
+///
+/// [Helper] Set the driver strength for the UHS-I card
+///
+/// @param busSpeed The bus speed
+/// @return `true` on success, `false` otherwise.
+/// @note Port: This function replaces `sd_select_driver_type()` defined in `sd.c`.
+/// @note This function is a part of the UHS-I card initialization routine `initUltraHighSpeedMode()`.
+///
 bool IOSDCard::setUHSDriverType(SwitchCaps::BusSpeed busSpeed)
 {
+    // TODO: NOT IMPLEMENTED YET
+    // Note that Realtek's driver does not use this function.
     return true;
 }
 
@@ -1032,6 +1043,405 @@ IOSDCard* IOSDCard::createWithOCR(IOSDHostDriver* driver, UInt32 ocr)
     }
     
     return card;
+}
+
+//
+// MARK: - Card Initialization Process
+//
+
+///
+/// [Helper] Initialize the card at the default speed mode
+///
+/// @param speedMode Set to `IOSDCard::SpeedMode::kDefaultSpeed` on return
+/// @return `kIOReturnSuccess` on success,
+///         `kIOReturnNotResponding` if the host driver should invoke this function again to initialize the card at a lower speed mode,
+///         `kIOReturnAborted` if the host driver should abort the initialization of the attached card.
+/// @note This function is a wrapper of `IOSDCard::initDefaultSpeedMode()` to support the new fallback mechanism as of v0.9.7.
+/// @note The return value of this function is inherited from the caller `IOSDCard::initializeCard(ocr:speedMode:)`.
+/// @seealso `IOSDCard::initializeCard(ocr:speedMode:)` and `IOSDCard::initDefaultSpeedMode()`.
+///
+IOReturn IOSDCard::initializeCardAtDefaultSpeedMode(SpeedMode& speedMode)
+{
+    speedMode = SpeedMode::kDefaultSpeed;
+    
+    return this->initDefaultSpeedMode() ? kIOReturnSuccess : kIOReturnNotResponding;
+}
+
+///
+/// [Helper] Initialize the card at the high speed mode
+///
+/// @param speedMode Set to `IOSDCard::SpeedMode::kHighSpeed` on return
+/// @return `kIOReturnSuccess` on success,
+///         `kIOReturnNotResponding` if the host driver should invoke this function again to initialize the card at a lower speed mode,
+///         `kIOReturnAborted` if the host driver should abort the initialization of the attached card.
+/// @note This function is a wrapper of `IOSDCard::initHighSpeedMode()` to support the new fallback mechanism as of v0.9.7.
+/// @note The return value of this function is inherited from the caller `IOSDCard::initializeCard(ocr:speedMode:)`.
+/// @seealso `IOSDCard::initializeCard(ocr:speedMode:)` and `IOSDCard::initHighSpeedMode()`.
+///
+IOReturn IOSDCard::initializeCardAtHighSpeedMode(SpeedMode& speedMode)
+{
+    speedMode = SpeedMode::kHighSpeed;
+    
+    return this->initHighSpeedMode() ? kIOReturnSuccess : kIOReturnNotResponding;
+}
+
+///
+/// [Helper] Initialize the card at the ultra high speed mode
+///
+/// @param speedMode Set to `IOSDCard::SpeedMode::kUltraHighSpeed` on return
+/// @return `kIOReturnSuccess` on success,
+///         `kIOReturnNotResponding` if the host driver should invoke this function again to initialize the card at a lower speed mode,
+///         `kIOReturnAborted` if the host driver should abort the initialization of the attached card.
+/// @note This function is a wrapper of `IOSDCard::initUltraHighSpeedMode()` to support the new fallback mechanism as of v0.9.7.
+/// @note The return value of this function is inherited from the caller `IOSDCard::initializeCard(ocr:speedMode:)`.
+/// @seealso `IOSDCard::initializeCard(ocr:speedMode:)` and `IOSDCard::initUltraHighSpeedMode()`.
+///
+IOReturn IOSDCard::initializeCardAtUltraHighSpeedMode(SpeedMode& speedMode)
+{
+    speedMode = SpeedMode::kUltraHighSpeed;
+    
+    return this->initUltraHighSpeedMode() ? kIOReturnSuccess : kIOReturnNotResponding;
+}
+
+///
+/// Initialize the card with the given OCR register value
+///
+/// @param ocr The current operating condition register value
+/// @param speedMode The suggested speed mode (see below)
+/// @return `kIOReturnSuccess` on success,
+///         `kIOReturnNotResponding` if the host driver should invoke this function again to initialize the card at a lower speed mode,
+///         `kIOReturnAborted` if the host driver should abort the initialization of the attached card.
+/// @note The given speed mode is treated as a hint and may be overridden by user configurations or the capability of the card.
+///       The caller should always invoke this function with the maximum speed mode (i.e. `IOSDCard::SpeedMode::kMaxSpeed`) at the beginning.
+///       If this function returns `kIOReturnNotResponding`, `speedMode` is set to the speed mode at which the card has failed to initialize.
+///       The caller may repeatedly invoke this function with a lower speed mode until one of the following scenarios occurs.
+///       (1) The function returns `kIOReturnSuccess`, indicating that the card has been initialized successfully.
+///       (2) The function returns `kIOReturnAborted`, indicating that the card failed to initialize thus the caller should abort the initialization process.
+///       (3) The function returns `kIOReturnNotResponding` with `speedMode` set to the minimum speed mode (i.e. `IOSDCard::SpeedMode::kMinSpeed`),
+///           indicating that the caller has tried all possible speed modes but the card still failed to initialize thus should abort the initialization process.
+///       The caller may use the return value of this function to implement a graceful fallback mechanism.
+/// @note Port: This function replaces `mmc_sd_init_card()` defined in `sd.c`.
+///
+IOReturn IOSDCard::initializeCard(UInt32 ocr, SpeedMode& speedMode)
+{
+    // ===============================
+    // | BEGIN PORTED mmc_sd_get_cid |
+    // ===============================
+    // The initialization routine may change the OCR value
+    UInt32 pocr = ocr;
+    
+    pinfo("Initializing the SD card with OCR = 0x%08x.", ocr);
+    
+    pinfo("The speed mode suggested by the host driver = %u.", speedMode);
+    
+    // Tell the card to go to the idle state
+    if (this->driver->CMD0() != kIOReturnSuccess)
+    {
+        perr("Failed to tell the card to go back to the idle state.");
+        
+        return kIOReturnAborted;
+    }
+    
+    pinfo("The card is now in the idle state.");
+    
+    // Check whether the card supports SD 2.0
+    if (this->driver->CMD8(ocr) == kIOReturnSuccess)
+    {
+        pinfo("Found a SD 2.0 compliant card.");
+        
+        ocr |= OCR::kCardCapacityStatus;
+    }
+    
+    // Check whether the host supports the UHS-I mode
+    // If so, we assume that the card also supports the UHS-I mode
+    // and request the card to switch to 1.8V signal voltage
+    // Later the card will return an OCR value indicating whether it supports the UHS-I mode
+    if (this->driver->hostSupportsUltraHighSpeedMode())
+    {
+        pinfo("The host supports UHS-I mode and will try to request the card to switch to 1.8V signal voltage.");
+        
+        ocr |= OCR::kRequest1d8V;
+    }
+    
+    // Check whether users request to initialize the card at 3.3V
+    if (UNLIKELY(UserConfigs::Card::InitAt3v3))
+    {
+        pinfo("User requests to initialize the card at 3.3V. Will not request the card to switch to 1.8V.");
+        
+        ocr &= (~OCR::kRequest1d8V);
+    }
+    
+    // Check whether the suggested speed mode is a lower one
+    if (speedMode != SpeedMode::kUltraHighSpeed)
+    {
+        pinfo("The host driver suggests to initialize the card at a lower speed mode = %u.", speedMode);
+        
+        ocr &= (~OCR::kRequest1d8V);
+    }
+    
+    // Check whether the host can supply more than 150mA at the current voltage level
+    // If so, we must follow the specification to set the XPC bit
+    if (this->driver->getHostMaxCurrent() > 150)
+    {
+        pinfo("The host can supply more than 150mA.");
+        
+        ocr |= OCR::kSDXCPowerControl;
+    }
+    
+    // Send the new OCR value
+    UInt32 rocr = 0;
+    
+    pinfo("Sending the new OCR value 0x%08x to start the card initialization process...", ocr);
+    
+    if (this->driver->ACMD41(ocr, rocr) != kIOReturnSuccess)
+    {
+        perr("Failed to send the new OCR value. The card initialization process will be aborted.");
+        
+        return kIOReturnAborted;
+    }
+    
+    pinfo("OCR value returned from the card is 0x%08x.", rocr);
+    
+    // Check whether the card accepts the 1.8V signal voltage
+    if (BitOptions(rocr).contains(OCR::kCardCapacityStatus | OCR::kAccepted1d8V))
+    {
+        pinfo("The card has accepted the 1.8V signal voltage.");
+        
+        // Tell the card and the host to switch to 1.8V
+        if (!this->enableUltraHighSpeedSignalVoltage(pocr))
+        {
+            perr("Failed to switch the host and the card to 1.8V.");
+            
+            pinfo("Will try again and initialize the card at a lower speed mode.")
+            
+            return kIOReturnNotResponding;
+        }
+        
+        pinfo("Both the host and the card has switched to the 1.8V signal voltage.");
+    }
+    
+    // Fetch and parse the card identification data
+    pinfo("Fetching the card identification data...");
+    
+    if (this->driver->CMD2(this->cid) != kIOReturnSuccess)
+    {
+        perr("Failed to fetch the card identification data.");
+        
+        // Some cards may not respond to any command after being switched to 1.8V
+        // We will gracefully try again and initialize the card at a lower speed mode
+        // If the host driver is initializing the card at the standard speed mode,
+        // it will abort the initialization sequence in `IOSDHostDriver::attachCardAtFrequency()`.
+        return kIOReturnNotResponding;
+    }
+    
+    pinfo("The card identification data has been fetched and decoded.");
+    
+    // ===============================
+    // |  END  PORTED mmc_sd_get_cid |
+    // ===============================
+    // =================================
+    // | BEGIN PORTED mmc_sd_init_card |
+    // =================================
+    
+    // Ask the card to publish its relative address
+    pinfo("Requesting the card relative address...");
+    
+    if (this->driver->CMD3(this->rca) != kIOReturnSuccess)
+    {
+        perr("Failed to fetch the card relative address.");
+        
+        return kIOReturnAborted;
+    }
+    
+    pinfo("The card relative address is 0x%08x.", this->rca);
+    
+    // Fetch the card specific data
+    pinfo("Fetching the card specific data...");
+    
+    if (this->driver->CMD9(this->rca, this->csd) != kIOReturnSuccess)
+    {
+        perr("Failed to fetch the card specific data.");
+        
+        return kIOReturnAborted;
+    }
+    
+    pinfo("The card specific data has been fetched and decoded.");
+    
+    // Select the card: Will enter into the transfer state
+    pinfo("Asking the card to enter into the transfer state...");
+    
+    if (this->driver->CMD7(this->rca) != kIOReturnSuccess)
+    {
+        perr("Failed to select the card.");
+        
+        return kIOReturnAborted;
+    }
+    
+    pinfo("The card is now in the transfer state.");
+    
+    // ==================================
+    // | BEGIN PORTED mmc_sd_setup_card |
+    // ==================================
+    
+    // Fetch and parse the SD configuration data from the card
+    pinfo("Fetching the card configuration data...");
+    
+    if (this->driver->ACMD51(this->rca, this->scr) != kIOReturnSuccess)
+    {
+        perr("Failed to fetch the SD configuration data.");
+        
+        return kIOReturnAborted;
+    }
+    
+    pinfo("The card configuration data has been fetched and decoded.");
+    
+    // Fetch the SD status register value from the card
+    pinfo("Fetching the SD status register value...");
+    
+    if (this->driver->ACMD13(this->rca, this->ssr) != kIOReturnSuccess)
+    {
+        perr("Failed to fetch the SD status data.");
+        
+        return kIOReturnAborted;
+    }
+    
+    pinfo("The SD status register value has been fetched.");
+    
+    // The Linux driver initializes the erase function here,
+    // but our driver does not support this feature.
+    
+    // Fetch the switch information from the card
+    pinfo("Fetching the switch capabilities from the card...");
+    
+    if (!this->readSwitchCapabilities())
+    {
+        perr("Failed to fetch the switch information from the card.");
+        
+        return kIOReturnAborted;
+    }
+    
+    pinfo("The switch capabilities have been fetched.");
+    
+    // The Linux driver checks whether the card is already running under 1.8V.
+    // Our driver detaches and powers off the card when the machine goes to sleep.
+    // When the machines wakes up, the driver powers on the card and initializes it.
+    // So the card is always power cycled, so it should never be running under 1.8V at this moment.
+    // Please submit an issue if this is not true when you are testing this driver.
+    // TODO: It seems that some newer cards do operate at 1.8V by default when they are powered on.
+    BitOptions currentBusMode = this->switchCaps.sd3BusMode;
+    
+    if (currentBusMode.containsOneOf(SwitchCaps::BusMode::kModeUHSSDR50, SwitchCaps::BusMode::kModeUHSSDR104, SwitchCaps::BusMode::kModeUHSDDR50) &&
+        this->driver->getHostDevice()->getHostBusConfig().signalVoltage != IOSDBusConfig::SignalVoltage::k1d8V)
+    {
+        pinfo("The card is already operating at 1.8V but the host does not.");
+        
+        pinfo("Abort the initialization. Should never happen. Not implemented.");
+        
+        return kIOReturnAborted;
+    }
+    
+    // Guard: Check whether the card supports the high speed mode
+    if (this->scr.spec < SCR::Spec::kVersion1d1x)
+    {
+        pinfo("The card does not support SD 1.10+. High Speed mode is not supported.");
+        
+        return this->initializeCardAtDefaultSpeedMode(speedMode);
+    }
+    
+    // Guard: Check whether the card supports switch functions
+    if (!BitOptions(this->csd.cardCommandClasses).contains(CSD::CommandClass::kSwitch))
+    {
+        pinfo("The card does not support switch functions. High Speed mode is not supported.");
+        
+        return this->initializeCardAtDefaultSpeedMode(speedMode);
+    }
+    
+    // Guard: Check whether the host supports the high speed mode
+    if (!this->driver->hostSupportsHighSpeedMode())
+    {
+        pinfo("The host does not support the high speed mode.");
+        
+        return this->initializeCardAtDefaultSpeedMode(speedMode);
+    }
+    
+    // Guard: Check the card switch functionality
+    if (this->switchCaps.maxClockFrequencies.highSpeedMode == 0)
+    {
+        pinfo("The maximum clock frequency value for the high speed mode is zero.");
+        
+        return this->initializeCardAtDefaultSpeedMode(speedMode);
+    }
+    
+    // Guard: Check whether the user requests to initialize the card at the default speed mode
+    if (UNLIKELY(UserConfigs::Card::InitAtDefaultSpeed))
+    {
+        pinfo("User requests to initialize the card at the default speed mode.");
+        
+        return this->initializeCardAtDefaultSpeedMode(speedMode);
+    }
+    
+    // Guard: Check whether the host driver suggests to initialize the card at the default speed mode
+    if (speedMode == SpeedMode::kDefaultSpeed)
+    {
+        pinfo("The host driver suggests to initialize the card at the default speed mode.")
+        
+        return this->initializeCardAtDefaultSpeedMode(speedMode);
+    }
+    
+    // Guard: Check whether the card supports the UHS-I mode
+    if (BitOptions(rocr).contains(OCR::kAccepted1d8V) && this->driver->hostSupportsUltraHighSpeedMode())
+    {
+        pinfo("Both the host and the card support the ultra high speed mode.");
+        
+        do
+        {
+            // Guard: Check whether the user requests to initialize the card at the high speed mode
+            if (UNLIKELY(UserConfigs::Card::InitAtHighSpeed))
+            {
+                pinfo("User requests to initialize the card at the high speed mode.");
+                
+                break;
+            }
+            
+            // Guard: Check whether the host driver suggests to initialize the card at the high speed mode
+            if (speedMode == SpeedMode::kHighSpeed)
+            {
+                pinfo("The host driver suggests to initialize the card at the high speed mode.");
+                
+                break;
+            }
+            
+            // Try to initialize the card at the fastest mode
+            return this->initializeCardAtUltraHighSpeedMode(speedMode);
+        }
+        while (false);
+    }
+    
+    // Guard: Tell the card to switch to the high speed mode
+    pinfo("Asking the card to switch to the high speed mode...");
+    
+    UInt8 status[64] = {};
+    
+    if (this->driver->CMD6(1, 0, SwitchCaps::BusSpeed::kSpeedHighSpeed, status) != kIOReturnSuccess)
+    {
+        perr("Failed to issue the CMD6 while the card supports switch functions.");
+        
+        return kIOReturnAborted;
+    }
+    
+    // Guard: Check the card status
+    if ((status[16] & 0xF) == SwitchCaps::BusSpeed::kSpeedHighSpeed)
+    {
+        pinfo("The card has switched to the high speed mode.");
+        
+        return this->initializeCardAtHighSpeedMode(speedMode);
+    }
+    else
+    {
+        perr("The card fails to switch to the high speed mode. Will use the default speed mode.");
+        
+        return this->initializeCardAtDefaultSpeedMode(speedMode);
+    }
 }
 
 //

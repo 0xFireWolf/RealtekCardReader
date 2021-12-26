@@ -1860,6 +1860,8 @@ bool IOSDHostDriver::attachCardAtFrequencyV2(UInt32 frequency)
     }
     
     // Step 2: Probe and initialize the card
+    IOSDCard::SpeedMode speedMode = IOSDCard::SpeedMode::kMaxSpeed;
+    
     while (true)
     {
         // Step 2.1: Probe the card at the given frequency
@@ -1891,7 +1893,7 @@ bool IOSDHostDriver::attachCardAtFrequencyV2(UInt32 frequency)
         pinfo("Voltage levels supported by both sides = 0x%08x (OCR).", rocr);
         
         // Step 2.3: Start the card initialization process
-        IOReturn retVal = card->initializeCard(rocr);
+        IOReturn retVal = card->initializeCard(rocr, speedMode);
         
         // Guard Case 1: Success
         if (retVal == kIOReturnSuccess)
@@ -1912,7 +1914,7 @@ bool IOSDHostDriver::attachCardAtFrequencyV2(UInt32 frequency)
         }
         
         // Guard Case 3: Abort
-        if (retVal == kIOReturnError)
+        if (retVal == kIOReturnAborted)
         {
             perr("Failed to initialize the card. Will abort the card initialization process.");
             

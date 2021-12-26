@@ -35,9 +35,38 @@ class IOSDCard: public IOService
     
     using super = IOService;
     
+    //
+    // MARK: - Constants and Definitions
+    //
+    
+private:
     /// The specification table
     static const Pair<SPEC, const char*> kSpecTable[13];
     
+public:
+    ///
+    /// Enumerates all possible speed modes
+    ///
+    /// @note The host driver provides a fallback mechanism so that cards do not work
+    ///       at a given speed mode will be initialized at the next lower speed mode.
+    ///
+    enum SpeedMode: UInt32
+    {
+        // Supported modes
+        kUltraHighSpeed = 2,
+        kHighSpeed      = 1,
+        kDefaultSpeed   = 0,
+        
+        // Speed ranges
+        kMaxSpeed = kUltraHighSpeed,
+        kMinSpeed = kDefaultSpeed,
+    };
+    
+    //
+    // MARK: - Card Properties
+    //
+    
+private:
     /// The host driver
     IOSDHostDriver* driver;
     
@@ -67,6 +96,7 @@ class IOSDCard: public IOService
     /// @return `true` on success, `false` otherwise.
     /// @note Port: This function replaces `mmc_sd_init_card()` defined in `sd.c`.
     ///
+    DEPRECATE("Replaced by initializeCard().")
     bool init(IOSDHostDriver* driver, UInt32 ocr);
     
     ///
@@ -125,15 +155,15 @@ class IOSDCard: public IOService
     ///
     SwitchCaps::BusSpeed selectUltraHighSpeedBusSpeed();
     
-    
-    
-    
-    
-    
+    ///
+    /// [Helper] Set the driver strength for the UHS-I card
+    ///
+    /// @param busSpeed The bus speed
+    /// @return `true` on success, `false` otherwise.
+    /// @note Port: This function replaces `sd_select_driver_type()` defined in `sd.c`.
+    /// @note This function is a part of the UHS-I card initialization routine `initUltraHighSpeedMode()`.
+    ///
     bool setUHSDriverType(SwitchCaps::BusSpeed busSpeed);
-    
-    
-    
     
     ///
     /// [Helper] Set the current limit for the UHS-I card
@@ -419,6 +449,72 @@ public:
         /// Indicate that the card event handler is invoked by the power management routine
         kPowerManagementContext = 1,
     };
+    
+    //
+    // MARK: - Card Initialization Process
+    //
+    
+private:
+    ///
+    /// [Helper] Initialize the card at the default speed mode
+    ///
+    /// @param speedMode Set to `IOSDCard::SpeedMode::kDefaultSpeed` on return
+    /// @return `kIOReturnSuccess` on success,
+    ///         `kIOReturnNotResponding` if the host driver should invoke this function again to initialize the card at a lower speed mode,
+    ///         `kIOReturnAborted` if the host driver should abort the initialization of the attached card.
+    /// @note This function is a wrapper of `IOSDCard::initDefaultSpeedMode()` to support the new fallback mechanism as of v0.9.7.
+    /// @note The return value of this function is inherited from the caller `IOSDCard::initializeCard(ocr:speedMode:)`.
+    /// @seealso `IOSDCard::initializeCard(ocr:speedMode:)` and `IOSDCard::initDefaultSpeedMode()`.
+    ///
+    IOReturn initializeCardAtDefaultSpeedMode(SpeedMode& speedMode);
+    
+    ///
+    /// [Helper] Initialize the card at the high speed mode
+    ///
+    /// @param speedMode Set to `IOSDCard::SpeedMode::kHighSpeed` on return
+    /// @return `kIOReturnSuccess` on success,
+    ///         `kIOReturnNotResponding` if the host driver should invoke this function again to initialize the card at a lower speed mode,
+    ///         `kIOReturnAborted` if the host driver should abort the initialization of the attached card.
+    /// @note This function is a wrapper of `IOSDCard::initHighSpeedMode()` to support the new fallback mechanism as of v0.9.7.
+    /// @note The return value of this function is inherited from the caller `IOSDCard::initializeCard(ocr:speedMode:)`.
+    /// @seealso `IOSDCard::initializeCard(ocr:speedMode:)` and `IOSDCard::initHighSpeedMode()`.
+    ///
+    IOReturn initializeCardAtHighSpeedMode(SpeedMode& speedMode);
+    
+    ///
+    /// [Helper] Initialize the card at the ultra high speed mode
+    ///
+    /// @param speedMode Set to `IOSDCard::SpeedMode::kUltraHighSpeed` on return
+    /// @return `kIOReturnSuccess` on success,
+    ///         `kIOReturnNotResponding` if the host driver should invoke this function again to initialize the card at a lower speed mode,
+    ///         `kIOReturnAborted` if the host driver should abort the initialization of the attached card.
+    /// @note This function is a wrapper of `IOSDCard::initUltraHighSpeedMode()` to support the new fallback mechanism as of v0.9.7.
+    /// @note The return value of this function is inherited from the caller `IOSDCard::initializeCard(ocr:speedMode:)`.
+    /// @seealso `IOSDCard::initializeCard(ocr:speedMode:)` and `IOSDCard::initUltraHighSpeedMode()`.
+    ///
+    IOReturn initializeCardAtUltraHighSpeedMode(SpeedMode& speedMode);
+    
+public:
+    ///
+    /// Initialize the card with the given OCR register value
+    ///
+    /// @param ocr The current operating condition register value
+    /// @param speedMode The suggested speed mode (see below)
+    /// @return `kIOReturnSuccess` on success,
+    ///         `kIOReturnNotResponding` if the host driver should invoke this function again to initialize the card at a lower speed mode,
+    ///         `kIOReturnAborted` if the host driver should abort the initialization of the attached card.
+    /// @note The given speed mode is treated as a hint and may be overridden by user configurations or the capability of the card.
+    ///       The caller should always invoke this function with the maximum speed mode (i.e. `IOSDCard::SpeedMode::kMaxSpeed`) at the beginning.
+    ///       If this function returns `kIOReturnNotResponding`, `speedMode` is set to the speed mode at which the card has failed to initialize.
+    ///       The caller may repeatedly invoke this function with a lower speed mode until one of the following scenarios occurs.
+    ///       (1) The function returns `kIOReturnSuccess`, indicating that the card has been initialized successfully.
+    ///       (2) The function returns `kIOReturnAborted`, indicating that the card failed to initialize thus the caller should abort the initialization process.
+    ///       (3) The function returns `kIOReturnNotResponding` with `speedMode` set to the minimum speed mode (i.e. `IOSDCard::SpeedMode::kMinSpeed`),
+    ///           indicating that the caller has tried all possible speed modes but the card still failed to initialize thus should abort the initialization process.
+    ///       The caller may use the return value of this function to implement a graceful fallback mechanism.
+    /// @note Port: This function replaces `mmc_sd_init_card()` defined in `sd.c`.
+    ///
+    IOReturn initializeCard(UInt32 ocr, SpeedMode& speedMode);
     
     //
     // MARK: - IOService Implementations
