@@ -22,6 +22,10 @@ This page documents all known issues found during developments and reported by u
 
 ### USB Card Readers
 
+#### Cannot Fetch Card Status on RTS5139
+- **Category:** Device Support
+- **Description:** The card status register always reports that no card is inserted.
+
 ### All Card Readers
 
 #### Card Ejected After Waked Up
