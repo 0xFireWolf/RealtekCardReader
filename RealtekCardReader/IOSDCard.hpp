@@ -242,17 +242,6 @@ public:
     ///
     OSDictionaryPtr getCardCharacteristics() const;
     
-    // TODO: REMOVE THIS
-//    ///
-//    /// Create the card and initialize it with the given OCR value
-//    ///
-//    /// @param driver The non-null host driver
-//    /// @param ocr The OCR value that contains the voltage level supported by the host and the card
-//    /// @return A non-null card instance on success, `nullptr` otherwise.
-//    ///
-//    DEPRECATE("Replaced by setupCard() and initializeCard().")
-//    static IOSDCard* createWithOCR(IOSDHostDriver* driver, UInt32 ocr);
-    
     //
     // MARK: - Card Event Utilities
     //
@@ -380,19 +369,7 @@ public:
     // MARK: - Card Initialization Process
     //
     
-private:
-    // TODO: REMOVE THIS
-//    ///
-//    /// Initialize the card with the given OCR register value
-//    ///
-//    /// @param driver The host driver
-//    /// @param ocr The current operating condition register value
-//    /// @return `true` on success, `false` otherwise.
-//    /// @note Port: This function replaces `mmc_sd_init_card()` defined in `sd.c`.
-//    ///
-//    DEPRECATE("Replaced by initializeCard().")
-//    bool init(IOSDHostDriver* driver, UInt32 ocr);
-    
+private:    
     ///
     /// [Helper] Initialize the card with Default Speed Mode enabled
     ///

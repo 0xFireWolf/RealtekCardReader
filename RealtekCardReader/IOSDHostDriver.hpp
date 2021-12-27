@@ -976,19 +976,6 @@ private:
     /// @return The status returned by the block storage device.
     ///
     IOReturn notifyBlockStorageDevice(IOMediaState state);
-  
-    // TODO: REMOVE THIS
-//    ///
-//    /// [Helper] Use the given frequency to communicate with the card and try to attach it
-//    ///
-//    /// @param frequency The initial frequency in Hz
-//    /// @return `true` on success, `false` otherwise.
-//    /// @note Port: This function replaces `mmc_rescan_try_freq()` defined in `core.c` and `mmc_attach_sd()` in `sd.c`.
-//    /// @note This function is invoked by `IOSDHostDriver::attachCard()`,
-//    ///       so it runs synchronously with respect to the processor workloop.
-//    ///
-//    DEPRECATE("Replaced by attachCardAtFrequencyV2.")
-//    bool attachCardAtFrequency(UInt32 frequency);
     
     ///
     /// [Helper] Use the given frequency to probe the card prior to the initialization process
@@ -1010,7 +997,7 @@ private:
     /// @note This function is invoked by `IOSDHostDriver::attachCard()`,
     ///       so it runs synchronously with respect to the processor workloop.
     ///
-    bool attachCardAtFrequencyV2(UInt32 frequency);
+    bool attachCardAtFrequency(UInt32 frequency);
     
     ///
     /// Attach the SD card

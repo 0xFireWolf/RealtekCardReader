@@ -1644,131 +1644,6 @@ IOReturn IOSDHostDriver::notifyBlockStorageDevice(IOMediaState state)
     return this->blockStorageDevice->message(kIOMessageMediaStateHasChanged, this, reinterpret_cast<void*>(state));
 }
 
-// TODO: REMOVE THIS
-/////
-///// [Helper] Use the given frequency to communicate with the card and try to attach it
-/////
-///// @param frequency The initial frequency in Hz
-///// @return `true` on success, `false` otherwise.
-///// @note Port: This function replaces `mmc_rescan_try_freq()` defined in `core.c` and `mmc_attach_sd()` in `sd.c`.
-///// @note This function is invoked by `IOSDHostDriver::attachCard()`,
-/////       so it runs synchronously with respect to the processor workloop.
-/////
-//DEPRECATE("Replaced by attachCardAtFrequencyV2.")
-//bool IOSDHostDriver::attachCardAtFrequency(UInt32 frequency)
-//{
-//    do
-//    {
-//        // Start to attach the card
-//        pinfo("Trying to initialize the card at %u Hz.", frequency);
-//
-//        psoftassert(this->card == nullptr, "this->card should be null at this moment.");
-//
-//        // Initial clock and voltages
-//        this->host->setHostInitialClock(frequency);
-//
-//        UInt32 ocr = this->host->getHostSupportedVoltageRanges();
-//
-//        pinfo("Voltage ranges supported by the host: 0x%08x.", ocr);
-//
-//        // OCR value returned by the card
-//        UInt32 rocr = 0;
-//
-//        // Power up the SD bus
-//        pinfo("Powering up the host bus...");
-//
-//        if (this->powerUp(ocr) != kIOReturnSuccess)
-//        {
-//            perr("Failed to power up the host bus.");
-//
-//            return false;
-//        }
-//
-//        pinfo("The host bus is now powered up.");
-//
-//        // Tell the card to go to the idle state
-//        pinfo("Asking the card to go to the idle state...");
-//
-//        if (this->CMD0() != kIOReturnSuccess)
-//        {
-//            perr("Failed to tell the card to go to the idle state.");
-//
-//            break;
-//        }
-//
-//        pinfo("The card is now in the idle state.");
-//
-//        // Check whether a SD card is inserted
-//        if (this->CMD8(ocr) != kIOReturnSuccess)
-//        {
-//            perr("The card does not respond to the CMD8.");
-//        }
-//
-//        if (this->ACMD41(rocr) != kIOReturnSuccess)
-//        {
-//            perr("The card does not respond to the ACMD41.");
-//
-//            break;
-//        }
-//
-//        // Filter out unsupported voltage levels
-//        rocr &= ~0x7FFF;
-//
-//        rocr = this->selectMutualVoltageLevels(rocr);
-//
-//        if (rocr == 0)
-//        {
-//            perr("Failed to find a voltage level supported by both the host and the card.");
-//
-//            return false;
-//        }
-//
-//        pinfo("Voltage levels supported by both sides = 0x%08x (OCR).", rocr);
-//
-//        // Start the card initialization sequence
-//        pinfo("Creating the card with the OCR = 0x%08x.", rocr);
-//
-//        this->card = IOSDCard::createWithOCR(this, rocr);
-//
-//        if (this->card == nullptr)
-//        {
-//            perr("Failed to complete the card initialization sequence.");
-//
-//            break;
-//        }
-//
-//        if (!this->card->attach(this))
-//        {
-//            perr("Failed to attach the SD card device.");
-//
-//            OSSafeReleaseNULL(this->card);
-//
-//            break;
-//        }
-//
-//        if (!this->card->start(this))
-//        {
-//            perr("Failed to start the SD card device.");
-//
-//            this->card->detach(this);
-//
-//            OSSafeReleaseNULL(this->card);
-//
-//            break;
-//        }
-//
-//        pinfo("The card has been created and initialized.");
-//
-//        return true;
-//    }
-//    while (false);
-//
-//    // Failed to attach the card
-//    psoftassert(this->powerOff() == kIOReturnSuccess, "Failed to power off the bus.");
-//
-//    return false;
-//}
-
 ///
 /// [Helper] Use the given frequency to probe the card prior to the initialization process
 ///
@@ -1848,7 +1723,7 @@ bool IOSDHostDriver::probeCardAtFrequency(UInt32 frequency, UInt32& rocr)
 /// @note This function is invoked by `IOSDHostDriver::attachCard()`,
 ///       so it runs synchronously with respect to the processor workloop.
 ///
-bool IOSDHostDriver::attachCardAtFrequencyV2(UInt32 frequency)
+bool IOSDHostDriver::attachCardAtFrequency(UInt32 frequency)
 {
     // Step 1: Setup the card instance
     passert(this->card == nullptr, "this->card should be null at this moment.");
@@ -1988,7 +1863,7 @@ void IOSDHostDriver::attachCard(IOSDCard::Completion* completion, IOSDCard::Even
         }
         
         // Guard: Attempt to initialize the card
-        if (!this->attachCardAtFrequencyV2(frequency))
+        if (!this->attachCardAtFrequency(frequency))
         {
             perr("Failed to initialize the card at %u Hz.", frequency);
             
@@ -2701,7 +2576,7 @@ bool IOSDHostDriver::setupCard()
         return false;
     }
     
-    if (!this->card->IOService::init()) // TODO: Remove `IOService::` once the custom init() is removed
+    if (!this->card->init())
     {
         perr("Failed to initiaize the card instance.");
         
