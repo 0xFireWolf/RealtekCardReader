@@ -564,6 +564,13 @@ void RealtekCardReaderController::prepareToWakeUp()
 ///
 IOReturn RealtekCardReaderController::setPowerState(unsigned long powerStateOrdinal, IOService* whatDevice)
 {
+    if (UNLIKELY(BootArgs::contains("-rtsxnopm")))
+    {
+        pinfo("User requests to disable the power management routine.");
+        
+        return kIOPMAckImplied;
+    }
+    
     pinfo("Setting the power state from %u to %lu.", this->getPowerState(), powerStateOrdinal);
     
     if (powerStateOrdinal == 0)
