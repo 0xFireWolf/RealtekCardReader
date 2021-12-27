@@ -825,11 +825,29 @@ class RealtekUSBCardReaderController: public RealtekCardReaderController
     //
     
     ///
+    /// [Helper] Get the card status via the control endpoint
+    ///
+    /// @param status The card status on return
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces the branch where `polling_pipe` is 0 in  `rtsx_usb_get_card_status()` defined in `rtsx_usb.c`.
+    ///
+    IOReturn getCardStatusViaControlEndpoint(UInt16& status);
+    
+    ///
+    /// [Helper] Get the card status via a bulk transfer
+    ///
+    /// @param status The card status on return
+    /// @return `kIOReturnSuccess` on success, other values otherwise.
+    /// @note Port: This function replaces `rtsx_usb_get_status_with_bulk()` defined in `rtsx_usb.c`.
+    ///
+    IOReturn getCardStatusViaBulkTransfer(UInt16& status);
+    
+    ///
     /// Get the card status
     ///
     /// @param status The card status on return
     /// @return `kIOReturnSuccess` on success, other values otherwise.
-    /// @note Port: This function replaces `rtsx_usb_get_card_status()` and `rtsx_usb_get_status_with_bulk` defined in `rtsx_usb.c`.
+    /// @note Port: This function replaces `rtsx_usb_get_card_status()` defined in `rtsx_usb.c`.
     ///
     IOReturn getCardStatus(UInt16& status);
     

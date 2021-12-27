@@ -1182,13 +1182,47 @@ IOReturn RealtekUSBCardReaderController::switchCardClock(UInt8 depth, UInt8 n, U
 //
 
 ///
-/// Get the card status
+/// [Helper] Get the card status via the control endpoint
 ///
 /// @param status The card status on return
 /// @return `kIOReturnSuccess` on success, other values otherwise.
-/// @note Port: This function replaces `rtsx_usb_get_card_status()` and `rtsx_usb_get_status_with_bulk` defined in `rtsx_usb.c`.
+/// @note Port: This function replaces the branch where `polling_pipe` is 0 in  `rtsx_usb_get_card_status()` defined in `rtsx_usb.c`.
 ///
-IOReturn RealtekUSBCardReaderController::getCardStatus(UInt16& status)
+IOReturn RealtekUSBCardReaderController::getCardStatusViaControlEndpoint(UInt16& status)
+{
+    // Construct the control request
+    StandardUSB::DeviceRequest request =
+    {
+        // Request type
+        kDeviceRequestDirectionIn | kDeviceRequestTypeVendor | kDeviceRequestRecipientDevice,
+        
+        // Request
+        Endpoints::Control::VendorRequest::kPoll,
+        
+        // Value
+        0,
+        
+        // Index
+        0,
+        
+        // Length
+        sizeof(UInt16)
+    };
+    
+    // Issue the request
+    UInt32 bytesTransferred = 0;
+    
+    return this->interface->deviceRequest(request, &status, bytesTransferred, 100);
+}
+
+///
+/// [Helper] Get the card status via a bulk transfer
+///
+/// @param status The card status on return
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `rtsx_usb_get_status_with_bulk()` defined in `rtsx_usb.c`.
+///
+IOReturn RealtekUSBCardReaderController::getCardStatusViaBulkTransfer(UInt16& status)
 {
     using namespace RTSX::UCR::Chip;
     
@@ -1216,6 +1250,29 @@ IOReturn RealtekUSBCardReaderController::getCardStatus(UInt16& status)
     pinfo("Card status = 0x%04x.", status);
     
     return kIOReturnSuccess;
+}
+
+///
+/// Get the card status
+///
+/// @param status The card status on return
+/// @return `kIOReturnSuccess` on success, other values otherwise.
+/// @note Port: This function replaces `rtsx_usb_get_card_status()` defined in `rtsx_usb.c`.
+///
+IOReturn RealtekUSBCardReaderController::getCardStatus(UInt16& status)
+{
+    if (BootArgs::contains("-rtsxppsta"))
+    {
+        pinfo("Will fetch the card status via the control endpoint.");
+        
+        return this->getCardStatusViaControlEndpoint(status);
+    }
+    else
+    {
+        pinfo("Will fetch the card status via a bulk transfer.");
+        
+        return this->getCardStatusViaBulkTransfer(status);
+    }
 }
 
 ///
