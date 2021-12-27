@@ -58,6 +58,12 @@ For example, if the name is `rtsxabcd` and the value is `10`, `<Name>=<Value>` b
     - Default Value: `500`
     - Minimum Value: `100`
     - Description: Specify the interval in milliseconds of polling for the device status. A background thread checks whether a card is present every `interval` milliseconds and notifies other driver components if a card is inserted or removed. Increasing the interval will increase the latency of processing the card event, while decreasing the value will waste your CPU cycle, so please choose an interval value wisely.
+    
+- FetchCardStatusViaControlEndpoint
+    - Boot Argument: `-rtsxppsta`
+    - Value Type: `Boolean`
+    - Default Value: `false`
+    - Description: Add this boot argument to fetch the card status via the control endpoint instead of a bulk transfer. Some RTS5139 chips can report the card status only via the control endpoint thus are not compatible with the default mechanism.
 
 ### PCIe/USB-based Card Reader Specific
 - DelayStableSSCClock
