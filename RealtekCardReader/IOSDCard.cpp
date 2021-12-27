@@ -89,307 +89,308 @@ OSDictionaryPtr IOSDCard::getCardCharacteristics() const
 // MARK: - Card Initialization Process
 //
 
-///
-/// Initialize the card with the given OCR register value
-///
-/// @param driver The host driver
-/// @param ocr The current operating condition register value
-/// @return `true` on success, `false` otherwise.
-/// @note Port: This function replaces `mmc_sd_init_card()` defined in `sd.c`.
-///
-DEPRECATE("Replaced by initializeCard().")
-bool IOSDCard::init(IOSDHostDriver* driver, UInt32 ocr)
-{
-    if (!super::init())
-    {
-        return false;
-    }
-    
-    // ===============================
-    // | BEGIN PORTED mmc_sd_get_cid |
-    // ===============================
-    // The initialization routine may change the OCR value
-    UInt32 pocr = ocr;
-    
-    this->driver = driver;
-    
-    pinfo("Initializing the SD card with OCR = 0x%08x.", ocr);
-    
-    // Tell the card to go to the idle state
-    if (this->driver->CMD0() != kIOReturnSuccess)
-    {
-        perr("Failed to tell the card to go back to the idle state.");
-        
-        return false;
-    }
-    
-    pinfo("The card is now in the idle state.");
-    
-    // Check whether the card supports SD 2.0
-    if (this->driver->CMD8(ocr) == kIOReturnSuccess)
-    {
-        pinfo("Found a SD 2.0 compliant card.");
-        
-        ocr |= OCR::kCardCapacityStatus;
-    }
-    
-    // Check whether the host supports UHS-I mode
-    // If so, we assume that the card also supports UHS-I mode
-    // and request the card to switch to 1.8V signal voltage
-    // Later the card will return a OCR value indicating whether it supports UHS-I mode
-    if (this->driver->hostSupportsUltraHighSpeedMode())
-    {
-        pinfo("The host supports UHS-I mode and will try to request the card to switch to 1.8V signal voltage.");
-        
-        ocr |= OCR::kRequest1d8V;
-    }
-    
-    // Check whether users request to initialize the card at 3.3V
-    if (UNLIKELY(UserConfigs::Card::InitAt3v3))
-    {
-        pinfo("User requests to initialize the card at 3.3V. Will not request the card to switch to 1.8V.");
-        
-        ocr &= (~OCR::kRequest1d8V);
-    }
-    
-    // Check whether the host can supply more than 150mA at the current voltage level
-    // If so, we must follow the specification to set the XPC bit
-    if (this->driver->getHostMaxCurrent() > 150)
-    {
-        pinfo("The host can supply more than 150mA.");
-        
-        ocr |= OCR::kSDXCPowerControl;
-    }
-    
-    // Send the new OCR value
-    UInt32 rocr;
-    
-    pinfo("Sending the new OCR value 0x%08x...", ocr);
-    
-    if (this->driver->ACMD41(ocr, rocr) != kIOReturnSuccess)
-    {
-        perr("Failed to send the new OCR value.");
-        
-        return false;
-    }
-    
-    pinfo("OCR value returned from the card is 0x%08x.", rocr);
-    
-    // Check whether the card accepts the 1.8V signal voltage
-    if (BitOptions(rocr).contains(OCR::kCardCapacityStatus | OCR::kAccepted1d8V))
-    {
-        pinfo("The card has accepted the 1.8V signal voltage.");
-        
-        // TODO: Retry on failure not implemented; Just fails?
-        // Tell the card and the host to switch to 1.8V
-        if (!this->enableUltraHighSpeedSignalVoltage(pocr))
-        {
-            perr("Failed to switch the host and the card to 1.8V.");
-            
-            return false;
-        }
-        
-        pinfo("Both the host and the card has switched to the 1.8V signal voltage.");
-    }
-    
-    // Fetch and parse the card identification data
-    pinfo("Fetching the card identification data...");
-    
-    if (this->driver->CMD2(this->cid) != kIOReturnSuccess)
-    {
-        perr("Failed to fetch the card identification data.");
-        
-        return false;
-    }
-    
-    pinfo("The card identification data has been fetched and decoded.");
-    
-    // ===============================
-    // |  END  PORTED mmc_sd_get_cid |
-    // ===============================
-    // =================================
-    // | BEGIN PORTED mmc_sd_init_card |
-    // =================================
-    
-    // Ask the card to publish its relative address
-    pinfo("Requesting the card relative address...");
-    
-    if (this->driver->CMD3(this->rca) != kIOReturnSuccess)
-    {
-        perr("Failed to fetch the card relative address.");
-        
-        return false;
-    }
-    
-    pinfo("The card relative address is 0x%08x.", this->rca);
-    
-    // Fetch the card specific data
-    pinfo("Fetching the card specific data...");
-    
-    if (this->driver->CMD9(this->rca, this->csd) != kIOReturnSuccess)
-    {
-        perr("Failed to fetch the card specific data.");
-        
-        return false;
-    }
-    
-    pinfo("The card specific data has been fetched and decoded.");
-    
-    // Select the card: Will enter into the transfer state
-    pinfo("Asking the card to enter into the transfer state...");
-    
-    if (this->driver->CMD7(this->rca) != kIOReturnSuccess)
-    {
-        perr("Failed to select the card.");
-        
-        return false;
-    }
-    
-    pinfo("The card is now in the transfer state.");
-    
-    // ==================================
-    // | BEGIN PORTED mmc_sd_setup_card |
-    // ==================================
-    
-    // Fetch and parse the SD configuration data from the card
-    pinfo("Fetching the card configuration data...");
-    
-    if (this->driver->ACMD51(this->rca, this->scr) != kIOReturnSuccess)
-    {
-        perr("Failed to fetch the SD configuration data.");
-        
-        return false;
-    }
-    
-    pinfo("The card configuration data has been fetched and decoded.");
-    
-    // Fetch the SD status register value from the card
-    pinfo("Fetching the SD status register value...");
-    
-    if (this->driver->ACMD13(this->rca, this->ssr) != kIOReturnSuccess)
-    {
-        perr("Failed to fetch the SD status data.");
-        
-        return false;
-    }
-    
-    pinfo("The SD status register value has been fetched.");
-    
-    // TODO: INIT ERASE??? How does macOS handle erase
-    
-    // Fetch the switch information from the card
-    pinfo("Fetching the switch capabilities from the card...");
-    
-    if (!this->readSwitchCapabilities())
-    {
-        perr("Failed to fetch the switch information from the card.");
-        
-        return false;
-    }
-    
-    pinfo("The switch capabilities have been fetched.");
-    
-    // The Linux driver checks whether the card is already running under 1.8V.
-    // Our driver detaches and powers off the card when the machine goes to sleep.
-    // When the machines wakes up, the driver powers on the card and initializes it.
-    // So the card is always power cycled, so it should never be running under 1.8V at this moment.
-    // Please submit an issue if this is not true when you are testing this driver.
-    BitOptions currentBusMode = this->switchCaps.sd3BusMode;
-    
-    if (currentBusMode.containsOneOf(SwitchCaps::BusMode::kModeUHSSDR50, SwitchCaps::BusMode::kModeUHSSDR104, SwitchCaps::BusMode::kModeUHSDDR50) &&
-        this->driver->getHostDevice()->getHostBusConfig().signalVoltage != IOSDBusConfig::SignalVoltage::k1d8V)
-    {
-        pinfo("The card is already operating at 1.8V but the host does not.");
-        
-        pinfo("Abort the initialization. Should never happen. Not implemented.");
-        
-        return false;
-    }
-    
-    // TODO: Consider fallback mechanism?
-
-    // Guard: Check whether the card supports the high speed mode
-    if (this->scr.spec < SCR::Spec::kVersion1d1x)
-    {
-        pinfo("The card does not support SD 1.10+. High Speed mode is not supported.");
-        
-        return this->initDefaultSpeedMode();
-    }
-    
-    // Guard: Check whether the card supports switch functions
-    if (!BitOptions(this->csd.cardCommandClasses).contains(CSD::CommandClass::kSwitch))
-    {
-        pinfo("The card does not support switch functions. High Speed mode is not supported.");
-        
-        return this->initDefaultSpeedMode();
-    }
-    
-    // Guard: Check whether the host supports the high speed mode
-    if (!this->driver->hostSupportsHighSpeedMode())
-    {
-        pinfo("The host does not support the high speed mode.");
-        
-        return this->initDefaultSpeedMode();
-    }
-    
-    // Guard: Check the card switch functionality
-    if (this->switchCaps.maxClockFrequencies.highSpeedMode == 0)
-    {
-        pinfo("The maximum clock frequency value for the high speed mode is zero.");
-        
-        return this->initDefaultSpeedMode();
-    }
-    
-    // Guard: Check whether the user requests to initialize the card at the default speed mode
-    if (UNLIKELY(UserConfigs::Card::InitAtDefaultSpeed))
-    {
-        pinfo("User requests to initialize the card at the default speed mode.");
-        
-        return this->initDefaultSpeedMode();
-    }
-    
-    // Guard: Check whether the card supports the UHS-I mode
-    if (BitOptions(rocr).contains(OCR::kAccepted1d8V) && this->driver->hostSupportsUltraHighSpeedMode())
-    {
-        pinfo("Both the host and the card support the ultra high speed mode.");
-
-        // Guard: Check whether the user requests to initialize the card at the high speed mode
-        if (LIKELY(!UserConfigs::Card::InitAtHighSpeed))
-        {
-            return this->initUltraHighSpeedMode();
-        }
-        else
-        {
-            pinfo("User requests to initialize the card at the high speed mode.");
-        }
-    }
-    
-    // Guard: Tell the card to switch to the high speed mode
-    pinfo("Asking the card to switch to the high speed mode...");
-    
-    UInt8 status[64] = {};
-    
-    if (this->driver->CMD6(1, 0, SwitchCaps::BusSpeed::kSpeedHighSpeed, status) != kIOReturnSuccess)
-    {
-        perr("Failed to issue the CMD6 while the card supports switch functions.");
-        
-        return false;
-    }
-    
-    // Guard: Check the card status
-    if ((status[16] & 0xF) == SwitchCaps::BusSpeed::kSpeedHighSpeed)
-    {
-        pinfo("The card has switched to the high speed mode.");
-        
-        return this->initHighSpeedMode();;
-    }
-    else
-    {
-        perr("The card fails to switch to the high speed mode. Will use the default speed mode.");
-        
-        return this->initDefaultSpeedMode();
-    }
-}
+// TODO: REMOVE THIS
+/////
+///// Initialize the card with the given OCR register value
+/////
+///// @param driver The host driver
+///// @param ocr The current operating condition register value
+///// @return `true` on success, `false` otherwise.
+///// @note Port: This function replaces `mmc_sd_init_card()` defined in `sd.c`.
+/////
+//DEPRECATE("Replaced by initializeCard().")
+//bool IOSDCard::init(IOSDHostDriver* driver, UInt32 ocr)
+//{
+//    if (!super::init())
+//    {
+//        return false;
+//    }
+//
+//    // ===============================
+//    // | BEGIN PORTED mmc_sd_get_cid |
+//    // ===============================
+//    // The initialization routine may change the OCR value
+//    UInt32 pocr = ocr;
+//
+//    this->driver = driver;
+//
+//    pinfo("Initializing the SD card with OCR = 0x%08x.", ocr);
+//
+//    // Tell the card to go to the idle state
+//    if (this->driver->CMD0() != kIOReturnSuccess)
+//    {
+//        perr("Failed to tell the card to go back to the idle state.");
+//
+//        return false;
+//    }
+//
+//    pinfo("The card is now in the idle state.");
+//
+//    // Check whether the card supports SD 2.0
+//    if (this->driver->CMD8(ocr) == kIOReturnSuccess)
+//    {
+//        pinfo("Found a SD 2.0 compliant card.");
+//
+//        ocr |= OCR::kCardCapacityStatus;
+//    }
+//
+//    // Check whether the host supports UHS-I mode
+//    // If so, we assume that the card also supports UHS-I mode
+//    // and request the card to switch to 1.8V signal voltage
+//    // Later the card will return a OCR value indicating whether it supports UHS-I mode
+//    if (this->driver->hostSupportsUltraHighSpeedMode())
+//    {
+//        pinfo("The host supports UHS-I mode and will try to request the card to switch to 1.8V signal voltage.");
+//
+//        ocr |= OCR::kRequest1d8V;
+//    }
+//
+//    // Check whether users request to initialize the card at 3.3V
+//    if (UNLIKELY(UserConfigs::Card::InitAt3v3))
+//    {
+//        pinfo("User requests to initialize the card at 3.3V. Will not request the card to switch to 1.8V.");
+//
+//        ocr &= (~OCR::kRequest1d8V);
+//    }
+//
+//    // Check whether the host can supply more than 150mA at the current voltage level
+//    // If so, we must follow the specification to set the XPC bit
+//    if (this->driver->getHostMaxCurrent() > 150)
+//    {
+//        pinfo("The host can supply more than 150mA.");
+//
+//        ocr |= OCR::kSDXCPowerControl;
+//    }
+//
+//    // Send the new OCR value
+//    UInt32 rocr;
+//
+//    pinfo("Sending the new OCR value 0x%08x...", ocr);
+//
+//    if (this->driver->ACMD41(ocr, rocr) != kIOReturnSuccess)
+//    {
+//        perr("Failed to send the new OCR value.");
+//
+//        return false;
+//    }
+//
+//    pinfo("OCR value returned from the card is 0x%08x.", rocr);
+//
+//    // Check whether the card accepts the 1.8V signal voltage
+//    if (BitOptions(rocr).contains(OCR::kCardCapacityStatus | OCR::kAccepted1d8V))
+//    {
+//        pinfo("The card has accepted the 1.8V signal voltage.");
+//
+//        // TODO: Retry on failure not implemented; Just fails?
+//        // Tell the card and the host to switch to 1.8V
+//        if (!this->enableUltraHighSpeedSignalVoltage(pocr))
+//        {
+//            perr("Failed to switch the host and the card to 1.8V.");
+//
+//            return false;
+//        }
+//
+//        pinfo("Both the host and the card has switched to the 1.8V signal voltage.");
+//    }
+//
+//    // Fetch and parse the card identification data
+//    pinfo("Fetching the card identification data...");
+//
+//    if (this->driver->CMD2(this->cid) != kIOReturnSuccess)
+//    {
+//        perr("Failed to fetch the card identification data.");
+//
+//        return false;
+//    }
+//
+//    pinfo("The card identification data has been fetched and decoded.");
+//
+//    // ===============================
+//    // |  END  PORTED mmc_sd_get_cid |
+//    // ===============================
+//    // =================================
+//    // | BEGIN PORTED mmc_sd_init_card |
+//    // =================================
+//
+//    // Ask the card to publish its relative address
+//    pinfo("Requesting the card relative address...");
+//
+//    if (this->driver->CMD3(this->rca) != kIOReturnSuccess)
+//    {
+//        perr("Failed to fetch the card relative address.");
+//
+//        return false;
+//    }
+//
+//    pinfo("The card relative address is 0x%08x.", this->rca);
+//
+//    // Fetch the card specific data
+//    pinfo("Fetching the card specific data...");
+//
+//    if (this->driver->CMD9(this->rca, this->csd) != kIOReturnSuccess)
+//    {
+//        perr("Failed to fetch the card specific data.");
+//
+//        return false;
+//    }
+//
+//    pinfo("The card specific data has been fetched and decoded.");
+//
+//    // Select the card: Will enter into the transfer state
+//    pinfo("Asking the card to enter into the transfer state...");
+//
+//    if (this->driver->CMD7(this->rca) != kIOReturnSuccess)
+//    {
+//        perr("Failed to select the card.");
+//
+//        return false;
+//    }
+//
+//    pinfo("The card is now in the transfer state.");
+//
+//    // ==================================
+//    // | BEGIN PORTED mmc_sd_setup_card |
+//    // ==================================
+//
+//    // Fetch and parse the SD configuration data from the card
+//    pinfo("Fetching the card configuration data...");
+//
+//    if (this->driver->ACMD51(this->rca, this->scr) != kIOReturnSuccess)
+//    {
+//        perr("Failed to fetch the SD configuration data.");
+//
+//        return false;
+//    }
+//
+//    pinfo("The card configuration data has been fetched and decoded.");
+//
+//    // Fetch the SD status register value from the card
+//    pinfo("Fetching the SD status register value...");
+//
+//    if (this->driver->ACMD13(this->rca, this->ssr) != kIOReturnSuccess)
+//    {
+//        perr("Failed to fetch the SD status data.");
+//
+//        return false;
+//    }
+//
+//    pinfo("The SD status register value has been fetched.");
+//
+//    // TODO: INIT ERASE??? How does macOS handle erase
+//
+//    // Fetch the switch information from the card
+//    pinfo("Fetching the switch capabilities from the card...");
+//
+//    if (!this->readSwitchCapabilities())
+//    {
+//        perr("Failed to fetch the switch information from the card.");
+//
+//        return false;
+//    }
+//
+//    pinfo("The switch capabilities have been fetched.");
+//
+//    // The Linux driver checks whether the card is already running under 1.8V.
+//    // Our driver detaches and powers off the card when the machine goes to sleep.
+//    // When the machines wakes up, the driver powers on the card and initializes it.
+//    // So the card is always power cycled, so it should never be running under 1.8V at this moment.
+//    // Please submit an issue if this is not true when you are testing this driver.
+//    BitOptions currentBusMode = this->switchCaps.sd3BusMode;
+//
+//    if (currentBusMode.containsOneOf(SwitchCaps::BusMode::kModeUHSSDR50, SwitchCaps::BusMode::kModeUHSSDR104, SwitchCaps::BusMode::kModeUHSDDR50) &&
+//        this->driver->getHostDevice()->getHostBusConfig().signalVoltage != IOSDBusConfig::SignalVoltage::k1d8V)
+//    {
+//        pinfo("The card is already operating at 1.8V but the host does not.");
+//
+//        pinfo("Abort the initialization. Should never happen. Not implemented.");
+//
+//        return false;
+//    }
+//
+//    // TODO: Consider fallback mechanism?
+//
+//    // Guard: Check whether the card supports the high speed mode
+//    if (this->scr.spec < SCR::Spec::kVersion1d1x)
+//    {
+//        pinfo("The card does not support SD 1.10+. High Speed mode is not supported.");
+//
+//        return this->initDefaultSpeedMode();
+//    }
+//
+//    // Guard: Check whether the card supports switch functions
+//    if (!BitOptions(this->csd.cardCommandClasses).contains(CSD::CommandClass::kSwitch))
+//    {
+//        pinfo("The card does not support switch functions. High Speed mode is not supported.");
+//
+//        return this->initDefaultSpeedMode();
+//    }
+//
+//    // Guard: Check whether the host supports the high speed mode
+//    if (!this->driver->hostSupportsHighSpeedMode())
+//    {
+//        pinfo("The host does not support the high speed mode.");
+//
+//        return this->initDefaultSpeedMode();
+//    }
+//
+//    // Guard: Check the card switch functionality
+//    if (this->switchCaps.maxClockFrequencies.highSpeedMode == 0)
+//    {
+//        pinfo("The maximum clock frequency value for the high speed mode is zero.");
+//
+//        return this->initDefaultSpeedMode();
+//    }
+//
+//    // Guard: Check whether the user requests to initialize the card at the default speed mode
+//    if (UNLIKELY(UserConfigs::Card::InitAtDefaultSpeed))
+//    {
+//        pinfo("User requests to initialize the card at the default speed mode.");
+//
+//        return this->initDefaultSpeedMode();
+//    }
+//
+//    // Guard: Check whether the card supports the UHS-I mode
+//    if (BitOptions(rocr).contains(OCR::kAccepted1d8V) && this->driver->hostSupportsUltraHighSpeedMode())
+//    {
+//        pinfo("Both the host and the card support the ultra high speed mode.");
+//
+//        // Guard: Check whether the user requests to initialize the card at the high speed mode
+//        if (LIKELY(!UserConfigs::Card::InitAtHighSpeed))
+//        {
+//            return this->initUltraHighSpeedMode();
+//        }
+//        else
+//        {
+//            pinfo("User requests to initialize the card at the high speed mode.");
+//        }
+//    }
+//
+//    // Guard: Tell the card to switch to the high speed mode
+//    pinfo("Asking the card to switch to the high speed mode...");
+//
+//    UInt8 status[64] = {};
+//
+//    if (this->driver->CMD6(1, 0, SwitchCaps::BusSpeed::kSpeedHighSpeed, status) != kIOReturnSuccess)
+//    {
+//        perr("Failed to issue the CMD6 while the card supports switch functions.");
+//
+//        return false;
+//    }
+//
+//    // Guard: Check the card status
+//    if ((status[16] & 0xF) == SwitchCaps::BusSpeed::kSpeedHighSpeed)
+//    {
+//        pinfo("The card has switched to the high speed mode.");
+//
+//        return this->initHighSpeedMode();;
+//    }
+//    else
+//    {
+//        perr("The card fails to switch to the high speed mode. Will use the default speed mode.");
+//
+//        return this->initDefaultSpeedMode();
+//    }
+//}
 
 ///
 /// [Helper] Initialize the card with Default Speed Mode enabled
@@ -1026,36 +1027,37 @@ bool IOSDCard::setUHSBusSpeedMode(SwitchCaps::BusSpeed busSpeed)
     return true;
 }
 
-///
-/// Create the card and initialize it with the given OCR value
-///
-/// @param driver The non-null host driver
-/// @param ocr The OCR value that contains the voltage level supported by the host and the card
-/// @return A non-null card instance on success, `nullptr` otherwise.
-///
-DEPRECATE("Replaced by setupCard() and initializeCard().")
-IOSDCard* IOSDCard::createWithOCR(IOSDHostDriver* driver, UInt32 ocr)
-{
-    auto card = OSTypeAlloc(IOSDCard);
-    
-    if (card == nullptr)
-    {
-        perr("Failed to allocate a card instance.")
-        
-        return nullptr;
-    }
-    
-    if (!card->init(driver, ocr))
-    {
-        perr("Failed to initialize the card.");
-        
-        card->release();
-        
-        return nullptr;
-    }
-    
-    return card;
-}
+// TODO: REMOVE THIS
+/////
+///// Create the card and initialize it with the given OCR value
+/////
+///// @param driver The non-null host driver
+///// @param ocr The OCR value that contains the voltage level supported by the host and the card
+///// @return A non-null card instance on success, `nullptr` otherwise.
+/////
+//DEPRECATE("Replaced by setupCard() and initializeCard().")
+//IOSDCard* IOSDCard::createWithOCR(IOSDHostDriver* driver, UInt32 ocr)
+//{
+//    auto card = OSTypeAlloc(IOSDCard);
+//
+//    if (card == nullptr)
+//    {
+//        perr("Failed to allocate a card instance.")
+//
+//        return nullptr;
+//    }
+//
+//    if (!card->init(driver, ocr))
+//    {
+//        perr("Failed to initialize the card.");
+//
+//        card->release();
+//
+//        return nullptr;
+//    }
+//
+//    return card;
+//}
 
 ///
 /// [Helper] Initialize the card at the default speed mode
