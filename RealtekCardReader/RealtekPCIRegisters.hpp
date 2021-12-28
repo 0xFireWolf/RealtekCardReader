@@ -429,8 +429,8 @@ namespace RTSX::PCR::Chip::CARD
         RTSXDeclareChipRegisterValue(kGPIO8mA, 0x01);
         
         RTSXDeclareChipRegisterValue(kDefault, kMS8mA | kGPIO8mA);
-        RTSXDeclareChipRegisterValue(kDefault_5209, kMS8mA | kMMC8mA | kXD8mA);
-        RTSXDeclareChipRegisterValue(kDefault_8411, kMS8mA | kMMC8mA | kXD8mA | kGPIO8mA);
+        RTSXDeclareChipRegisterValue(kDefault_5209, kMS8mA | kMMC8mA | kXD8mA | kGPIO8mA);
+        RTSXDeclareChipRegisterValue(kDefault_8411, kMS8mA | kMMC8mA | kXD8mA);
     }
     
     RTSXDeclareChipRegister(rSTOP, 0xFD54);
