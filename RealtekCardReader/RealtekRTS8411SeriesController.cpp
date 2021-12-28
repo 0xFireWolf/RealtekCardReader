@@ -430,6 +430,8 @@ IOReturn RealtekRTS8411SeriesController::initVendorSpecificParameters()
     // PCR Config 1
     UInt32 regVal = this->device->configRead32(RTSX::PCR::kSREG1);
     
+    pinfo("PCR Config 1 = 0x%08x.", regVal);
+    
     if (!this->vsIsRegisterValueValid(regVal))
     {
         perr("Vendor settings are invalid.");
@@ -455,6 +457,8 @@ IOReturn RealtekRTS8411SeriesController::initVendorSpecificParameters()
     
     // PCR Config 3
     regVal = this->device->configRead8(RTSX::PCR::kSREG3);
+    
+    pinfo("PCR Config 3 = 0x%08x.", regVal);
     
     this->parameters.sd30DriveSelector3d3V = this->vsGetSD30DriveSelector3d3V(regVal);
     

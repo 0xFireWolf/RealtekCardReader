@@ -164,6 +164,8 @@ IOReturn RealtekRTS5287Controller::initVendorSpecificParameters()
     // PCR Config 1
     UInt32 regVal = this->device->configRead32(RTSX::PCR::kSREG1);
     
+    pinfo("PCR Config 1 = 0x%08x.", regVal);
+    
     if (!this->vsIsRegisterValueValid(regVal))
     {
         perr("Vendor settings are invalid.");
