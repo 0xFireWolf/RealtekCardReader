@@ -1749,25 +1749,97 @@ void RealtekUSBCardReaderController::prepareToSleep()
 void RealtekUSBCardReaderController::prepareToWakeUp()
 {
     pinfo("Prepare to wake up...");
-    
+
+    // Reset the card event lock
+    this->cardEventLock = 0;
+    this->isCardPresentBefore = false;
+
+    // Clear any stale transfer state
+    this->clearError();
+
     // The builtin USB card reader disconnects from the system when the computer sleeps
-    // and reconnects when the computer wakes up on some platforms.
-    // (The kernel will stop the driver when the computer wakes up and
-    //  starts a new instance of this driver when the card reader is up.)
-    // If the driver fails to reset the hardware, then this is the sign of such a behavior.
-    if (this->resetHardware() == kIOReturnSuccess)
+    IOReturn retVal = this->resetHardware();
+
+    if (retVal == kIOReturnSuccess)
     {
-        // Attach the card if present
-        super::prepareToWakeUp();
-        
-        this->resumePollingThread();
-        
         pinfo("The hardware is ready.");
+
+        retVal = this->initHardware();
+
+        if (retVal == kIOReturnSuccess)
+        {
+            super::prepareToWakeUp();
+            this->resumePollingThread();
+        }
     }
-    else
+}
+
+//
+// MARK: - Termination Handling (NEW)
+//
+
+///
+/// Called before termination begins
+///
+bool RealtekUSBCardReaderController::willTerminate(IOService* provider, IOOptionBits options)
+{
+
+    // Stop all activity immediately
+    this->pausePollingThread();
+
+    // Abort any pending transfers
+    if (this->inputPipe != nullptr)
     {
-        perr("Failed to reset the hardware when the driver wakes up.");
+        this->inputPipe->abort();
     }
+
+    if (this->outputPipe != nullptr)
+    {
+        this->outputPipe->abort();
+    }
+
+    // Close all connections to clear busy state
+    if (this->interface != nullptr && this->interface->isOpen(this))
+    {
+        this->interface->close(this);
+    }
+
+    if (this->device != nullptr && this->device->isOpen(this))
+    {
+        this->device->close(this);
+    }
+
+    return super::willTerminate(provider, options);
+}
+
+///
+/// Called after termination is complete
+///
+bool RealtekUSBCardReaderController::didTerminate(IOService* provider, IOOptionBits options, bool* defer)
+{
+    // Make sure everything is cleaned up
+    if (this->interface != nullptr && this->interface->isOpen(this))
+    {
+        this->interface->close(this);
+    }
+
+    if (this->device != nullptr && this->device->isOpen(this))
+    {
+        this->device->close(this);
+    }
+
+    return super::didTerminate(provider, options, defer);
+}
+
+///
+/// Handle termination
+///
+bool RealtekUSBCardReaderController::terminate(IOOptionBits options)
+{
+    // Stop polling immediately
+    this->pausePollingThread();
+
+    return super::terminate(options);
 }
 
 //
@@ -2027,7 +2099,7 @@ void RealtekUSBCardReaderController::setDeviceProperties()
 }
 
 //
-// MARK: - Polling Device Status
+// MARK: - Polling Device Status (FIXED)
 //
 
 ///
@@ -2057,6 +2129,17 @@ void RealtekUSBCardReaderController::pausePollingThread()
 void RealtekUSBCardReaderController::resumePollingThread()
 {
     // For consistency, let's protect ourselves even though it is not needed
+
+    if (this->timer == nullptr || this->commandGate == nullptr)
+    {
+        return;
+    }
+
+    if (this->isInactive())
+    {
+        return;
+    }
+
     auto action = [&]() -> IOReturn
     {
         this->timer->enable();
@@ -2394,9 +2477,24 @@ void RealtekUSBCardReaderController::tearDownPollingTimer()
     if (this->timer != nullptr)
     {
         this->pausePollingThread();
-        
-        this->workLoop->removeEventSource(this->timer);
-        
+
+        if (this->commandGate != nullptr)
+        {
+            auto action = [&]() -> IOReturn
+            {
+                this->timer->cancelTimeout();
+                this->timer->disable();
+                return kIOReturnSuccess;
+            };
+
+            IOCommandGateRunAction(this->commandGate, action);
+        }
+
+        if (this->workLoop != nullptr)
+        {
+            this->workLoop->removeEventSource(this->timer);
+        }
+
         this->timer->release();
         
         this->timer = nullptr;
@@ -2606,4 +2704,16 @@ void RealtekUSBCardReaderController::stop(IOService* provider)
     pinfo("The card reader controller has stopped.");
     
     super::stop(provider);
+}
+
+void RealtekUSBCardReaderController::free()
+{
+    // Final cleanup
+    OSSafeReleaseNULL(this->timer);
+    OSSafeReleaseNULL(this->inputPipe);
+    OSSafeReleaseNULL(this->outputPipe);
+    OSSafeReleaseNULL(this->interface);
+    OSSafeReleaseNULL(this->device);
+
+    super::free();
 }
