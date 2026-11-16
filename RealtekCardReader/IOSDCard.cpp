@@ -52,6 +52,13 @@ OSDictionaryPtr IOSDCard::getCardCharacteristics() const
 {
     OSDictionary* dictionary = OSDictionary::withCapacity(11);
 
+    if (dictionary == nullptr)
+    {
+        perr("Failed to allocate the card characteristics dictionary.");
+
+        return nullptr;
+    }
+
     char name[8] = {};
     
     char revision[8] = {};
@@ -63,23 +70,44 @@ OSDictionaryPtr IOSDCard::getCardCharacteristics() const
     passert(this->getCardRevision(revision, sizeof(revision)), "Should be able to get the card revision.");
     
     passert(this->getCardProductionDate(date, sizeof(date)), "Should be able to get the card production date.");
-    
-    if (dictionary != nullptr &&
-        OSDictionaryAddStringToDictionary(dictionary, "Card Type", this->getCardType()) &&
-        OSDictionaryAddStringToDictionary(dictionary, "Specification Version", this->getSpecificationVersion()) &&
-        OSDictionaryAddStringToDictionary(dictionary, "Product Name", name) &&
-        OSDictionaryAddStringToDictionary(dictionary, "Product Revision Level", revision) &&
-        OSDictionaryAddStringToDictionary(dictionary, "Manufacturing Date", date) &&
-        OSDictionaryAddDataToDictionary(dictionary, "Serial Number", &this->cid.serial, sizeof(this->cid.serial)) &&
-        OSDictionaryAddDataToDictionary(dictionary, "Manufacturer ID", &this->cid.manufacturer, sizeof(this->cid.manufacturer)) &&
-        OSDictionaryAddDataToDictionary(dictionary, "Application ID", &this->cid.oem, sizeof(this->cid.oem)) &&
-        OSDictionaryAddDataToDictionary(dictionary, "Speed Class", &this->ssr.speedClass, sizeof(this->ssr.speedClass)) &&
-        OSDictionaryAddIntegerToDictionary(dictionary, "UHS Speed Grade", this->ssr.uhsSpeedGrade) &&
-        OSDictionaryAddIntegerToDictionary(dictionary, "Video Speed Class", this->ssr.videoSpeedClass))
+
+    if (UNLIKELY(UserConfigs::Card::UseLegacyCardCharacteristicsDictionary))
     {
-        return dictionary;
+        if (OSDictionaryAddStringToDictionary(dictionary, "Card Type", this->getCardType()) &&
+            OSDictionaryAddStringToDictionary(dictionary, "Specification Version", this->getSpecificationVersion()) &&
+            OSDictionaryAddStringToDictionary(dictionary, "Product Name", name) &&
+            OSDictionaryAddStringToDictionary(dictionary, "Product Revision Level", revision) &&
+            OSDictionaryAddStringToDictionary(dictionary, "Manufacturing Date", date) &&
+            OSDictionaryAddDataToDictionary(dictionary, "Serial Number", &this->cid.serial, sizeof(this->cid.serial)) &&
+            OSDictionaryAddDataToDictionary(dictionary, "Manufacturer ID", &this->cid.manufacturer, sizeof(this->cid.manufacturer)) &&
+            OSDictionaryAddDataToDictionary(dictionary, "Application ID", &this->cid.oem, sizeof(this->cid.oem)) &&
+            OSDictionaryAddDataToDictionary(dictionary, "Speed Class", &this->ssr.speedClass, sizeof(this->ssr.speedClass)) &&
+            OSDictionaryAddIntegerToDictionary(dictionary, "UHS Speed Grade", this->ssr.uhsSpeedGrade) &&
+            OSDictionaryAddIntegerToDictionary(dictionary, "Video Speed Class", this->ssr.videoSpeedClass))
+        {
+            return dictionary;
+        }
     }
-    
+    else
+    {
+        if (OSDictionaryAddStringToDictionary(dictionary, "Card Type", this->getCardType()) &&
+            OSDictionaryAddStringToDictionary(dictionary, "Specification Version", this->getSpecificationVersion()) &&
+            OSDictionaryAddStringToDictionary(dictionary, "Product Name", name) &&
+            OSDictionaryAddStringToDictionary(dictionary, "Product Revision Level", revision) &&
+            OSDictionaryAddStringToDictionary(dictionary, "Manufacturing Date", date) &&
+            OSDictionaryAddIntegerToDictionary(dictionary, "Serial Number", this->cid.serial) &&
+            OSDictionaryAddIntegerToDictionary(dictionary, "Manufacturer ID", static_cast<UInt64>(this->cid.manufacturer)) &&
+            OSDictionaryAddIntegerToDictionary(dictionary, "Application ID", static_cast<UInt64>(this->cid.oem)) &&
+            OSDictionaryAddIntegerToDictionary(dictionary, "Speed Class", this->ssr.speedClass) &&
+            OSDictionaryAddIntegerToDictionary(dictionary, "UHS Speed Grade", this->ssr.uhsSpeedGrade) &&
+            OSDictionaryAddIntegerToDictionary(dictionary, "Video Speed Class", this->ssr.videoSpeedClass))
+        {
+            return dictionary;
+        }
+    }
+
+    perr("Failed to populate the card characteristics dictionary.");
+
     OSSafeReleaseNULL(dictionary);
     
     return nullptr;
