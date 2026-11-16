@@ -27,7 +27,7 @@ namespace UserConfigs::Card
     bool NoACMD23 = BootArgs::contains("-iosdnoacmd23");
 
     /// `True` if the driver should use the legacy format of the card characteristics dictionary
-    extern bool UseLegacyCardCharacteristicsDictionary = BootArgs::contains("-iosdlccd");
+    bool UseLegacyCardCharacteristicsDictionary = BootArgs::contains("-iosdlccd");
     
     /// Specify the maximum number of attempts to retry an application command
     UInt32 ACMDMaxNumAttempts = max(BootArgs::get("iosdamna", 2), 1);
