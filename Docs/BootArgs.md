@@ -42,6 +42,11 @@ For example, if the name is `rtsxabcd` and the value is `10`, `<Name>=<Value>` b
     - Default Value: `2`
     - Minimum Value: `1`
     - Description: Specify the maximum number of attempts to retry an application command (`ACMD*`).
+- UseLegacyCardCharacteristicsDictionary
+    - Boot Argument: `-iosdlccd`
+    - Value Type: `Boolean`
+    - Default Value: `false`
+    - Description: Add this boot argument to use the legacy format of the card characteristics dictionary. Apple has changed the format of the card characteristics dictionary in macOS Sonoma 14.4, so users see an error message like "There was an error loading card reader information" when they click "Card Reader" in System Information.app. Use this boot argument if you use this driver on earlier macOS versions.
 
 ### PCIe-based Card Reader Specific
 - DelayCardInitAtBoot
@@ -71,4 +76,4 @@ For example, if the name is `rtsxabcd` and the value is `10`, `<Name>=<Value>` b
     - Value Type: `UInt32`
     - Default Value: `10`
     - Minimum Value: `1`
-    - Description: Specify the amount of time in milliseconds to wait until the SSC clock becomes stable. If the value is too small, commands may timeout after the driver switches the card clock. Increase this value if you find that the driver fails to enable the 4-bit bus in the kernel log.
+    - Description: Specify the amount of time in milliseconds to wait until the SSC clock becomes stable. If the value is too small, commands may time out after the driver switches the card clock. Increase this value if you find that the driver fails to enable the 4-bit bus in the kernel log.
