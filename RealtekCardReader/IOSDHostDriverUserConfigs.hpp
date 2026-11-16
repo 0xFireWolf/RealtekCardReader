@@ -27,6 +27,9 @@ namespace UserConfigs::Card
     
     /// `True` if the driver should not issue the ACMD23 command when processing CMD25 requests
     extern bool NoACMD23;
+
+    /// `True` if the driver should use the new format of the card characteristics dictionary
+    extern bool UseNewCardCharacteristicsDictionary;
     
     /// Specify the maximum number of attempts to retry an application command
     extern UInt32 ACMDMaxNumAttempts;

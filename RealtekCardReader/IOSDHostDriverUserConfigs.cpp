@@ -25,6 +25,9 @@ namespace UserConfigs::Card
     
     /// `True` if the driver should not issue the ACMD23 command when processing CMD25 requests
     bool NoACMD23 = BootArgs::contains("-iosdnoacmd23");
+
+    /// `True` if the driver should use the new format of the card characteristics dictionary
+    bool UseNewCardCharacteristicsDictionary = BootArgs::contains("-iosdnccd");
     
     /// Specify the maximum number of attempts to retry an application command
     UInt32 ACMDMaxNumAttempts = max(BootArgs::get("iosdamna", 2), 1);
