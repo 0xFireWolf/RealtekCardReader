@@ -1,5 +1,8 @@
 #  Changelog
 
+#### v0.9.8 Beta
+- Added support for the new format of the card characteristics dictionary, resolving the error "There was an error loading card reader information" when users click "Card Reader" in System Information.app. Use the new boot argument `-iosdlccd` if you use this driver on earlier macOS versions.
+
 #### v0.9.7 Beta
 - ~~Fixed an issue that the card is not mounted after the computer wakes up when sleeps with the card inserted.~~
 - Fixed a race condition that may resume the polling thread even though the client requests to pause it.
