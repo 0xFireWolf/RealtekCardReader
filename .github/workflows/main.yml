@@ -1,4 +1,4 @@
-name: RealtekCardReader-CI
+name: CI
 
 # Controls when the workflow will run
 on:
@@ -17,35 +17,41 @@ jobs:
         name: Build
         runs-on: macos-latest
         steps:
-            # Checkout the card reader repo
-            - uses: actions/checkout@v2
-            # Checkout the MacKernelSDK repo
-            - uses: actions/checkout@v2
+            # Checkout the repo along with its submodules
+            - name: Check out the repo along with its submodules
+              uses: actions/checkout@v7
               with:
-                repository: acidanthera/MacKernelSDK
-                path: MacKernelSDK
-            # Build the driver
-            - run: xcodebuild -jobs 3 -configuration Debug
-            - run: xcodebuild -jobs 3 -configuration Release
-            # Upload the driver
-            - name: Upload to Artifacts
-              uses: actions/upload-artifact@v2
+                  submodules: 'true'
+            # Build the driver in DEBUG mode
+            - name: Build the driver in DEBUG mode
+              run: xcodebuild -jobs 3 -configuration Debug
+            # Upload the driver built in DEBUG mode to Artifacts
+            - name: Upload the DEBUG driver to Artifacts
+              uses: actions/upload-artifact@v7
               with:
-                name: Artifacts
-                path: build/*/*.zip
+                  name: Artifacts-Debug
+                  path: build/*/*_DEBUG.zip
+            # Build the driver in RELEASE mode
+            - name: Build the driver in RELEASE mode
+              run: xcodebuild -jobs 3 -configuration Release
+            - name: Upload the DEBUG driver to Artifacts
+              uses: actions/upload-artifact@v7
+              with:
+                  name: Artifacts-Release
+                  path: build/*/*_RELEASE.zip
 
     # Analyze the kext
     analyze:
         name: Analyze
         runs-on: macos-latest
         steps:
-            # Checkout the card reader repo
-            - uses: actions/checkout@v2
-            # Checkout the MacKernelSDK repo
-            - uses: actions/checkout@v2
+            # Checkout the repo along with its submodules
+            - name: Check out the repo along with its submodules
+              uses: actions/checkout@v7
               with:
-                repository: acidanthera/MacKernelSDK
-                path: MacKernelSDK
+                  submodules: 'true'
             # Analyze the driver
-            - run: xcodebuild analyze -quiet -scheme RealtekCardReader -configuration Debug CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
-            - run: xcodebuild analyze -quiet -scheme RealtekCardReader -configuration Release CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
+            - name: Analyze the driver in DEBUG mode
+              run: xcodebuild analyze -quiet -scheme RealtekCardReader -configuration Debug CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
+            - name: Analyze the driver in RELEASE mode
+              run: xcodebuild analyze -quiet -scheme RealtekCardReader -configuration Release CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
