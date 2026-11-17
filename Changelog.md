@@ -2,6 +2,19 @@
 
 #### v0.9.8 Beta
 - Added support for the new format of the card characteristics dictionary, resolving the error "There was an error loading card reader information" when users click "Card Reader" in System Information.app. Use the new boot argument `-iosdlccd` if you use this driver on earlier macOS versions.
+- Fixed a kernel panic "Sleep transition timed out" that occurs when the completion of a card event is lost while the system sleeps or wakes up. The driver now waits for a card event for a bounded amount of time, and each completion is invoked exactly once.
+- Fixed a lost wakeup in the synchronous card event wait that delays the system sleep by 10 seconds and stalls the system wake by up to 30 seconds.
+- Fixed a kernel panic that occurs when a block request is serviced before the card is attached (e.g. right after the system wakes up or while it shuts down).
+- Fixed an issue that pending block requests are dropped without being completed when the card is removed, leaving the caller waiting forever. A request submitted for a removed card is never serviced on the next card.
+- Fixed a kernel panic that occurs when a second card insertion event arrives while a card is attached.
+- Fixed an issue that the driver fails to initialize a card at a lower speed mode after it has failed at the UHS-I mode. Added the boot argument `iosdpoweroff`.
+- Fixed an issue that the driver reads and writes the PCIe Link Control, Device Control 2 and L1 substates registers at wrong offsets.
+- The card reader now returns to the idle state (ASPM, LTR and L1 substates) when no request has been processed for 200 ms, so the CPU package can reach the deep C-states (C6 and below) again. Added the boot argument `-rtsxnoidle` to restore the previous behavior.
+- Card insertions are now debounced for 200 ms, like the Linux driver. Added the boot argument `rtsxdebounce`.
+- The driver now waits 250 ms after the card reader is re-initialized on wake before it checks whether a card is present, as some chips report a wrong card presence right after the re-initialization. Added the boot argument `rtsxwakesettle`.
+- Added the boot argument `-rtsxdiag` to publish the power management state of the card reader to the I/O Registry.
+- The manufacturing date, the specification version and the product revision of the card are now shown correctly in System Information.app in locales that use a decimal comma (e.g. `2019-01` instead of `2.019,01`, `SD 5.00` and `v8.0` instead of `5,00` and `8,0`).
+- Removed build host paths from the binary.
 
 #### v0.9.7 Beta
 - ~~Fixed an issue that the card is not mounted after the computer wakes up when sleeps with the card inserted.~~
