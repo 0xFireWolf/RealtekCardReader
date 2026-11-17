@@ -229,7 +229,9 @@ public:
         
         bzero(date, length);
         
-        snprintf(date, length, "%04d.%02d", this->cid.getYear(), this->cid.month);
+        // ISO 8601 year-month ("2019-01"): System Information formats values that look like a decimal number with the user's
+        // locale, which turned "2019.01" into e.g. "2.019,01" (en_NL); a dash is never taken for a number
+        snprintf(date, length, "%04d-%02d", this->cid.getYear(), this->cid.month);
         
         return true;
     }

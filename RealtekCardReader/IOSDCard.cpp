@@ -90,10 +90,22 @@ OSDictionaryPtr IOSDCard::getCardCharacteristics() const
     }
     else
     {
+        // System Information formats values that look like a decimal number with the user's locale ("5.00" -> "5,00" in
+        // many European locales), but these are versions, not decimals: give them a prefix so they keep their dots
+        char specification[16] = {};
+        
+        char revisionLabel[16] = {};
+        
+        const char* specVersion = this->getSpecificationVersion();
+        
+        snprintf(specification, sizeof(specification), strcmp(specVersion, "Unknown") == 0 ? "%s" : "SD %s", specVersion);
+        
+        snprintf(revisionLabel, sizeof(revisionLabel), "v%s", revision);
+        
         if (OSDictionaryAddStringToDictionary(dictionary, "Card Type", this->getCardType()) &&
-            OSDictionaryAddStringToDictionary(dictionary, "Specification Version", this->getSpecificationVersion()) &&
+            OSDictionaryAddStringToDictionary(dictionary, "Specification Version", specification) &&
             OSDictionaryAddStringToDictionary(dictionary, "Product Name", name) &&
-            OSDictionaryAddStringToDictionary(dictionary, "Product Revision Level", revision) &&
+            OSDictionaryAddStringToDictionary(dictionary, "Product Revision Level", revisionLabel) &&
             OSDictionaryAddStringToDictionary(dictionary, "Manufacturing Date", date) &&
             OSDictionaryAddIntegerToDictionary(dictionary, "Serial Number", this->cid.serial) &&
             OSDictionaryAddIntegerToDictionary(dictionary, "Manufacturer ID", static_cast<UInt64>(this->cid.manufacturer)) &&
