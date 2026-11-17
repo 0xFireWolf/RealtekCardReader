@@ -24,6 +24,14 @@ namespace UserConfigs::PCR
     /// The amount of time in milliseconds to delay the card initialization
     /// if the card is present when the driver starts
     extern UInt32 DelayCardInitAtBoot;
+    
+    /// Set to `true` (boot argument `-rtsxnoidle`) to keep the card reader in the worker state forever,
+    /// i.e. never enable the ASPM when the reader is idle (the behavior of v0.9.7)
+    extern bool DisableIdleState;
+    
+    /// Set to `true` (boot argument `-rtsxdiag`, always on in debug builds) to publish the power-management state
+    /// as the "RTSX Power" property of the controller
+    extern bool PowerDiagnostics;
 }
 
 /// Boot arguments that customize the USB-based card reader controller

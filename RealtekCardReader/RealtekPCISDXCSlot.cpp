@@ -37,7 +37,8 @@ IOReturn RealtekPCISDXCSlot::executeTuning(const IOSDBusConfig& config)
     }
     
     // Notify the card reader to enter the worker state
-    controller->enterWorkerState();
+    // The guard lets the card reader return to the idle state (ASPM, LTR) once the tuning is finished
+    RealtekCardReaderController::WorkerStateGuard workerState(controller);
     
     IOReturn retVal = kIOReturnSuccess;
     

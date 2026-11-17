@@ -1575,6 +1575,36 @@ public:
     ///
     virtual void enterWorkerState() {};
     
+    ///
+    /// Notify the card reader that the current request has finished so that it may return to the idle state
+    ///
+    /// @note Every call to `enterWorkerState()` must be balanced by a call to this function.
+    ///
+    virtual void exitWorkerState() {};
+    
+    ///
+    /// Keeps the card reader in the worker state for the lifetime of the object
+    ///
+    class WorkerStateGuard
+    {
+        RealtekCardReaderController* controller;
+        
+    public:
+        explicit WorkerStateGuard(RealtekCardReaderController* controller) : controller(controller)
+        {
+            this->controller->enterWorkerState();
+        }
+        
+        ~WorkerStateGuard()
+        {
+            this->controller->exitWorkerState();
+        }
+        
+        WorkerStateGuard(const WorkerStateGuard&) = delete;
+        
+        WorkerStateGuard& operator=(const WorkerStateGuard&) = delete;
+    };
+    
     //
     // MARK: - Power Management
     //

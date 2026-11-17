@@ -22,6 +22,16 @@ namespace UserConfigs::PCR
     /// The amount of time in milliseconds to delay the card initialization
     /// if the card is present when the driver starts
     UInt32 DelayCardInitAtBoot = BootArgs::get("rtsxdcib", 100);
+    
+    /// Keep the card reader in the worker state forever (the behavior of v0.9.7)
+    bool DisableIdleState = BootArgs::contains("-rtsxnoidle");
+    
+    /// Publish the power-management state ("RTSX Power") to the I/O Registry; always on in debug builds
+#ifdef DEBUG
+    bool PowerDiagnostics = true;
+#else
+    bool PowerDiagnostics = BootArgs::contains("-rtsxdiag");
+#endif
 }
 
 /// Boot arguments that customize the USB-based card reader controller
