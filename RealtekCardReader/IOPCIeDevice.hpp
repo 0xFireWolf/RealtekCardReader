@@ -39,29 +39,41 @@
 #define  PCI_EXP_DEVCTL2_OBFF_MSGB_EN    0x4000    /* Enable OBFF Message type B */
 #define  PCI_EXP_DEVCTL2_OBFF_WAKE_EN    0x6000    /* OBFF using WAKE# signaling */
 
+///
+/// Return the config-space offset of the PCI Express capability
+///
+/// @note `IOPCIDevice::findPCICapability()` returns the *value* of the capability register;
+///       the offset comes back through the second parameter. v0.9.7 used the return value as the offset,
+///       so every access through these helpers went to a non-existent address (reads 0xFFFF, writes dropped).
+///
+static inline UInt8 IOPCIeDeviceCapabilityOffset(IOPCIDevice* device)
+{
+    UInt8 offset = 0;
+    
+    UInt32 header = device->findPCICapability(kIOPCICapabilityIDPCIExpress, &offset);
+    
+    passert(header != 0 && offset != 0, "The given device is not a PCIe device.");
+    
+    return offset;
+}
+
 static inline UInt16 IOPCIeDeviceConfigRead16(IOPCIDevice* device, IOByteCount offset)
 {
-    UInt32 base = device->findPCICapability(kIOPCICapabilityIDPCIExpress);
-    
-    passert(base != 0, "The given device is not a PCIe device.");
+    UInt8 base = IOPCIeDeviceCapabilityOffset(device);
     
     return device->configRead16(base + offset);
 }
 
 static inline void IOPCIeDeviceConfigWrite16(IOPCIDevice* device, IOByteCount offset, UInt16 value)
 {
-    UInt32 base = device->findPCICapability(kIOPCICapabilityIDPCIExpress);
-    
-    passert(base != 0, "The given device is not a PCIe device.");
+    UInt8 base = IOPCIeDeviceCapabilityOffset(device);
     
     device->configWrite16(base + offset, value);
 }
 
 static inline void IOPCIeDeviceConfigSet16(IOPCIDevice* device, IOByteCount offset, UInt16 set)
 {
-    UInt32 base = device->findPCICapability(kIOPCICapabilityIDPCIExpress);
-    
-    passert(base != 0, "The given device is not a PCIe device.");
+    UInt8 base = IOPCIeDeviceCapabilityOffset(device);
     
     UInt16 value = device->configRead16(base + offset) | set;
     
@@ -70,9 +82,7 @@ static inline void IOPCIeDeviceConfigSet16(IOPCIDevice* device, IOByteCount offs
 
 static inline void IOPCIeDeviceConfigClear16(IOPCIDevice* device, IOByteCount offset, UInt16 clear)
 {
-    UInt32 base = device->findPCICapability(kIOPCICapabilityIDPCIExpress);
-    
-    passert(base != 0, "The given device is not a PCIe device.");
+    UInt8 base = IOPCIeDeviceCapabilityOffset(device);
     
     UInt16 value = device->configRead16(base + offset) & (~clear);
     

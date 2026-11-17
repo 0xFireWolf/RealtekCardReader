@@ -782,16 +782,17 @@ IOReturn RealtekRTS5260Controller::initHardwareFromConfig()
 {
     pinfo("Initializing the hardware from the PCIe config.");
     
-    UInt32 l1ss = this->device->extendedFindPCICapability(static_cast<UInt32>(kIOPCIExpressCapabilityIDL1PMSubstates));
+    // The return value is the capability header; the offset comes back through the second parameter
+    IOByteCount l1ss = 0;
     
-    if (l1ss == 0)
+    if (this->device->extendedFindPCICapability(static_cast<UInt32>(kIOPCIExpressCapabilityIDL1PMSubstates), &l1ss) == 0 || l1ss == 0)
     {
         pwarning("Skipped: L1SS is not available.")
         
         return kIOReturnSuccess;
     }
     
-    BitOptions regVal = this->device->configRead32(PCI_L1SS_CTL1 + l1ss);
+    BitOptions regVal = this->device->extendedConfigRead32(PCI_L1SS_CTL1 + l1ss);
     
     pinfo("L1SS RegVal = 0x%08x.", regVal.flatten());
     

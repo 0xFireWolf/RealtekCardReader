@@ -2565,7 +2565,8 @@ IOReturn RealtekPCICardReaderController::initHardwareCommon()
     
     // Enter L1 when the host is idle
     // TODO: CHECK THIS
-    this->device->configWrite8(0x70F, 0x5B);
+    // 0x70F lies beyond the 256-byte legacy config space, so it needs the extended config access
+    this->device->extendedConfigWrite8(0x70F, 0x5B);
     
     // Perform device-specific initialization
     retVal = this->initHardwareExtra();
