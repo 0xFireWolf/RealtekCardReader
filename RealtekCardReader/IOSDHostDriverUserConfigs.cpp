@@ -31,4 +31,9 @@ namespace UserConfigs::Card
     
     /// Specify the maximum number of attempts to retry an application command
     UInt32 ACMDMaxNumAttempts = max(BootArgs::get("iosdamna", 2), 1);
+    
+    /// The amount of time in milliseconds the bus stays powered off before the card is powered on again.
+    /// A card that has switched to 1.8V signaling only returns to 3.3V after its supply has fully discharged,
+    /// otherwise the retry at a lower speed mode aborts with "the card is already operating at 1.8V".
+    UInt32 PowerOffDelay = max(BootArgs::get("iosdpoweroff", 100), 1);
 }

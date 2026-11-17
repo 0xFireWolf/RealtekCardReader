@@ -147,7 +147,7 @@ IOReturn IOSDBlockStorageDevice::message(UInt32 type, IOService* provider, void*
 ///
 IOReturn IOSDBlockStorageDevice::doEjectMedia()
 {
-    pinfo("The storage subsystem requests to eject the media.");
+    pmesg("The storage subsystem requests to eject the media.");
     
     this->driver->onSDCardRemovedGated();
     

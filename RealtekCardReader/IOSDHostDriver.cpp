@@ -841,7 +841,8 @@ IOReturn IOSDHostDriver::powerOff()
     }
 
     // Some cards require a short delay after powered off before turned on again
-    IOSleep(1);
+    // A card running at 1.8V needs its supply to discharge fully to reset (1 ms was not enough on an RTS522A)
+    IOSleep(UserConfigs::Card::PowerOffDelay);
 
     return retVal;
 }
@@ -1899,7 +1900,34 @@ void IOSDHostDriver::attachCard(IOSDCard::Completion* completion, IOSDCard::Even
     static constexpr UInt32 frequencies[] = { KHz2Hz(400), KHz2Hz(300), KHz2Hz(200), KHz2Hz(100) };
 
     pinfo("Attaching the SD card with completion at 0x%08x%08x and event options %u...", KPTR(completion), options.flatten());
-    
+
+    // Guard: A card is already attached (e.g. a bounced or spurious insertion interrupt).
+    // Re-initializing it would replace `this->card` under a mounted volume.
+    // Like Linux `mmc_rescan()`, keep the card if it still answers CMD13, otherwise detach it first.
+    if (this->card != nullptr)
+    {
+        UInt32 cardStatus = 0;
+
+        if (this->CMD13(this->card->getRCA(), cardStatus) == kIOReturnSuccess)
+        {
+            pmesg("A card is already attached and responsive (status = 0x%08x). Ignored the insertion event.", cardStatus);
+
+            OSDictionary* characteristics = this->card->getCardCharacteristics();
+
+            IOSDCard::complete(completion, kIOReturnSuccess, characteristics);
+
+            OSSafeReleaseNULL(characteristics);
+
+            this->resumeBlockRequestsAfterAttach();
+
+            return;
+        }
+
+        pmesg("The attached card no longer responds. Detaching it before attaching the new one.");
+
+        this->detachCard(nullptr, options);
+    }
+
     ClosedRange<UInt32> range = this->host->getHostClockRange();
     
     OSDictionary* characteristics = nullptr;
