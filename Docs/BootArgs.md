@@ -42,6 +42,12 @@ For example, if the name is `rtsxabcd` and the value is `10`, `<Name>=<Value>` b
     - Default Value: `2`
     - Minimum Value: `1`
     - Description: Specify the maximum number of attempts to retry an application command (`ACMD*`).
+- PowerOffDelay
+    - Boot Argument: `iosdpoweroff`
+    - Value Type: `UInt32`
+    - Default Value: `100`
+    - Minimum Value: `1`
+    - Description: Specify the amount of time in milliseconds the bus stays powered off before the card is powered on again. A card that has switched to 1.8V signaling only returns to 3.3V once its supply has fully discharged; with a shorter delay the retry at a lower speed mode fails. Previous versions used 1 ms.
 - UseLegacyCardCharacteristicsDictionary
     - Boot Argument: `-iosdlccd`
     - Value Type: `Boolean`
@@ -55,6 +61,28 @@ For example, if the name is `rtsxabcd` and the value is `10`, `<Name>=<Value>` b
     - Default Value: `100`
     - Minimum Value: `0`
     - Description: Specify the amount of time in milliseconds to delay the card initialization if the card is present when the driver starts. Increase the delay if your card cannot be initialized when the system boots.
+- CardInsertionDebounce
+    - Boot Argument: `rtsxdebounce`
+    - Value Type: `UInt32`
+    - Default Value: `200`
+    - Minimum Value: `0`
+    - Description: Specify the amount of time in milliseconds to wait after a card insertion interrupt before the card is set up (the interrupt fires while the card is still sliding in; Linux waits 200 ms as well).
+- WakeCardDetectSettle
+    - Boot Argument: `rtsxwakesettle`
+    - Value Type: `UInt32`
+    - Default Value: `250`
+    - Minimum Value: `0`
+    - Description: Specify the amount of time in milliseconds to wait after the card reader is re-initialized on wake before the driver checks whether a card is present. Some chips (e.g. RTS5227) report the opposite of the slot state right after the re-initialization, so a mounted card would be detached or a card that is not there would be attached. Set it to `0` to disable the delay.
+- DisableIdleState
+    - Boot Argument: `-rtsxnoidle`
+    - Value Type: `Boolean`
+    - Default Value: `false`
+    - Description: Add this boot argument to keep the card reader in the active state forever, i.e. never re-enable the ASPM when the reader is idle (the behavior of previous versions). Intended for debugging only: the PCIe link then never enters L1 and the CPU package cannot reach the deep C-states (C6 and below).
+- PowerDiagnostics
+    - Boot Argument: `-rtsxdiag`
+    - Value Type: `Boolean`
+    - Default Value: `false` (always `true` in debug builds)
+    - Description: Add this boot argument to publish the power-management state of the card reader (ASPM, LTR, L1 substates, idle entries) as the `RTSX Power` property of the controller in the I/O Registry, updated on every idle entry. Read it with `ioreg -rc RealtekPCICardReaderController -l | grep "RTSX Power"`.
 
 ### USB-based Card Reader Specific
 - DeviceStatusPollingInterval
