@@ -41,6 +41,10 @@ IOReturn IOSDHostDriver::submitBlockRequest(IOSDBlockRequest::Processor processo
     
     psoftassert(buffer->getLength() == nblocks * 512, "Buffer lengths mismatched.");
     
+    // Read the card generation before checking the queue: a request that races with a removal carries the old value
+    // and is dropped by the queue event source instead of being serviced on the next card
+    UInt32 generation = this->getCardGeneration();
+    
     // Guard: Ensure that the queue event source is still enabled
     // It is enabled if and only if the card is not ejected or removed.
     if (!this->queueEventSource->isEnabled())
@@ -66,6 +70,8 @@ IOReturn IOSDHostDriver::submitBlockRequest(IOSDBlockRequest::Processor processo
     passert(request != nullptr, "The block request should not be null at this moment.");
     
     request->init(this, processor, buffer, block, nblocks, attributes, completion);
+    
+    request->cardGeneration = generation;
     
     // It is possible that the user removes the card just before the host driver enqueues the request and signals the processor workloop.
     // In this case, the card removal handler has already disabled the queue event source.
@@ -126,6 +132,14 @@ UInt32 IOSDHostDriver::transformBlockOffsetIfNecessary(UInt64 block)
 ///
 IOReturn IOSDHostDriver::processReadBlockRequest(IOSDBlockRequest* request)
 {
+    // Guard: The card may have been removed, or failed to initialize (the request then completes with an error)
+    if (UNLIKELY(this->card == nullptr))
+    {
+        perr("The card is not attached. The request is rejected.");
+        
+        return kIOReturnNoMedia;
+    }
+    
     pinfo("Processing the request that reads a single block...");
     
     auto creq = this->host->getRequestFactory().CMD17(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getMemoryDescriptor());
@@ -143,6 +157,14 @@ IOReturn IOSDHostDriver::processReadBlockRequest(IOSDBlockRequest* request)
 ///
 IOReturn IOSDHostDriver::processReadBlocksRequest(IOSDBlockRequest* request)
 {
+    // Guard: The card may have been removed, or failed to initialize (the request then completes with an error)
+    if (UNLIKELY(this->card == nullptr))
+    {
+        perr("The card is not attached. The request is rejected.");
+        
+        return kIOReturnNoMedia;
+    }
+    
     // Guard: Check if the driver should separate the incoming request
     if (UNLIKELY(UserConfigs::Card::SeparateAccessBlocksRequest))
     {
@@ -189,6 +211,14 @@ IOReturn IOSDHostDriver::processReadBlocksRequestSeparately(IOSDBlockRequest* re
 ///
 IOReturn IOSDHostDriver::processWriteBlockRequest(IOSDBlockRequest* request)
 {
+    // Guard: The card may have been removed, or failed to initialize (the request then completes with an error)
+    if (UNLIKELY(this->card == nullptr))
+    {
+        perr("The card is not attached. The request is rejected.");
+        
+        return kIOReturnNoMedia;
+    }
+    
     pinfo("Processing the request that writes a single block...");
     
     auto creq = this->host->getRequestFactory().CMD24(this->transformBlockOffsetIfNecessary(request->getBlockOffset()), request->getMemoryDescriptor());
@@ -206,6 +236,14 @@ IOReturn IOSDHostDriver::processWriteBlockRequest(IOSDBlockRequest* request)
 ///
 IOReturn IOSDHostDriver::processWriteBlocksRequest(IOSDBlockRequest* request)
 {
+    // Guard: The card may have been removed, or failed to initialize (the request then completes with an error)
+    if (UNLIKELY(this->card == nullptr))
+    {
+        perr("The card is not attached. The request is rejected.");
+        
+        return kIOReturnNoMedia;
+    }
+    
     // Guard: Check if the driver should separate the incoming request
     if (UNLIKELY(UserConfigs::Card::SeparateAccessBlocksRequest))
     {
@@ -1830,6 +1868,25 @@ bool IOSDHostDriver::attachCardAtFrequency(UInt32 frequency)
 }
 
 ///
+/// [Helper] Signal the queue event source after a card insertion event has been processed
+///
+/// @note The queue event source does not service requests while the insertion event is pending (see
+///       `IOSDBlockRequestEventSource::checkForWork()`), so it has to be signaled again once the card is attached.
+///       It stays disabled if a removal event has arrived in the meantime.
+///
+void IOSDHostDriver::resumeBlockRequestsAfterAttach()
+{
+    if (this->detachCardEventSource->isEnabled())
+    {
+        pinfo("A card removal event is pending. Will not resume the block requests.");
+        
+        return;
+    }
+    
+    this->queueEventSource->enable();
+}
+
+///
 /// Attach the SD card
 ///
 /// @param completion The completion routine to call once the card insertion event has been processed
@@ -1876,11 +1933,9 @@ void IOSDHostDriver::attachCard(IOSDCard::Completion* completion, IOSDCard::Even
         // Fetch the card characteristics
         characteristics = this->card->getCardCharacteristics();
         
-        // Sanitize the pending request queue
-        // It is possible that one or two requests are left in the queue
-        // even after the card has been removed from the system.
-        // See `IOSDHostDriver::submitBlockRequest()` for details.
-        this->recyclePendingBlockRequest();
+        // Requests left over from a removed card are no longer recycled here: they carry an old card generation and
+        // the queue event source completes them with an error. Requests submitted since the insertion event (e.g. the
+        // mounted volume reading right after a wake) are valid and are serviced once this function returns.
         
         // Check whether the host driver is initializing the card to service the interrupt
         if (!options.contains(IOSDCard::EventOption::kPowerManagementContext))
@@ -1935,6 +1990,9 @@ void IOSDHostDriver::attachCard(IOSDCard::Completion* completion, IOSDCard::Even
     }
     
     pinfo("The card insertion event has been processed. Status = 0x%08x.", status);
+    
+    // Service the block requests that waited for the card (they complete with an error if the card failed to initialize)
+    this->resumeBlockRequestsAfterAttach();
     
     // All done: Notify the client
     IOSDCard::complete(completion, status, characteristics);
@@ -2037,6 +2095,11 @@ void IOSDHostDriver::onSDCardRemovedGated(IOSDCard::Completion* completion, IOSD
 {
     // Disable the queue event source so that the processor work loop will stop processing requests
     this->queueEventSource->disable();
+    
+    // Then start a new card generation: a request that is still queued, or that passed the queue check in
+    // `submitBlockRequest()` just before the line above, carries the old value and is dropped, not serviced on the next card.
+    // (The order matters: a submitter that reads the new value also finds the queue disabled.)
+    OSIncrementAtomic(reinterpret_cast<volatile SInt32*>(&this->cardGeneration));
     
     // Make sure that the attach event source is disabled
     this->attachCardEventSource->disable();

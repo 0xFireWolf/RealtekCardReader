@@ -112,6 +112,14 @@ UInt64 IOSDSimpleBlockRequest::getNumBlocks()
 }
 
 ///
+/// Complete the block request with the given error without servicing it
+///
+void IOSDSimpleBlockRequest::cancel(IOReturn status)
+{
+    IOStorage::complete(&this->completion, status, 0);
+}
+
+///
 /// Service the block request
 ///
 void IOSDSimpleBlockRequest::service()
