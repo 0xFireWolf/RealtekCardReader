@@ -1257,7 +1257,8 @@ IOReturn RealtekSDXCSlot::processRequest(IOSDHostRequest& request)
     }
     
     // Notify the card reader to enter the worker state
-    this->controller->enterWorkerState();
+    // The guard lets the card reader return to the idle state (ASPM, LTR) once the request is finished
+    RealtekCardReaderController::WorkerStateGuard workerState(this->controller);
     
     pinfo("The host driver has sent a SD command request.");
     
@@ -1627,8 +1628,8 @@ IOReturn RealtekSDXCSlot::setBusConfig(const IOSDBusConfig& config)
 {
     pinfo("The host driver requests to change the bus configuration.");
     
-    // Notify the card reader to enter the worker state
-    this->controller->enterWorkerState();
+    // Notify the card reader to enter the worker state; the guard lets it return to the idle state afterwards
+    RealtekCardReaderController::WorkerStateGuard workerState(this->controller);
     
     // Set the bus width
     pinfo("Setting the bus width...");
@@ -1925,8 +1926,8 @@ IOReturn RealtekSDXCSlot::switchSignalVoltage(const IOSDBusConfig& config)
         return kIOReturnNoMedia;
     }
     
-    // Notify the card reader to enter the worker state
-    this->controller->enterWorkerState();
+    // Notify the card reader to enter the worker state; the guard lets it return to the idle state afterwards
+    RealtekCardReaderController::WorkerStateGuard workerState(this->controller);
     
     using namespace RTSX::COM::Chip::SD;
     
@@ -2247,8 +2248,8 @@ IOReturn RealtekSDXCSlot::tuningRx()
 ///
 IOReturn RealtekSDXCSlot::isCardWriteProtected(bool& result)
 {
-    // Notify the card reader to enter the worker state
-    this->controller->enterWorkerState();
+    // Notify the card reader to enter the worker state; the guard lets it return to the idle state afterwards
+    RealtekCardReaderController::WorkerStateGuard workerState(this->controller);
     
     // Guard: Check whether the card is still present
     if (!this->controller->isCardPresent())
@@ -2272,8 +2273,8 @@ IOReturn RealtekSDXCSlot::isCardWriteProtected(bool& result)
 ///
 IOReturn RealtekSDXCSlot::isCardPresent(bool& result)
 {
-    // Notify the card reader to enter the worker state
-    this->controller->enterWorkerState();
+    // No worker state here: the presence bit is a plain MMIO read, and it is polled,
+    // so it must not wake the chip (turn the ASPM off) every time
     
     result = this->controller->isCardPresent();
     
@@ -2296,8 +2297,8 @@ IOReturn RealtekSDXCSlot::isCardCommandLineBusy(bool& result)
         return kIOReturnNoMedia;
     }
     
-    // Notify the card reader to enter the worker state
-    this->controller->enterWorkerState();
+    // Notify the card reader to enter the worker state; the guard lets it return to the idle state afterwards
+    RealtekCardReaderController::WorkerStateGuard workerState(this->controller);
     
     using namespace RTSX::COM::Chip::SD;
     
@@ -2333,8 +2334,8 @@ IOReturn RealtekSDXCSlot::isCardDataLineBusy(bool& result)
         return kIOReturnNoMedia;
     }
     
-    // Notify the card reader to enter the worker state
-    this->controller->enterWorkerState();
+    // Notify the card reader to enter the worker state; the guard lets it return to the idle state afterwards
+    RealtekCardReaderController::WorkerStateGuard workerState(this->controller);
     
     using namespace RTSX::COM::Chip::SD;
     

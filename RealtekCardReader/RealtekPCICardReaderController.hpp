@@ -394,6 +394,18 @@ class RealtekPCICardReaderController: public RealtekCardReaderController
     /// A timer that delays the initialization of the card
     IOTimerEventSource* cardSetupTimer;
     
+    /// A timer that puts the card reader back to the idle state when no request is being processed
+    IOTimerEventSource* idleTimer;
+    
+    /// Number of requests that are being processed (guarded by the command gate)
+    UInt32 activeRequestCount;
+    
+    /// Number of times the card reader has entered the idle state (diagnostics)
+    UInt32 idleEntryCount;
+    
+    /// Publish the power-management state to the I/O Registry as "RTSX Power" (diagnostics)
+    void publishPowerDiagnostics(const char* reason);
+    
     //
     // MARK: - Host Command & Data Buffer
     //
@@ -1558,6 +1570,54 @@ public:
     /// @note Port: This function replaces `rtsx_pci_start_run()`, `rtsx_pm_full_on()` and `rtsx_comm_pm_full_on()` defined in `rtsx_psr.c`.
     ///
     void enterWorkerState() override final;
+    
+    ///
+    /// Notify the card reader that the current request has finished
+    ///
+    /// @note Arms the timer that returns the card reader to the idle state once the last request is done.
+    /// @note Port: This function replaces the `schedule_delayed_work(&pcr->idle_work, ...)` calls in `rtsx_psr.c`.
+    ///
+    void exitWorkerState() override final;
+    
+private:
+    /// How long the card reader must stay quiet before it enters the idle state (Linux uses 200 ms)
+    static constexpr UInt32 kIdleDelayMS = 200;
+    
+    ///
+    /// Notify the card reader to enter the idle state
+    ///
+    /// @note This function runs in a gated context.
+    /// @note Port: This function replaces `rtsx_pci_idle_work()`, `rtsx_pm_power_saving()` and `rtsx_comm_pm_power_saving()` defined in `rtsx_psr.c`.
+    ///       It enables the ASPM, restores the idle LTR latency and the L1 sub-state configuration.
+    ///       Without it the link never leaves L0 and the platform cannot reach the deep package C-states.
+    ///
+    void enterIdleStateGated();
+    
+    ///
+    /// The idle timer fired
+    ///
+    /// @note This function runs in a gated context.
+    ///
+    void idleTimerFiredGated(IOTimerEventSource* sender);
+    
+    ///
+    /// Arm the idle timer
+    ///
+    void scheduleIdleState();
+    
+    ///
+    /// Create the idle timer
+    ///
+    /// @return `true` on success, `false` otherwise.
+    ///
+    bool setupIdleTimer();
+    
+    ///
+    /// Destroy the idle timer
+    ///
+    void destroyIdleTimer();
+    
+public:
     
     //
     // MARK: - Power Management
