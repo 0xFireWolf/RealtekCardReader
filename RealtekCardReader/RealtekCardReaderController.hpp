@@ -1696,6 +1696,35 @@ private:
     ///
     void onSDCardEventProcessedSyncCompletion(void* parameter, IOReturn status, OSDictionary* characteristics);
     
+    /// State shared between a synchronous card event waiter and the completion routine
+    struct SyncCardEventContext
+    {
+        /// Number of owners (the waiter and the completion routine)
+        SInt32 refCount;
+        
+        /// `True` once the completion routine has run
+        volatile bool done;
+        
+        /// The status reported by the completion routine
+        IOReturn status;
+
+        /// The completion handed to the host device.
+        /// It must live here and not on the waiter's stack: the host device chains its own completion
+        /// that points to this one, and that chained completion may still run after the waiter timed out.
+        IOSDCard::Completion completion;
+    };
+    
+    /// Maximum time the sleep path waits for the host driver to detach the card
+    static constexpr UInt32 kSDCardEventRemovalTimeoutMS = 10 * 1000;
+    
+    /// Maximum time the wake path waits for the host driver to attach the card
+    static constexpr UInt32 kSDCardEventInsertionTimeoutMS = 30 * 1000;
+    
+    ///
+    /// Raise a card event and wait until the host driver has processed it, but not forever
+    ///
+    IOReturn waitForSDCardEventGated(bool inserted, IOSDCard::EventOptions options);
+    
     ///
     /// Helper interrupt service routine that runs synchronously when a SD card is inserted
     ///
