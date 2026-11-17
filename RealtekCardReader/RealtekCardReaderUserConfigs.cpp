@@ -26,6 +26,13 @@ namespace UserConfigs::PCR
     /// Keep the card reader in the worker state forever (the behavior of v0.9.7)
     bool DisableIdleState = BootArgs::contains("-rtsxnoidle");
     
+    /// The amount of time in milliseconds to wait after a card insertion interrupt before the card is set up
+    UInt32 CardInsertionDebounce = BootArgs::get("rtsxdebounce", 200);
+    
+    /// The amount of time in milliseconds to wait after the controller is re-initialized on wake before the card presence is read
+    /// (on some chips, e.g. RTS5227, the card detect bit reports the opposite of the slot state for up to ~200 ms)
+    UInt32 WakeCardDetectSettle = BootArgs::get("rtsxwakesettle", 250);
+    
     /// Publish the power-management state ("RTSX Power") to the I/O Registry; always on in debug builds
 #ifdef DEBUG
     bool PowerDiagnostics = true;
