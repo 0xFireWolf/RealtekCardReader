@@ -2366,6 +2366,13 @@ void RealtekPCICardReaderController::prepareToSleep()
         this->idleTimer->cancelTimeout();
     }
     
+    // Drop a pending (debounced) insertion as well: it would otherwise fire after the wake-up
+    // on top of the card detection that `prepareToWakeUp()` performs anyway
+    if (this->cardSetupTimer != nullptr)
+    {
+        this->cardSetupTimer->cancelTimeout();
+    }
+    
     // Detach the card if present
     super::prepareToSleep();
     
@@ -2410,6 +2417,15 @@ void RealtekPCICardReaderController::prepareToWakeUp()
     // Initialize the hardware
     if (this->initHardwareCommon() == kIOReturnSuccess)
     {
+        // Let the card detect bit settle before `super::prepareToWakeUp()` reads it: right after the re-initialization
+        // some chips report the opposite of the slot state (reported on an RTS5227: a card in the slot read as absent,
+        // an empty slot as present, correct after < 200 ms). A wrong reading would detach a mounted card or attach a
+        // card that is not there. Boot argument `rtsxwakesettle=<ms>`, 0 disables the delay.
+        if (UserConfigs::PCR::WakeCardDetectSettle != 0)
+        {
+            IOSleep(UserConfigs::PCR::WakeCardDetectSettle);
+        }
+        
         // Attach the card if present
         super::prepareToWakeUp();
         
@@ -2506,10 +2522,25 @@ void RealtekPCICardReaderController::interruptHandlerGated(IOInterruptEventSourc
     {
         if (pendingInterrupts.contains(BIPR::kSDExists))
         {
-            this->onSDCardInsertedGated();
+            // Debounce the insertion like Linux (rtsx_pci_isr waits 200 ms before running card detect):
+            // the interrupt fires while the card is still sliding in. The timer re-checks the presence.
+            if (this->cardSetupTimer != nullptr)
+            {
+                this->cardSetupTimer->setTimeoutMS(UserConfigs::PCR::CardInsertionDebounce);
+            }
+            else
+            {
+                this->onSDCardInsertedGated();
+            }
         }
         else
         {
+            // A card that was pulled before the debounce delay expired must not be set up
+            if (this->cardSetupTimer != nullptr)
+            {
+                this->cardSetupTimer->cancelTimeout();
+            }
+            
             this->onSDCardRemovedGated();
         }
         
