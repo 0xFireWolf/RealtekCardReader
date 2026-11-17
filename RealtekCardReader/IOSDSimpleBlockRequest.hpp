@@ -80,6 +80,13 @@ public:
     void deinit() override;
     
     ///
+    /// Complete the block request with the given error without servicing it
+    ///
+    /// @param status The error passed to the storage completion routine
+    ///
+    void cancel(IOReturn status) override;
+    
+    ///
     /// Service the block request
     ///
     /// @note This function is invoked by the processor work loop to fully service the request.

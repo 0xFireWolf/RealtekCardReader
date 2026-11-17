@@ -81,6 +81,20 @@ public:
     /// @note This function is invoked by the processor routine to service the request either fully or partially.
     ///
     virtual UInt64 getNumBlocks() = 0;
+    
+    ///
+    /// Complete the request with the given error without servicing it
+    ///
+    /// @param status The error passed to the storage completion routine
+    /// @note Used for requests that are dropped (card removed, or the request belongs to a card that is gone),
+    ///       so that the client is never left waiting for a completion that does not come.
+    ///
+    virtual void cancel(IOReturn status) = 0;
+    
+    ///
+    /// The card generation (see `IOSDHostDriver::getCardGeneration()`) under which the request was submitted
+    ///
+    UInt32 cardGeneration = 0;
 };
 
 #endif /* IOSDBlockRequest_hpp */

@@ -6,6 +6,7 @@
 //
 
 #include "IOSDBlockRequestEventSource.hpp"
+#include "IOSDHostDriver.hpp"
 #include "Debug.hpp"
 
 //
@@ -42,6 +43,19 @@ bool IOSDBlockRequestEventSource::checkForWork()
         return false;
     }
     
+    // Guard: Do not service any request while a card insertion event is pending
+    // The host driver enables this event source together with the attach event source, and this event source is
+    // registered with the work loop first, so a request would otherwise reach a card that is not attached yet.
+    // The host driver signals this event source again once the insertion event has been processed.
+    auto driver = OSDynamicCast(IOSDHostDriver, this->owner);
+    
+    if (driver != nullptr && driver->isCardAttachPending())
+    {
+        pinfo("A card insertion event is pending. Will service the pending requests once the card is attached.");
+        
+        return false;
+    }
+    
     // Get a pending request
     IOSDBlockRequest* request = this->pendingRequests->dequeueRequest();
     
@@ -54,10 +68,20 @@ bool IOSDBlockRequestEventSource::checkForWork()
         return false;
     }
     
-    // Process the request
-    pinfo("Processing the block request...");
-    
-    request->service();
+    // Guard: A request submitted before the last card removal belongs to a card that is gone
+    if (driver != nullptr && request->cardGeneration != driver->getCardGeneration())
+    {
+        perr("Dropped a block request that was submitted for a card that has been removed.");
+        
+        request->cancel(kIOReturnNoMedia);
+    }
+    else
+    {
+        // Process the request
+        pinfo("Processing the block request...");
+        
+        request->service();
+    }
     
     pinfo("The block request has been processed.");
     

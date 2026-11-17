@@ -107,6 +107,14 @@ class IOSDHostDriver: public IOService
     IOSDCard* card;
     
     ///
+    /// Incremented on every card removal event
+    ///
+    /// @note A block request records the value when it is submitted. A request that is still queued after the removal
+    ///       (it raced with the removal) belongs to a card that is gone and must not be serviced on the next card.
+    ///
+    volatile UInt32 cardGeneration;
+    
+    ///
     /// The identification data of the card inserted before the computer sleeps
     ///
     /// @note `pcid` is zeroed if no card is inserted when the computer sleeps
@@ -151,12 +159,22 @@ private:
     ///
     inline void recyclePendingBlockRequest()
     {
-        // Recycle all pending requests
+        // Complete every pending request with an error before returning it to the pool;
+        // v0.9.7 returned them without calling the storage completion, so the client waited forever
         while (!this->pendingRequests->isEmpty())
         {
             pinfo("Recycling a pending request...");
             
-            this->releaseBlockRequestToPool(this->pendingRequests->dequeueRequest());
+            IOSDBlockRequest* request = this->pendingRequests->dequeueRequest();
+            
+            if (request == nullptr)
+            {
+                break;
+            }
+            
+            request->cancel(kIOReturnNoMedia);
+            
+            this->finalizeBlockRequest(request);
         }
     }
     
@@ -422,6 +440,38 @@ private:
     ///       It deinitializes the given request and puts it back to the block request pool.
     ///
     void finalizeBlockRequest(IOSDBlockRequest* request);
+    
+    //
+    // MARK: - Query Card Event State
+    //
+    
+public:
+    ///
+    /// Check whether a card insertion event is waiting to be processed by the processor work loop
+    ///
+    /// @note The attach event source disables itself before it runs `attachCard()`, and the queue event source runs on the
+    ///       same work loop, so "enabled" means that the card has not been attached yet. Pending block requests wait for it.
+    ///
+    inline bool isCardAttachPending() const
+    {
+        return this->attachCardEventSource != nullptr && this->attachCardEventSource->isEnabled();
+    }
+    
+    ///
+    /// Get the current card generation (incremented on every card removal event)
+    ///
+    inline UInt32 getCardGeneration() const
+    {
+        return this->cardGeneration;
+    }
+    
+private:
+    ///
+    /// [Helper] Signal the queue event source after a card insertion event has been processed
+    ///
+    void resumeBlockRequestsAfterAttach();
+    
+public:
     
     //
     // MARK: - Query Host Properties
