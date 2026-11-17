@@ -633,22 +633,13 @@ void RealtekCardReaderController::onSDCardRemovedGated(IOSDCard::Completion* com
 /// @note This interrupt service routine runs in a gated context.
 /// @note This function simply invokes the asynchronous interrupt service routine `onSDCardInsertedGated()` and
 ///       calls `IOCommandGate::commandSleep()` to wait until the host driver finishes processing the event.
+///       The wait is bounded: `kIOReturnTimeout` is returned if the host driver does not finish in time.
 ///
 IOReturn RealtekCardReaderController::onSDCardInsertedSyncGated(IOSDCard::EventOptions options)
 {
     pinfo("A SD card is inserted. Waiting until the host driver finishes processing the event.");
     
-    IOReturn status = kIOReturnSuccess;
-    
-    auto completion = IOSDCard::Completion::withMemberFunction(this, &RealtekCardReaderController::onSDCardEventProcessedSyncCompletion, &status);
-    
-    this->onSDCardInsertedGated(&completion, options);
-    
-    this->commandGate->commandSleep(&status);
-    
-    pinfo("The host driver has processed the card insertion event. Status = 0x%08x.", status);
-    
-    return status;
+    return this->waitForSDCardEventGated(true, options);
 }
 
 ///
@@ -659,20 +650,94 @@ IOReturn RealtekCardReaderController::onSDCardInsertedSyncGated(IOSDCard::EventO
 /// @note This interrupt service routine runs in a gated context.
 /// @note This function simply invokes the asynchronous interrupt service routine `onSDCardRemovedGated()` and
 ///       calls `IOCommandGate::commandSleep()` to wait until the host driver finishes processing the event.
+///       The wait is bounded: `kIOReturnTimeout` is returned if the host driver does not finish in time.
 ///
 IOReturn RealtekCardReaderController::onSDCardRemovedSyncGated(IOSDCard::EventOptions options)
 {
     pinfo("The SD card has been removed. Waiting until the host driver finishes processing the event.");
     
-    IOReturn status = kIOReturnSuccess;
+    return this->waitForSDCardEventGated(false, options);
+}
+
+///
+/// Raise a card event and wait until the host driver has processed it, but not forever
+///
+/// @param inserted `true` to raise the insertion event, `false` to raise the removal event
+/// @param options An optional value passed to the host driver
+/// @return The status reported by the host driver, or `kIOReturnTimeout` if the host driver did not complete in time.
+/// @note This function runs in a gated context. A card event is processed on a different work loop;
+///       if the completion never arrives, an unbounded wait would block the power management thread
+///       and the kernel would panic with "Sleep transition timed out".
+/// @note The state shared with the completion routine lives on the heap and is reference counted,
+///       so that a completion that arrives after the timeout never writes to a dead stack frame.
+///
+IOReturn RealtekCardReaderController::waitForSDCardEventGated(bool inserted, IOSDCard::EventOptions options)
+{
+    // The sleep transition is guarded by a 180-second watchdog; stay well below it.
+    // Initializing a card (wake) may legitimately take a few seconds.
+    const UInt32 timeoutMS = inserted ? kSDCardEventInsertionTimeoutMS : kSDCardEventRemovalTimeoutMS;
     
-    auto completion = IOSDCard::Completion::withMemberFunction(this, &RealtekCardReaderController::onSDCardEventProcessedSyncCompletion, &status);
+    auto context = static_cast<SyncCardEventContext*>(IOMalloc(sizeof(SyncCardEventContext)));
     
-    this->onSDCardRemovedGated(&completion, options);
+    if (context == nullptr)
+    {
+        perr("Failed to allocate the card event context.");
+        
+        return kIOReturnNoMemory;
+    }
     
-    this->commandGate->commandSleep(&status);
+    context->refCount = 2; // One for this function, one for the completion routine
     
-    pinfo("The host driver has processed the card removal event. Status = 0x%08x.", status);
+    context->done = false;
+    
+    context->status = kIOReturnSuccess;
+    
+    context->completion = IOSDCard::Completion::withMemberFunction(this, &RealtekCardReaderController::onSDCardEventProcessedSyncCompletion, context);
+
+    if (inserted)
+    {
+        this->onSDCardInsertedGated(&context->completion, options);
+    }
+    else
+    {
+        this->onSDCardRemovedGated(&context->completion, options);
+    }
+    
+    AbsoluteTime deadline;
+    
+    clock_interval_to_deadline(timeoutMS, kMillisecondScale, &deadline);
+    
+    bool timedOut = false;
+    
+    while (!context->done)
+    {
+        // `commandSleep()` releases the gate while sleeping and re-acquires it before returning
+        IOReturn result = this->commandGate->commandSleep(context, deadline, THREAD_UNINT);
+        
+        if (result == THREAD_TIMED_OUT)
+        {
+            timedOut = !context->done;
+            
+            break;
+        }
+    }
+    
+    IOReturn status = timedOut ? kIOReturnTimeout : context->status;
+    
+    if (timedOut)
+    {
+        perr("The host driver did not process the card %s event within %u ms. Will carry on.", inserted ? "insertion" : "removal", timeoutMS);
+    }
+    else
+    {
+        pinfo("The host driver has processed the card event. Status = 0x%08x.", status);
+    }
+    
+    // If the completion is still outstanding, it frees the context when (if) it runs
+    if (OSDecrementAtomic(&context->refCount) == 1)
+    {
+        IOFree(context, sizeof(SyncCardEventContext));
+    }
     
     return status;
 }
@@ -680,7 +745,7 @@ IOReturn RealtekCardReaderController::onSDCardRemovedSyncGated(IOSDCard::EventOp
 ///
 /// The completion action used by synchronous card interrupt service routines
 ///
-/// @param parameter An opaque client-supplied parameter pointer
+/// @param parameter An opaque client-supplied parameter pointer (a `SyncCardEventContext`)
 /// @param status `kIOReturnSuccess` if the card event has been processed without errors, other values otherwise.
 /// @param characteristics A non-null dictionary that contains characteristics of the card inserted and initialized successfully,
 ///                        `nullptr` if the card inserted by users cannot be initialized or has been removed from the card slot.
@@ -689,9 +754,30 @@ void RealtekCardReaderController::onSDCardEventProcessedSyncCompletion(void* par
 {
     pinfo("The card event has been processed. Status = 0x%08x.", status);
     
-    *reinterpret_cast<IOReturn*>(parameter) = status;
+    auto context = reinterpret_cast<SyncCardEventContext*>(parameter);
     
-    this->commandGate->commandWakeup(parameter);
+    // Publish the result and wake the waiter under the gate: the waiter checks `done` and goes to sleep while holding it,
+    // so the wakeup can no longer fall between its check and its sleep (it would be lost and the waiter would only
+    // return at its deadline, 10 s on sleep / 30 s on wake). The gate is recursive, and the host driver already calls
+    // into the controller through the gate from the thread that runs this completion, so this adds no new lock order.
+    auto action = [&]() -> IOReturn
+    {
+        context->status = status;
+        
+        context->done = true;
+        
+        this->commandGate->commandWakeup(context);
+        
+        return kIOReturnSuccess;
+    };
+    
+    IOCommandGateRunAction(this->commandGate, action);
+    
+    // Drop this routine's reference only now: the waiter may free the context as soon as it has woken up
+    if (OSDecrementAtomic(&context->refCount) == 1)
+    {
+        IOFree(context, sizeof(SyncCardEventContext));
+    }
 }
 
 //
