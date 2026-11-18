@@ -1227,6 +1227,20 @@ public:
     /// @param provider An instance of USB host device that represents the card reader
     ///
     void stop(IOService* provider) override;
+
+    ///
+    /// Override free functions to make sure objects are released when system sleep.
+    ///
+    void free() override;
+
+    /// Override functions to make sure objects are released when system sleep.
+    bool willTerminate(IOService* provider, IOOptionBits options) override;
+
+    /// Override functions to make sure objects are released when system sleep.
+    bool didTerminate(IOService* provider, IOOptionBits options, bool* defer) override;
+
+    /// Override functions to make sure objects are released when system sleep.
+    bool terminate(IOOptionBits options = 0) override;
 };
 
 #endif /* RealtekUSBCardReaderController_hpp */
