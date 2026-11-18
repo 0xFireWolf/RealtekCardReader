@@ -24,8 +24,7 @@ It uses the Linux driver as a reference implementation but is written from scrat
 ## Current Status
 - **Last Updated:** Nov 16, 2026
 - **Reference:** [Linux Kernel 5.11](https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.11.tar.xz)
-- **Driver Status:** Pre-1.0 Beta (v0.9.7)
-    - USB-based RTS5129, 5139 and 5179 card readers are now supported and should be working properly.
+- **Driver Status:** Pre-1.0 Beta (v0.9.8)
     - I/O performance and the overall driver stability are of the most concern at this moment.
 - **Known Issues:** [Link](Docs/KnownIssues.md)
 
