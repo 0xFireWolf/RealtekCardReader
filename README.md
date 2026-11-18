@@ -92,7 +92,7 @@ A detailed port note will be available later.
 A discussion thread is available on [InsanelyMac](https://www.insanelymac.com/forum/topic/348130-general-discussion-realtek-pcie-card-reader-driver-for-macos/).
 
 ## Support
-Writing a driver from scratch is hard and time consuming.  
+Writing a driver from scratch is hard and time-consuming.  
 If you would like to support my work, please consider a donation.  
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?business=M6AHXMUVSZQTS&no_recurring=0&item_name=Support+Realtek+PCIe+card+deader+driver+for+macOS&currency_code=USD)
@@ -105,6 +105,8 @@ If you would like to support my work, please consider a donation.
 - [Acidanthera](https://github.com/acidanthera) for [MacKernelSDK](https://github.com/acidanthera/MacKernelSDK)
 - [Realtek](https://www.realtek.com/) for the Linux [RTSX PCI/USB](https://github.com/torvalds/linux/tree/master/drivers/misc/cardreader) driver
 - [FireWolf](https://github.com/0xFireWolf) for developing the card reader driver for macOS
+- [bismillah-100](https://github.com/bismillah-100) for fixing the memory leaks in USB-based SD card readers.
+- [zearp](https://github.com/zearp) for fixing sleep/wake panics, card hot-plug issues, and C6 power management issues for PCIe-based SD card readers.
 
 ## Acknowledgements
 I would like to acknowledge the following beta testers without whom support for USB-based card readers won't be available.
@@ -112,6 +114,9 @@ I would like to acknowledge the following beta testers without whom support for 
 - [Sherlocks](https://github.com/Sher1ocks) for testing early builds to debug the timeout issues.
 - [whatnameisit](https://github.com/whatnameisit) for testing early builds to debug the hardware initialization issues.
 - [gnpaone](https://github.com/gnpaone) for providing multiple comprehensive bug reports.
+
+I would like to acknowledge the following beta testers for identifying issues and providing detailed reports.
+- [arsradu](https://github.com/arsradu) for analyzing power management issues and identifying bugs in the host driver.
 
 ## License
 This project is licensed under BSD-3-Clause.  
